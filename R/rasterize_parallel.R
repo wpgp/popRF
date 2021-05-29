@@ -1,8 +1,4 @@
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  October 2017
-# Version 0.1
-#
-#' rasterize_parallel_start function will return a string with OS
+#' @title rasterize_parallel_start function will return a string with OS
 #' @param x Raster* object
 #' @param df data.frame of points
 #' @param minblk Integer. Minimum number of blocks
@@ -115,19 +111,24 @@ rasterize_parallel_start <- function(x,
 }
 
 
-#' @title Function will transfer values associated with 'object' type spatial data (data.frame)
-#' to raster cells. Function is using paralle library to work with a big raster data. The raster
-#' file will be splited to blocks and processed per block
+#' @title Function will transfer values associated with 'object' type spatial 
+#' data (data.frame) to raster cells. Function is using paralle library to work 
+#' with a big raster data. The raster file will be splited to blocks and 
+#' processed per block.
 #'
 #' @author Maksym Bondarenko <mb4@soton.ac.uk> and 
 #'        Chris Jochem <W.C.Jochem@soton.ac.uk>
-#' @param x Raster* object
-#' @param df data.frame of points
+#' @usage rasterize_parallel(x, df, cores=NULL, minblk=NULL, NAflag=NULL, 
+#'                           datatype=NULL, filename=rasterTmpFile(), 
+#'                           overwrite=TRUE, silent=TRUE)
+#' @param x Raster* object.
+#' @param df data.frame of points.
 #' @param cores is a integer. Number of cores to use when executing the 
 #'        function in paralle.
-#' @param minblk Integer. Minimum number of blocks
-#' @param NAflag NO data value will be used for a new raster
-#' @param datatype Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
+#' @param minblk Integer. Minimum number of blocks.
+#' @param NAflag NO data value will be used for a new raster.
+#' @param datatype Type of raster. Available are 
+#'        INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S.
 #' @param filename the name of the raster file.
 #' @param overwrite Overwrite existing file.
 #' @param silent is logical. TRUE or FALSE: flag indicating whether to print 
@@ -135,7 +136,8 @@ rasterize_parallel_start <- function(x,
 #'        helpful for model debugging. If FALSE then the progress will be shown. 
 #'        Default is \code{silent} = TRUE.
 #' @importFrom raster getValues writeRaster writeStart writeStop compareRaster 
-#' hasValues writeValues blockSize  getCluster returnCluster endCluster beginCluster rasterTmpFile
+#'             hasValues writeValues blockSize  getCluster returnCluster 
+#'             endCluster beginCluster rasterTmpFile
 #' @importFrom stats complete.cases predict sd aggregate
 #' @importFrom utils stack
 #' @importFrom doParallel registerDoParallel 
@@ -147,7 +149,7 @@ rasterize_parallel_start <- function(x,
 #' @export
 #' @examples
 #' \dontrun{
-#' rasterize_parallel( x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
+#' rasterize_parallel(x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
 #' }
 rasterize_parallel <- function(x, 
                                df, 

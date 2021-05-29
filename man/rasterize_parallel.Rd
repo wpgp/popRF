@@ -2,35 +2,29 @@
 % Please edit documentation in R/rasterize_parallel.R
 \name{rasterize_parallel}
 \alias{rasterize_parallel}
-\title{Function will transfer values associated with 'object' type spatial data (data.frame)
-to raster cells. Function is using paralle library to work with a big raster data. The raster
-file will be splited to blocks and processed per block}
+\title{Function will transfer values associated with 'object' type spatial
+data (data.frame) to raster cells. Function is using paralle library to work
+with a big raster data. The raster file will be splited to blocks and
+processed per block.}
 \usage{
-rasterize_parallel(
-  x,
-  df,
-  cores = NULL,
-  minblk = NULL,
-  NAflag = NULL,
-  datatype = NULL,
-  filename = rasterTmpFile(),
-  overwrite = TRUE,
-  silent = TRUE
-)
+rasterize_parallel(x, df, cores=NULL, minblk=NULL, NAflag=NULL, 
+                          datatype=NULL, filename=rasterTmpFile(), 
+                          overwrite=TRUE, silent=TRUE)
 }
 \arguments{
-\item{x}{Raster* object}
+\item{x}{Raster* object.}
 
-\item{df}{data.frame of points}
+\item{df}{data.frame of points.}
 
 \item{cores}{is a integer. Number of cores to use when executing the
 function in paralle.}
 
-\item{minblk}{Integer. Minimum number of blocks}
+\item{minblk}{Integer. Minimum number of blocks.}
 
-\item{NAflag}{NO data value will be used for a new raster}
+\item{NAflag}{NO data value will be used for a new raster.}
 
-\item{datatype}{Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S}
+\item{datatype}{Type of raster. Available are
+INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S.}
 
 \item{filename}{the name of the raster file.}
 
@@ -45,13 +39,14 @@ Default is \code{silent} = TRUE.}
 Raster* object
 }
 \description{
-Function will transfer values associated with 'object' type spatial data (data.frame)
-to raster cells. Function is using paralle library to work with a big raster data. The raster
-file will be splited to blocks and processed per block
+Function will transfer values associated with 'object' type spatial
+data (data.frame) to raster cells. Function is using paralle library to work
+with a big raster data. The raster file will be splited to blocks and
+processed per block.
 }
 \examples{
 \dontrun{
-rasterize_parallel( x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
+rasterize_parallel(x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
 }
 }
 \author{
