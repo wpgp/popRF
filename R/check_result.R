@@ -11,6 +11,7 @@
 #' @param log If FALSE then the progress will be shown
 #' @rdname check_result
 #' @return Number of mean difference
+#' @noRd 
 check_result <- function(input_poptables, 
                          censusmaskPathFileName, 
                          rfg.output.path.countries, 

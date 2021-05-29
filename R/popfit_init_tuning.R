@@ -9,6 +9,7 @@
 #' @importFrom stats na.omit
 #' @return it returns a matrix whose first column contains the mtry values searched, 
 #' and the second column the corresponding OOB error
+#' @noRd 
 popfit_init_tuning <- function(x, 
                                y, 
                                proximity=TRUE, 

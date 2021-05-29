@@ -1,8 +1,4 @@
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  October 2017
-# Version 0.1
-#
-#' get_blocks_need function will return a number of blocks
+#' Function will return a number of blocks
 #' sugesting for processing raster file. It will take into consideration
 #' number of layers, cells, cores and avalible memory on computer
 #' (not maximum memory but avalible)
@@ -16,7 +12,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' get_blocks_need( x, cores=2, n=1 )
+#' get_blocks_need(x, cores=2, n=1)
 #' }
 get_blocks_need <- function( x, cores, n=1, number_type = "numeric"){
   

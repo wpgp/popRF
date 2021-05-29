@@ -2,79 +2,110 @@
 % Please edit documentation in R/popRF.R
 \name{popRF}
 \alias{popRF}
-\title{popRF Random Forests population modelling scripts
-Southampton University
-WordlPop Spatial Data Infrastructure
-https://sdi.worldpop.org}
+\title{popRF Random Forests population modelling scripts}
 \usage{
-popRF(
-  pop,
-  cov,
-  mastergrid,
-  watermask,
-  px_area,
-  output_dir,
-  npoc = NULL,
-  minblocks = NULL,
-  quant = TRUE,
-  proximity = TRUE,
-  fset = NULL,
-  fset_incl = FALSE,
-  fset_cutoff = 20,
-  fix_cov = FALSE,
-  check_result = FALSE,
-  verbose = TRUE,
-  log = FALSE
-)
+popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
+minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+fset_cutoff=20, fix_cov=FALSE, check_result=FALSE, verbose=TRUE, log=FALSE)
 }
 \arguments{
-\item{pop}{Input list to population}
+\item{pop}{the name of the file which the administrative ID and the population
+values are to be read from. The file should contain two columns
+comma-separated with the value of administrative ID and population
+without columns names. If it does not contain an absolute path, the
+file name is relative to the current working directory.}
 
-\item{cov}{Input list of covariates}
+\item{cov}{List contains a list of elements. Each element of a list is another
+list object with a given name of the country, the element of this list
+is the input covariates with the name of the covariates and the path to
+them.
+Example:\if{html}{\out{<div class="r">}}\preformatted{list(
+    "NPL"=list(
+               "covariate1" = "covariate1.tif",
+               "covariate2" = "covariate2.tif"
+              )  
+   )
+}\if{html}{\out{</div>}}\preformatted{## $NPL
+## $NPL$covariate1
+## [1] "covariate1.tif"
+## 
+## $NPL$covariate2
+## [1] "covariate2.tif"
+}}
 
-\item{mastergrid}{Input list to mastergrid}
+\item{mastergrid}{List with each element of a list is
+another object with a given name of the country, the element of
+this list is the input mastergrid with the path to the raster file.
+Example:\preformatted{list(
+    "NPL" = "npl_mastergrid.tif"
+   )
+}}
 
-\item{watermask}{Input list to watermask}
+\item{watermask}{List with each element of a list is
+another object with a given name of the country, the element of
+this list is the input watermask with the path to the raster file.
+Example:\preformatted{list(
+    "NPL" = "npl_watermask.tif"
+   )
+}}
 
-\item{px_area}{Input list to population}
+\item{px_area}{List with each element of a list is
+another object with a given name of the country, the element of
+this list is the input px_area with the path to the raster file.
+Example:\if{html}{\out{<div class="r">}}\preformatted{list(
+    "NPL" = "npl_px_area.tif"
+   )
+}\if{html}{\out{</div>}}\preformatted{## $NPL
+## [1] "npl_px_area.tif"
+}}
 
-\item{output_dir}{Path to the folder to save the outputs}
+\item{output_dir}{Path to the folder to save the outputs.}
 
-\item{npoc}{NULL or Integer. Number of process to use}
+\item{cores}{is a integer. Number of cores to use when executing the function,
+which defaults to 4. If set to 0 or NULL max number of cores will be
+used based on as many processors as the hardware and RAM allow.}
 
-\item{minblocks}{Integer. if minblocks  <- NULL then minblocks for cluster
-prediction parallesation will be calculated based on aval memory}
+\item{minblocks}{Integer. if \code{minblocks} is NULL then \code{minblocks}
+for cluster prediction parallesation will be calculated based on
+available memory.}
 
 \item{quant}{If FALSE then quant will not be calculated}
 
-\item{proximity}{Should proximity measures be computed?}
+\item{proximity}{is logical. TRUE or FALSE: flag indicating whether proximity
+measures among the rows be computed? Default is \code{proximity} = TRUE.
+See \code{\link[randomForest]{randomForest}} for more details.}
 
-\item{fset}{Declare if we are using a fixed set in this modeling,
-i.e. are we parameterizing, in part or in full, this RF model run upon another
+\item{fset}{Declare if we are using a fixed set in this modeling, i.e. are we
+parameterizing, in part or in full, this RF model run upon another
 country's(ies') RF model object.}
 
-\item{fset_incl}{If TRUE  RF popfit will not be combined with RF model
-run upon another country's(ies') RF model object}
+\item{fset_incl}{is logical. TRUE or FALSE: flag indicating whether RF model object
+will or will not be combined with RF model run upon another
+country's(ies') RF model object.}
 
 \item{fset_cutoff}{Default 20}
 
-\item{fix_cov}{logical. Should try to fix extend of covariates if they do not match mastergrid?}
+\item{fix_cov}{is logical. TRUE or FALSE: flag indicating whether the raster
+extend of the covariates will be fixed if the extend does not match
+mastergrid.}
 
-\item{check_result}{If TRUE then the results will be compare with input}
+\item{check_result}{is logical. TRUE or FALSE: flag indicating whether the
+results will be compare with input data.
+Default is \code{check_result} = TRUE.}
 
-\item{verbose}{logical. Should report extra information on progress?}
+\item{verbose}{is logical. TRUE or FALSE: flag indicating whether to print
+intermediate output from the function on the console, which might be
+helpful for model debugging. Default is \code{verbose} = TRUE.}
 
-\item{log}{logical. Should report on progress be saved in log file?}
+\item{log}{is logical. TRUE or FALSE: flag indicating whether to print intermediate
+output from the function on the log.txt file.
+Default is \code{log} = FALSE.}
 }
 \value{
 raster object of population
 }
 \description{
-Authors & Maintainer of the script
-Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk}
-Jeremiah J. Nieves \href{mailto:jeremiah.j.nieves@outlook.com}{jeremiah.j.nieves@outlook.com}
-David Kerr \href{mailto:dk2n16@soton.ac.uk}{dk2n16@soton.ac.uk}
-Alessandro Sorichetta \href{mailto:as1v13@soton.ac.uk}{as1v13@soton.ac.uk}
+popRF Random Forests population modelling scripts
 }
 \details{
 Random Forest (RF)-based dasymetric mapping approach developed
@@ -85,24 +116,25 @@ by Stevens et al. (2015)*
 \item Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
 Disaggregating Census Data for Population Mapping Using Random Forests
 with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
-http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042
+\url{http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042}
+for more details.
 }
 }
 \examples{
 \dontrun{
 
-pop_table <- list("Nepal"="/user/npl_population.csv")
+pop_table <- list("NPL"="/user/npl_population.csv")
 
 input_cov <- list(
-                 "Nepal"=list("dst011"="/user/dst011.tif",
-                              "dst040"="/user/dst040.tif",
-                              "dst130"="/user/dst130.tif"
-                              )  
+                 "NPL"=list(
+                            "covariate1" = "covariate1.tif",
+                            "covariate2" = "covariate2.tif"
+                            )  
                  )
 
-input_mastergrid <- list("Nepal"="/user/mastergrid.tif")
-input_watermask <- list("Nepal"="/user/watermask.tif")
-input_px_area <- list("Nepal"="/user/px_area.tif")
+input_mastergrid <- list("NPL"= "npl_mastergrid.tif")
+input_watermask <- list("NPL" ="npl_watermask.tif")
+input_px_area <- list("NPL" = "npl_px_area.tif")
 
 popRF(pop=pop_table, 
       cov=input_cov, 
@@ -113,4 +145,10 @@ popRF(pop=pop_table,
       cores=4 
       )
 }
+}
+\references{
+Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem,
+A. J. Disaggregating Census Data for Population Mapping Using Random
+Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
+(2015). \url{https://doi.org/10.1371/journal.pone.0107042}
 }

@@ -1,12 +1,23 @@
-#' Function to demo the popFR package using WorldPop inout data 
+#' Function to demo the popFR package using WorldPop input data 
 #'
+#' @usage
+#' popRFdemo(project_dir, country="NPL", cores=4, quant=TRUE, ftp=TRUE, 
+#' verbose=TRUE, log=TRUE)
 #' @param project_dir Path to the folder to save the outputs
-#' @param country ISO of the country in demo. Default one is NPL (Nepal)
-#' @param npoc NULL or Integer. Number of process to use
+#' @param country ISO of the country. Default one is NPL (Nepal)
+#' @param cores is a integer. Number of cores to use when executing the function, 
+#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
+#'        used based on as many processors as the hardware and RAM allow.
 #' @param quant If FALSE then quant will not be calculated
-#' @param ftp Method to be used for downloading files. If TRUE FTP will be used otherwise https
-#' @param verbose logical. Should report extra information on progress?
-#' @param log logical. Should report on progress be saved in log file?
+#' @param ftp is logical. TRUE or FALSE: flag indicating whether 
+#'        [FTP](ftp://ftp.worldpop.org) or [HTTPS](https://data.worldpop.org) 
+#'        WorldPop data hub server will be used. Default is \code{ftp} = TRUE. 
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE.
 #' @importFrom utils write.table read.csv
 #' @rdname popRFdemo
 #' @return A data.frame with a value for each zone (unique value in zones)
@@ -15,12 +26,12 @@
 #' \dontrun{
 #' popRFdemo( project_dir="/home/user/demo",
 #'            country="NPL", 
-#'            npoc=4
+#'            cores=4
 #'          )
 #' } 
 popRFdemo <- function(project_dir, 
                       country="NPL", 
-                      npoc=4,
+                      cores=4,
                       quant=TRUE,
                       ftp=TRUE, 
                       verbose=TRUE, 
@@ -281,7 +292,7 @@ popRFdemo <- function(project_dir,
                input_watermask, 
                input_px_area, 
                project_dir, 
-               npoc=npoc,
+               cores=cores,
                fset=fset,
                fset_incl=fset_incl,
                fset_cutoff=fset_cutoff,

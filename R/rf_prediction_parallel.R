@@ -23,6 +23,7 @@
 #' clusterEvalQ clusterExport
 #' @importFrom foreach '%dopar%' foreach
 #' @return raster objects
+#' @noRd 
 rf_prediction_parallel <- function(covariates,
                                    census_mask,
                                    water_raster,

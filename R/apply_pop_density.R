@@ -1,25 +1,39 @@
-#' Apply population densityto a final RF prediction 
-#' (RF_pred +L1_pop)/RF_pred_ZS_sum We will need to change it 
-#' by using gdal_calc
+#' Apply population density. 
+#' 
+#' @details Apply population density to a final RF prediction 
+#' (RF_pred +L1_pop)/RF_pred_ZS_sum.
 #' 
 #' @rdname apply_pop_density
-#' @param input_poptables input poptablest
-#' @param censusmaskPathFileName census mask Path FileName
-#' @param rfg.output.path.countries path to load/save popfit objects
-#' @param nrpoc number of cores
-#' @param rfg.countries.tag proximity
-#' @param quant proximity
-#' @param minblocks minblocks
-#' @param verbose If FALSE then the progress will be shown
-#' @param log If FALSE then the progress will be shown
+#' @param pop the name of the file which the administrative ID and the population 
+#'        values are to be read from. The file should contain two columns 
+#'        comma-separated with the value of administrative ID and population 
+#'        without columns names. If it does not contain an absolute path, the 
+#'        file name is relative to the current working directory.
+#' @param mastergrid_filename census mask Path FileName
+#' @param output_dir Path to the folder to save the outputs. 
+#' @param cores is a integer. Number of cores to use when executing the function, 
+#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
+#'        used based on as many processors as the hardware and RAM allow. 
+#' @param rfg.countries.tag character of tag
+#' @param quant logical. If FALSE then quant will not be calculated
+#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
+#'        for cluster prediction parallesation will be calculated based on 
+#'        available memory.
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE.
 #' @importFrom raster getValues writeRaster values
 #' @importFrom plyr join
 #' @importFrom utils stack
 #' @return raster objects
-apply_pop_density <- function(input_poptables,
-                              censusmaskPathFileName,
-                              rfg.output.path.countries,
-                              nrpoc=NULL,
+#' @noRd 
+apply_pop_density <- function(pop,
+                              mastergrid_filename,
+                              output_dir,
+                              cores=NULL,
                               rfg.countries.tag, 
                               quant = TRUE, 
                               minblocks=NULL,
@@ -30,22 +44,22 @@ apply_pop_density <- function(input_poptables,
   silent <- if (verbose) FALSE else TRUE
   
   # rasterising pop table 
-  rfg.rst.pop.census.tif <- file.path(rfg.output.path.countries,
+  rfg.rst.pop.census.tif <- file.path(output_dir,
                                       paste0("pop_census_mask_",rfg.countries.tag, ".tif"))
   
-  rfg.rst.zonal.stats.rf.pred.tif<- file.path(rfg.output.path.countries,
+  rfg.rst.zonal.stats.rf.pred.tif<- file.path(output_dir,
                                               paste0("predict_density_rf_pred_",rfg.countries.tag, "_ZS_sum.tif")) 
   
   
-  rfg.predict.density.rf.pred <- file.path(rfg.output.path.countries, 
+  rfg.predict.density.rf.pred <- file.path(output_dir, 
                                            paste0("predict_density_rf_pred_", rfg.countries.tag, ".tif"))
   
   rst.predict.density.rf.pred <- raster(rfg.predict.density.rf.pred) 
   
-  df <- get_pop_census_all(input_poptables)
-  zonal_raster <- raster(censusmaskPathFileName)
+  df <- get_pop_census_all(pop)
+  zonal_raster <- raster(mastergrid_filename)
   
-  if (is.null(nrpoc) | nrpoc < 2 ){
+  if (is.null(cores) | cores < 2 ){
     
     v <- data.frame( raster::getValues(zonal_raster) )
     colnames(v) <- c("v1")
@@ -104,11 +118,11 @@ apply_pop_density <- function(input_poptables,
     
     
     colnames(df) <- c("ADMINID", "ADMINPOP")
-    minblks <- get_blocks_need(zonal_raster, nrpoc, n=2)
+    minblks <- get_blocks_need(zonal_raster, cores, n=2)
     
     rst.pop.census <- rasterize_parallel(zonal_raster, 
                                          df, 
-                                         cores=nrpoc, 
+                                         cores=cores, 
                                          minblk=minblks, 
                                          NAflag=NULL, 
                                          datatype=NULL, 
@@ -122,7 +136,7 @@ apply_pop_density <- function(input_poptables,
     out.zonal.stats.rf.pred.sum <- calculate_zs_parallel(rst.predict.density.rf.pred,
                                                          zonal_raster, 
                                                          fun="sum", 
-                                                         cores=nrpoc,  
+                                                         cores=cores,  
                                                          minblk=minblks,
                                                          silent=silent)
     
@@ -137,7 +151,7 @@ apply_pop_density <- function(input_poptables,
     
     rst.zonal.stats.rf.pred <- rasterize_parallel(zonal_raster, 
                                                   out.zonal.stats.rf.pred.sum, 
-                                                  cores=nrpoc, 
+                                                  cores=cores, 
                                                   minblk=minblks, 
                                                   NAflag=NULL, 
                                                   datatype=NULL, 
@@ -149,7 +163,7 @@ apply_pop_density <- function(input_poptables,
   }  
   
   
-  rfg.predict.density.rf.pred.final <- file.path(rfg.output.path.countries, 
+  rfg.predict.density.rf.pred.final <- file.path(output_dir, 
                                                  paste0("ppp_",rfg.countries.tag, ".tif"))
   
   r_calc <- (rst.predict.density.rf.pred * rst.pop.census)/rst.zonal.stats.rf.pred

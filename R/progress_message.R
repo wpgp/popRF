@@ -1,20 +1,15 @@
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  October 2017
-# Version 0.1
-#
-#' progress_message function will return progress
+#' Function will return progress ploting a progress bar
 #'
-#' Tested on Windows 10
-#' @param x integer
-#' @param max maximum for progress bvar
+#' @param x integer, current level
+#' @param max maximum for progress bar
 #' @param label additional text for progress  bar
 #' @rdname progress_message
 #' @return character
-#' @export
 #' @examples
 #' \dontrun{
 #' progress_message( x=10, max = 200, label="Progress message" )
 #' }
+#' @noRd 
 progress_message <- function (x, max = 100, label=NULL) {
   
   if (is.null(label)) label=''

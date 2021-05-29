@@ -30,6 +30,11 @@ Authors@R: c(
           comment = c(ORCID = "0000-0002-3576-5826")
           )
     )
+Author: Maksym Bondarenko [aut, cre] (<https://orcid.org/0000-0003-4958-6551>),
+  Jeremiah J. Nieves [aut] (<https://orcid.org/0000-0002-7423-134>),
+  David Kerr [aut],
+  Alessandro Sorichetta (<https://orcid.org/0000-0002-3576-5826>)
+Maintainer: Maksym Bondarenko <mb4@soton.ac.uk>    
 Description: popRF Random Forests population modelling scripts.
 Imports: doParallel, parallel, raster, methods, stats, foreach, gdalUtils, randomForest, quantregForest, snow, plyr
 Depends: R (>= 3.2.0)

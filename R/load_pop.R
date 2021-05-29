@@ -1,10 +1,11 @@
 #
-#' load_pop load population data from input
+#' Load population data from input
 #'
 #' @param icountry ISO of the country
 #' @param input_poptables Path to the csv file with pop data
 #' @rdname load_pop
 #' @return A data.frame with the populations for each zone
+#' @noRd 
 load_pop <- function(icountry,input_poptables){
   
   file_local <- input_poptables[[icountry]]
@@ -21,6 +22,7 @@ load_pop <- function(icountry,input_poptables){
 #' @param x input poptables
 #' @rdname get_pop_census_all
 #' @return A data.frame with the populations
+#' @noRd 
 get_pop_census_all  <- function(x) {
   
   c <- names(x)

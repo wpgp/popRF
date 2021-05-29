@@ -1,12 +1,11 @@
-#  Authors: Maksym Bondarenko mb4@soton.ac.uk
-#  Date :  October 2017
-#  Version 0.1
-#
-#' calculate_zs_parallel function compute zonal statistics. That is,
-#' cross-tabulate the values of a Raster* object
-#' based on a "zones" RasterLayer. NA values are removed.
-#' Function uses DoParallel library to work with a big raster data
-#'
+#' @title Function compute zonal statistics. 
+#'        That is, cross-tabulate the values of a Raster* object based on a 
+#'        "zones" RasterLayer. NA values are removed. 
+#'        Function uses \code{\link[doParallel]{registerDoParallel}} 
+#'        library to work with a big raster data.
+#' 
+#' @author Maksym Bondarenko <mb4@soton.ac.uk> and 
+#'        Chris Jochem <W.C.Jochem@soton.ac.uk>
 #' @param x Raster* object
 #' @param y RasterLayer object with codes representing zones
 #' @param fun The function to be applied. Either as character: 'mean', 'min', 'max' and 'sum'
@@ -26,10 +25,14 @@
 #' \dontrun{
 #' calculate_zs_parallel( x=rasterObj1, y=rasterObj2, cores=2, minblk=4  )
 #' }
-calculate_zs_parallel <- function(x, y, fun='mean', cores=NULL, minblk=NULL, na.rm=TRUE, silent=TRUE) {
-  
-  #chack_pkg_load("raster","doParallel")
-  
+calculate_zs_parallel <- function(x, 
+                                  y, 
+                                  fun='mean', 
+                                  cores=NULL, 
+                                  minblk=NULL, 
+                                  na.rm=TRUE, 
+                                  silent=TRUE) {
+ 
   fun <- tolower(fun)
   if(length(fun) > 1){
     fun <- fun[1]

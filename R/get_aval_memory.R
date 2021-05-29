@@ -8,6 +8,7 @@
 #'
 #' @rdname get_aval_memory
 #' @return numeric
+#' @noRd 
 get_aval_memory <- function(){
   
   OS = tolower(get_OS_system())

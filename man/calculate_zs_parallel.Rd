@@ -2,10 +2,11 @@
 % Please edit documentation in R/calculate_zs_parallel.R
 \name{calculate_zs_parallel}
 \alias{calculate_zs_parallel}
-\title{calculate_zs_parallel function compute zonal statistics. That is,
-cross-tabulate the values of a Raster* object
-based on a "zones" RasterLayer. NA values are removed.
-Function uses DoParallel library to work with a big raster data}
+\title{Function compute zonal statistics.
+That is, cross-tabulate the values of a Raster* object based on a
+"zones" RasterLayer. NA values are removed.
+Function uses \code{\link[doParallel]{registerDoParallel}}
+library to work with a big raster data.}
 \usage{
 calculate_zs_parallel(
   x,
@@ -36,13 +37,18 @@ calculate_zs_parallel(
 A data.frame with a value for each zone (unique value in zones)
 }
 \description{
-calculate_zs_parallel function compute zonal statistics. That is,
-cross-tabulate the values of a Raster* object
-based on a "zones" RasterLayer. NA values are removed.
-Function uses DoParallel library to work with a big raster data
+Function compute zonal statistics.
+That is, cross-tabulate the values of a Raster* object based on a
+"zones" RasterLayer. NA values are removed.
+Function uses \code{\link[doParallel]{registerDoParallel}}
+library to work with a big raster data.
 }
 \examples{
 \dontrun{
 calculate_zs_parallel( x=rasterObj1, y=rasterObj2, cores=2, minblk=4  )
 }
+}
+\author{
+Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk} and
+Chris Jochem \href{mailto:W.C.Jochem@soton.ac.uk}{W.C.Jochem@soton.ac.uk}
 }

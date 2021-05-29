@@ -1,4 +1,4 @@
-#' create_covariates_list
+#' creating a covariates list
 #' 
 #' @param input_covariates Input list of covariates
 #' @param input_mastergrid Input list to mastergrid
@@ -13,6 +13,7 @@
 #'                         input_watermask, 
 #'                         input_px_area  )
 #' }
+#' @noRd 
 create_covariates_list <- function(input_covariates,
                                    input_mastergrid,
                                    input_watermask,
@@ -125,7 +126,7 @@ create_covariates_list <- function(input_covariates,
 }
 
 
-#' create_covariates_list_for_RF
+#' creating a covariates list as input for RF model
 #' 
 #' @param covariates Input list of covariates
 #' @return A list of covariates
@@ -133,6 +134,7 @@ create_covariates_list <- function(input_covariates,
 #' \dontrun{
 #' create_covariates_list_for_RF( covariates )
 #' }
+#' @noRd 
 create_covariates_list_for_RF <- function(covariates){
   
   covariates.new <- list()
@@ -170,6 +172,7 @@ create_covariates_list_for_RF <- function(covariates){
 #' \dontrun{
 #' get_covariates_var_names( covariates )
 #' }
+#' @noRd 
 get_covariates_var_names <- function(x){
   
   covariates.var.names <- c()

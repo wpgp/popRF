@@ -2,7 +2,7 @@
 % Please edit documentation in R/rasterize_parallel.R
 \name{rasterize_parallel}
 \alias{rasterize_parallel}
-\title{rasterize_parallel function will transfer values associated with 'object' type spatial data (data.frame)
+\title{Function will transfer values associated with 'object' type spatial data (data.frame)
 to raster cells. Function is using paralle library to work with a big raster data. The raster
 file will be splited to blocks and processed per block}
 \usage{
@@ -23,7 +23,8 @@ rasterize_parallel(
 
 \item{df}{data.frame of points}
 
-\item{cores}{number of cores}
+\item{cores}{is a integer. Number of cores to use when executing the
+function in paralle.}
 
 \item{minblk}{Integer. Minimum number of blocks}
 
@@ -31,17 +32,20 @@ rasterize_parallel(
 
 \item{datatype}{Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S}
 
-\item{filename}{File of a new raster file.}
+\item{filename}{the name of the raster file.}
 
-\item{overwrite}{Overwrite existing file}
+\item{overwrite}{Overwrite existing file.}
 
-\item{silent}{If FALSE then the progress will be shown}
+\item{silent}{is logical. TRUE or FALSE: flag indicating whether to print
+intermediate output from the function on the console, which might be
+helpful for model debugging. If FALSE then the progress will be shown.
+Default is \code{silent} = TRUE.}
 }
 \value{
 Raster* object
 }
 \description{
-rasterize_parallel function will transfer values associated with 'object' type spatial data (data.frame)
+Function will transfer values associated with 'object' type spatial data (data.frame)
 to raster cells. Function is using paralle library to work with a big raster data. The raster
 file will be splited to blocks and processed per block
 }
@@ -49,4 +53,8 @@ file will be splited to blocks and processed per block
 \dontrun{
 rasterize_parallel( x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
 }
+}
+\author{
+Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk} and
+Chris Jochem \href{mailto:W.C.Jochem@soton.ac.uk}{W.C.Jochem@soton.ac.uk}
 }

@@ -2,10 +2,9 @@
 # Date :  June 2021
 # Version 0.1
 #
-#' stop_quietly exit program without error
-#'
+#' Exit program quietly without error
+#' @noRd 
 #' @rdname stop_quietly
-#' @return stop execution of package
 stop_quietly <- function() {
   
   opt <- options(show.error.messages = FALSE)
@@ -15,12 +14,13 @@ stop_quietly <- function() {
 }
 
 #
-#' transY The default is to log transform the x argument:
+#' The default is to log transform the x argument:
 #'
 #' @param x vector
 #' @param inverse if TRUE inverse
 #' @rdname transY
 #' @return A data.frame merged covariates
+#' @noRd 
 transY <- function(x, inverse=FALSE) {
   if (!inverse) {
     return( log(x) )
@@ -32,13 +32,15 @@ transY <- function(x, inverse=FALSE) {
 
 
 #
-#' log_info save log into the file
+#' Print text into log.txt file
 #' @param prank type of log
 #' @param stext Text to log
-#' @param verbose If FALSE then the progress will be shown
-#' @param log If FALSE then the progress will be shown
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
 #' @rdname log_info
-#' @return save log into the file
+#' @noRd 
 log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
   
   if (verbose){
@@ -59,14 +61,14 @@ log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
 
 
 
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  June 2021
-# Version 0.1
-#
-#' create_dir creating dir
+
+#' Creating a folder in specified location.
 #' @param x name of the folder to be created
-#' @param verbose If FALSE then the progress will be shown    
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE. 
 #' @rdname create_dir
+#' @noRd 
 create_dir <- function(x, verbose){
   
   x.covariates <- file.path(x,"covariates")
@@ -85,18 +87,17 @@ create_dir <- function(x, verbose){
 }
 
 
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  June 2021
-# Version 0.1
-#
-#' tmDiff return a time difference in human  reading format
-#' @param start time when started
-#' @param end time when endted
-#' @param frm format of return      
+
+#' Function which takes time objects and calculates the difference between
+#' the start and end time point. Returned is the formatted time.
+#' @param start Start time.
+#' @param end End time.
+#' @param frm format of time difference.
 #' @rdname tmDiff
+#' @return Returned is the formatted time.
+#' @noRd 
 tmDiff <- function(start, end, frm="hms") {
-  ##  Function which takes time objects and calculates the difference between 
-  ##  the start and end time point. Returned is the formatted time.
+
   dsec <- as.numeric(difftime(end, start, units = c("secs")))
   hours <- floor(dsec / 3600)
   
@@ -117,8 +118,8 @@ tmDiff <- function(start, end, frm="hms") {
 
 
 
-#' creat_raster_stack Create a raster stack from all covariates from popfit and census_mask
-#' and water_raster:
+#' creat_raster_stack Create a raster stack from all covariates from 
+#' popfit and census_mask and water_raster.
 #' @param covariates covariates list
 #' @param popfit_final list of names used in the RF
 #' @param census_mask raster of census mask
@@ -127,6 +128,7 @@ tmDiff <- function(start, end, frm="hms") {
 #' @importFrom raster raster
 #' @rdname creat_raster_stack
 #' @return raster stack
+#' @noRd 
 creat_raster_stack <- function(covariates, 
                                popfit_final, 
                                census_mask, 
@@ -161,14 +163,16 @@ creat_raster_stack <- function(covariates,
 #' @param k format
 #' @rdname specify_decimal
 #' @return number
+#' @noRd 
 specify_decimal <- function(x, k) format(round(x, k), nsmall=k)
 
 
 #' Checking extent of two rasters
-#' @param x path to raster  
-#' @param y path to raster  
+#' @param x the name of the raster file.  
+#' @param y the name of the raster file. 
 #' @rdname check_raster_extend
 #' @return logical
+#' @noRd 
 check_raster_extend <- function( x, y ){
   
   r1 <- raster::raster(x)
@@ -193,12 +197,13 @@ check_raster_extend <- function( x, y ){
 
 
 #' Changing extent of two rasters.
-#' @param srcfile path to raster 
-#' @param dstfile path to raster 
+#' @param srcfile the name of the raster file.
+#' @param dstfile the name of the raster file. 
 #' @param verbose logical. Should report extra information on progress? 
-#' @param overwrite logical to overwrite or not the output file  
+#' @param overwrite logical to overwrite or not the output file.  
 #' @rdname check_raster_extend
 #' @return logical
+#' @noRd 
 change_raster_extend <- function(srcfile, 
                                  dstfile, 
                                  verbose=FALSE, 
@@ -235,38 +240,12 @@ change_raster_extend <- function(srcfile,
 
 
 
-# creat_raster_stack <- function(covariates, 
-#                                popfit_final, 
-#                                census_mask, 
-#                                water_raster) {
-#   ##  Create an empty list to hold the rasters:
-#   list_ras <- list()
-#   
-#   ##  For every raster name in the list of names used in the RF:
-#   for (i in 1:length(names(popfit_final$forest$xlevels))){
-#     ##  Retrieve the name:
-#     var_name <- names(popfit_final$forest$xlevels)[i]  
-#     ##  Assign that raster path to the varname:
-#     base::assign(var_name, raster( covariates[[var_name]]$path ), envir = .GlobalEnv)
-#     ##  Put the raster path in the list:
-#     list_ras[[i]] <-  get(var_name, envir = .GlobalEnv)
-#   }  
-#   ##  Append the census mask and the water mask to that list:
-#   list_ras[[length(list_ras)+1]] <- census_mask
-#   list_ras[[length(list_ras)+1]] <- water_raster
-#   
-#   ##  Stack all the rasters we just retrieved:
-#   ras_stack <- stack(list_ras)
-#   
-#   ##  Return the raster stack object:
-#   return(ras_stack)
-# }
-
 #' Create project directory based on tag of the countries.
-#' @param input.countries input list of the countries 
+#' @param input.countries input list of the countries. 
 #' @param output_dir path to project dir 
 #' @rdname create_dirs_for_prj
 #' @return list of project directories
+#' @noRd 
 create_dirs_for_prj <- function(input.countries, output_dir){
   
   
@@ -314,7 +293,8 @@ create_dirs_for_prj <- function(input.countries, output_dir){
 #' @param verbose logical. Should report extra information on progress?
 #' @param log logical. Should report on progress be saved in log file?
 #' @rdname check_cov
-#' @return logical if fix_raster is FALSE
+#' @return return TRUE or FASLE if \code{fix_raster} parameter is FALSE.
+#' @noRd 
 check_cov <- function(covariates, 
                       fix_cov,
                       verbose=FALSE, 

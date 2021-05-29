@@ -1,14 +1,19 @@
-#' merg_covariates merg covariates using gdal
+#' Mergin covariates.
 #'
 #' @param input.countries list countries 
-#' @param covariates.var.names list of cov names 
-#' @param covariates detailes list of covariates
-#' @param rfg.countries.tag tag for outputs
+#' @param covariates.var.names list of covariates names 
+#' @param covariates detailes of the covariates
+#' @param rfg.countries.tag tag for the project
 #' @param rfg.countries.merged directory to save merged rasters
-#' @param verbose If FALSE then the progress will be shown
-#' @param log If FALSE then the progress will be shown
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE.
 #' @importFrom gdalUtils gdalwarp
 #' @importFrom raster crs
+#' @noRd 
 #' @rdname merg_covariates
 #' @return A data.frame merged covariates
 #' @examples
@@ -86,7 +91,7 @@ merg_covariates <- function(input.countries,
         
         progress_message(x=i, 
                          max=length(covariates.var.names), 
-                         label=paste0("Complited merging                      " ))
+                         label=paste0("Complited merging                         " ))
         
       }
     }      
@@ -95,7 +100,7 @@ merg_covariates <- function(input.countries,
     
   } 
   
-  log_info("MSG", paste0("Completed merging covariates"), verbose=verbose, log=log) 
+  #log_info("MSG", paste0("Completed merging covariates"), verbose=verbose, log=log) 
   return(covariates_merged)
   
 }

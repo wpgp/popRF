@@ -8,6 +8,7 @@
 
 #' @rdname get_OS_system
 #' @return string
+#' @noRd 
 get_OS_system <- function(){
   
   sysinf <- Sys.info()

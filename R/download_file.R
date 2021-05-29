@@ -8,6 +8,7 @@
 #' "wget" and "curl", and there is a value "auto"
 #' @rdname download_file
 #' @importFrom utils read.csv
+#' @noRd 
 download_file <- function(file_remote, dest_file, quiet, method="auto") {
   
   tmStartDw  <- Sys.time()

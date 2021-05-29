@@ -1,44 +1,103 @@
-#' popRF Random Forests population modelling scripts
-#' Southampton University
-#' WordlPop Spatial Data Infrastructure
-#' https://sdi.worldpop.org
+## Authors & Maintainer of the script
+## Maksym Bondarenko <mb4@soton.ac.uk> 
+## Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>
+## David Kerr <dk2n16@soton.ac.uk>
+## Alessandro Sorichetta <as1v13@soton.ac.uk>
 #' 
-#' Authors & Maintainer of the script
-#' Maksym Bondarenko <mb4@soton.ac.uk> 
-#' Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>
-#' David Kerr <dk2n16@soton.ac.uk>
-#' Alessandro Sorichetta <as1v13@soton.ac.uk>
+#' @title popRF Random Forests population modelling scripts
 #' 
 #' @details Random Forest (RF)-based dasymetric mapping approach developed
 #' by Stevens et al. (2015)*
 #' 
 #' @note * Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
-#' Disaggregating Census Data for Population Mapping Using Random Forests
-#' with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
-#' http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042
+#'       Disaggregating Census Data for Population Mapping Using Random Forests
+#'       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
+#'       <http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042> 
+#'       for more details.
 #' 
-#'
-#' @param pop Input list to population
-#' @param cov Input list of covariates
-#' @param mastergrid Input list to mastergrid
-#' @param watermask Input list to watermask
-#' @param px_area Input list to population
-#' @param output_dir Path to the folder to save the outputs 
-#' @param npoc NULL or Integer. Number of process to use
-#' @param minblocks Integer. if minblocks  <- NULL then minblocks for cluster 
-#' prediction parallesation will be calculated based on aval memory
+#' @usage
+#' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
+#' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+#' fset_cutoff=20, fix_cov=FALSE, check_result=FALSE, verbose=TRUE, log=FALSE)
+#' @param pop the name of the file which the administrative ID and the population 
+#'        values are to be read from. The file should contain two columns 
+#'        comma-separated with the value of administrative ID and population 
+#'        without columns names. If it does not contain an absolute path, the 
+#'        file name is relative to the current working directory.
+#' @param cov List contains a list of elements. Each element of a list is another 
+#'       list object with a given name of the country, the element of this list 
+#'       is the input covariates with the name of the covariates and the path to 
+#'       them. 
+#'       Example:
+#'```{r}      
+#'list(
+#'     "NPL"=list(
+#'                "covariate1" = "covariate1.tif",
+#'                "covariate2" = "covariate2.tif"
+#'               )  
+#'    )
+#'```
+#' @param mastergrid List with each element of a list is 
+#'       another object with a given name of the country, the element of 
+#'       this list is the input mastergrid with the path to the raster file. 
+#'       Example:
+#'```      
+#'list(
+#'     "NPL" = "npl_mastergrid.tif"
+#'    )
+#'```
+#' @param watermask List with each element of a list is 
+#'       another object with a given name of the country, the element of 
+#'       this list is the input watermask with the path to the raster file. 
+#'       Example:
+#'```      
+#'list(
+#'     "NPL" = "npl_watermask.tif"
+#'    )
+#'``` 
+#' @param px_area List with each element of a list is 
+#'       another object with a given name of the country, the element of 
+#'       this list is the input px_area with the path to the raster file. 
+#'       Example:
+#'```{r}      
+#'list(
+#'     "NPL" = "npl_px_area.tif"
+#'    )
+#'``` 
+#' @param output_dir Path to the folder to save the outputs. 
+#' @param cores is a integer. Number of cores to use when executing the function, 
+#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
+#'        used based on as many processors as the hardware and RAM allow.
+#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
+#'        for cluster prediction parallesation will be calculated based on 
+#'        available memory.
 #' @param quant If FALSE then quant will not be calculated
-#' @param proximity Should proximity measures be computed?  
-#' @param fset Declare if we are using a fixed set in this modeling,  
-#' i.e. are we parameterizing, in part or in full, this RF model run upon another 
-#' country's(ies') RF model object. 
-#' @param fset_incl If TRUE  RF popfit will not be combined with RF model 
-#' run upon another country's(ies') RF model object
+#' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
+#'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
+#'        See \code{\link[randomForest]{randomForest}} for more details.
+#' @param fset Declare if we are using a fixed set in this modeling, i.e. are we 
+#'        parameterizing, in part or in full, this RF model run upon another 
+#'        country's(ies') RF model object.   
+#' @param fset_incl is logical. TRUE or FALSE: flag indicating whether RF model object 
+#'        will or will not be combined with RF model run upon another 
+#'        country's(ies') RF model object.
 #' @param fset_cutoff Default 20
-#' @param fix_cov logical. Should try to fix extend of covariates if they do not match mastergrid?
-#' @param check_result If TRUE then the results will be compare with input
-#' @param verbose logical. Should report extra information on progress?
-#' @param log logical. Should report on progress be saved in log file?
+#' @param fix_cov is logical. TRUE or FALSE: flag indicating whether the raster 
+#'        extend of the covariates will be fixed if the extend does not match 
+#'        mastergrid.
+#' @param check_result is logical. TRUE or FALSE: flag indicating whether the 
+#'        results will be compare with input data. 
+#'        Default is \code{check_result} = TRUE.
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE.
+#' @references Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, 
+#'        A. J. Disaggregating Census Data for Population Mapping Using Random 
+#'        Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 
+#'        (2015). <https://doi.org/10.1371/journal.pone.0107042>        
 #' @importFrom randomForest varImpPlot
 #' @rdname popRF
 #' @return raster object of population
@@ -46,18 +105,18 @@
 #' @examples
 #' \dontrun{
 #' 
-#' pop_table <- list("Nepal"="/user/npl_population.csv")
+#' pop_table <- list("NPL"="/user/npl_population.csv")
 #' 
 #' input_cov <- list(
-#'                  "Nepal"=list("dst011"="/user/dst011.tif",
-#'                               "dst040"="/user/dst040.tif",
-#'                               "dst130"="/user/dst130.tif"
-#'                               )  
+#'                  "NPL"=list(
+#'                             "covariate1" = "covariate1.tif",
+#'                             "covariate2" = "covariate2.tif"
+#'                             )  
 #'                  )
 #' 
-#' input_mastergrid <- list("Nepal"="/user/mastergrid.tif")
-#' input_watermask <- list("Nepal"="/user/watermask.tif")
-#' input_px_area <- list("Nepal"="/user/px_area.tif")
+#' input_mastergrid <- list("NPL"= "npl_mastergrid.tif")
+#' input_watermask <- list("NPL" ="npl_watermask.tif")
+#' input_px_area <- list("NPL" = "npl_px_area.tif")
 #' 
 #' popRF(pop=pop_table, 
 #'       cov=input_cov, 
@@ -74,7 +133,7 @@ popRF <- function(pop,
                   watermask,
                   px_area,
                   output_dir, 
-                  npoc = NULL, 
+                  cores = NULL, 
                   minblocks=NULL, 
                   quant = TRUE,
                   proximity = TRUE,
@@ -101,7 +160,7 @@ popRF <- function(pop,
                                       watermask,
                                       px_area,
                                       pop,
-                                      output_dir, npoc, minblocks)
+                                      output_dir, cores, minblocks)
   
   
   if (rfg.initial.checks != TRUE ){
@@ -183,7 +242,7 @@ popRF <- function(pop,
                                                   rfg.output.path.countries.cvr, 
                                                   pop, 
                                                   save_zst=TRUE, 
-                                                  nrpoc=4, 
+                                                  cores=cores, 
                                                   verbose=TRUE, 
                                                   log=FALSE)
   
@@ -507,7 +566,7 @@ popRF <- function(pop,
     #                                       census_mask, 
     #                                       water_raster)
     
-    if ( npoc < 2 ){
+    if ( cores < 2 ){
       
       tryCatch(                      
         {                     
@@ -562,10 +621,10 @@ popRF <- function(pop,
       
       if (is.null(minblocks)) {
         if (quant) nmb=60 else nmb=30
-        minblocks <- get_blocks_need(covariate_stack_tmp, cores=npoc, n=nmb)
+        minblocks <- get_blocks_need(covariate_stack_tmp, cores=cores, n=nmb)
       }
       blocks <- blockSize(covariate_stack_tmp, minblocks=minblocks)
-      npoc_blocks <- ifelse(blocks$n < npoc, blocks$n, npoc)
+      npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
       
       rm(covariate_stack_tmp)
       rm(r)
@@ -608,7 +667,7 @@ popRF <- function(pop,
   p_raster <- apply_pop_density(pop, 
                                 censusmaskPathFileName, 
                                 rfg.output.path.countries, 
-                                nrpoc=npoc, 
+                                cores=cores, 
                                 rfg.countries.tag, 
                                 quant = quant, 
                                 minblocks=minblocks, 
@@ -622,7 +681,7 @@ popRF <- function(pop,
     c_result <- check_result(pop, 
                              censusmaskPathFileName, 
                              rfg.output.path.countries, 
-                             npoc, 
+                             cores, 
                              rfg.countries.tag,  
                              minblocks=NULL, 
                              verbose=verbose, 

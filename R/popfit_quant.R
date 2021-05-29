@@ -15,6 +15,7 @@
 #' @param log If FALSE then the progress will be shown
 #' @importFrom quantregForest quantregForest
 #' @return constructed popfit objects
+#' @noRd 
 get_popfit_quant <- function(x_data, 
                              y_data, 
                              popfit,
@@ -61,6 +62,7 @@ get_popfit_quant <- function(x_data,
 #' @param log If FALSE then the progress will be shown
 #' @importFrom randomForest importance combine
 #' @return previously constructed popfit.RData objects
+#' @noRd 
 get_popfit_quant_old <- function(fset, 
                                  only.names=FALSE, 
                                  proximity=TRUE, 

@@ -5,13 +5,22 @@
 #' @rdname get_popfit_final
 #' @param x_data matrix or data frame of predictor variables
 #' @param y_data response vector (factor for classification, numeric for regression)
-#' @param popfit tuned randomForest objects
-#' @param popfit_fln path to load/save popfit objects
-#' @param proximity Should proximity measures be computed?
-#' @param verbose logical. Should report extra information on progress?
-#' @param log logical. Should report on progress be saved in log file?
+#' @param popfit the randomForest object produced with the optimal mtry. 
+#'         See \code{\link[randomForest]{tuneRF}} for more details.
+#' @param popfit_fln path to save \code{popfit} objects
+#' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
+#'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
+#'        See \code{\link[randomForest]{randomForest}} for more details.
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE
 #' @importFrom randomForest randomForest
-#' @return constructed popfit objects
+#' @return constructed n object of class randomForest, 
+#'         see \code{\link[randomForest]{randomForest}} for more details
+#' @noRd 
 get_popfit_final <- function(x_data, 
                              y_data, 
                              popfit,
@@ -59,7 +68,9 @@ get_popfit_final <- function(x_data,
 #' @param verbose logical. Should report extra information on progress?
 #' @param log logical. Should report on progress be saved in log file?
 #' @importFrom randomForest importance combine
-#' @return previously constructed popfit.RData objects
+#' @return constructed n object of class randomForest, 
+#'         see \code{\link[randomForest]{randomForest}} for more details
+#' @noRd 
 get_popfit_final_old <- function(fset, 
                                  only.names=FALSE, 
                                  proximity=TRUE, 

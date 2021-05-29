@@ -1,4 +1,4 @@
-#' rf_prediction Predict for gridded covariates
+#' Predict for gridded covariates
 #' 
 #' @rdname rf_prediction
 #' @param covariates covariates list
@@ -15,6 +15,7 @@
 #' @importFrom stats complete.cases predict sd
 #' @importFrom utils stack
 #' @return raster objects
+#' @noRd 
 rf_prediction <- function(covariates,
                           census_mask, 
                           water_raster,

@@ -1,33 +1,39 @@
-#' calculate_zonal_stats_covariates calculate zonal stats
+#' Calculation of covariates zonal statistics 
 #'
 #' @param x Input covariates list 
 #' @param y path to save results
-#' @param input_poptables Input population
-#' @param save_zst If TRUE save results
-#' @param nrpoc NULL or Integer. Number of process to use
-#' @param verbose If FALSE then the progress will be shown
-#' @param log If FALSE then the progress will be shown
+#' @param pop the name of the file which the administrative ID and the population 
+#'        values are to be read from. The file should contain two columns 
+#'        comma-separated with the value of administrative ID and population 
+#'        without columns names. If it does not contain an absolute path, the 
+#'        file name is relative to the current working directory.
+#' @param save_zst is logical. TRUE or FALSE: flag indicating whether output of 
+#'        zonal statistics will be sved into the file. 
+#'        Default is \code{save_zst} = TRUE.
+#' @param cores is a integer. Number of cores to use when executing the function.
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE.
 #' @importFrom raster raster zonal
 #' @importFrom utils write.csv read.csv
 #' @rdname calculate_zonal_stats_covariates
 #' @return A data.frame compiled census_data
 #' @examples
 #' \dontrun{
-#' calculate_zonal_stats_covariates( x, y, input_poptables)
+#' calculate_zonal_stats_covariates(x, y, pop)
 #' }
+#' @noRd 
 calculate_zonal_stats_covariates <- function(x, 
                                              y,
-                                             input_poptables,
+                                             pop,
                                              save_zst=TRUE,
-                                             nrpoc=NULL,
+                                             cores=NULL,
                                              verbose=FALSE,
                                              log=FALSE){
-  
-  # x <- covariates
-  # y <- rfg.output.path.countries.cvr
-  # rfg.cluster_workers <- 2
-  # save_zst=TRUE
-  # verbose=TRUE
+
   
   log_info("MSG", paste0("Start calculating zonal-statistics for all covariates"), verbose=verbose, log=log)  
   
@@ -77,21 +83,17 @@ calculate_zonal_stats_covariates <- function(x,
       file.path.csv <- file.path(y, fname)
       
       if(!file.exists(file.path.csv )){
+
         
-        
-        #log_info("MSG", paste0("Working on ", var_name, " for ",icountry,' ',dataset_summary ), verbose=verbose, log=log)
-        #log_info("MSG", paste0("Zonal stats has not been calculated before for a covariat ",var_name_class), verbose=verbose, log=log)    
-        
-        
-        if (!is.null(nrpoc)){
+        if (!is.null(cores)){
           
           ##  Determine the minimum number of blocks needed for processing:
-          minblks <- get_blocks_need(dataset_raster,nrpoc, n=2)
+          minblks <- get_blocks_need(dataset_raster,cores, n=2)
           ##  Calculate the stats in parallel:
           output_stats <- calculate_zs_parallel(dataset_raster, 
                                                 zonal_raster, 
                                                 fun=dataset_summary, 
-                                                cores=nrpoc, 
+                                                cores=cores, 
                                                 minblk=minblks)  
         }else{
           
@@ -173,7 +175,9 @@ calculate_zonal_stats_covariates <- function(x,
     }
     
     census_data.country <- merge(as.data.frame(census_data.country), 
-                                 as.data.frame(load_pop(icountry,input_poptables)), 
+                                 as.data.frame(load_pop(icountry,
+                                                        pop
+                                                        )), 
                                  by="ADMINID",
                                  sort=FALSE)       
     

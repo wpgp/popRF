@@ -1,15 +1,25 @@
 #' get_popfit optimize the model
 #' 
 #' @rdname get_popfit
-#' @param x_data data for optimize
-#' @param y_data data for optimize
-#' @param proximity proximity
-#' @param init_popfit init_popfit
-#' @param verbose If FALSE then the progress will be shown
-#' @param log If FALSE then the progress will be shown
+#' @param x_data matrix or data frame of predictor variables. 
+#'        See \code{\link[randomForest]{tuneRF}} for more details.
+#' @param y_data response vector.
+#' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
+#'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
+#'        See \code{\link[randomForest]{randomForest}} for more details.
+#' @param init_popfit randomForest object with the optimal mtry.
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#'        output from the function on the log.txt file. 
+#'        Default is \code{log} = FALSE
 #' @importFrom randomForest tuneRF importance
 #' @importFrom stats na.omit
-#' @return randomForest objects
+#' @return it returns the randomForest object produced with the optimal mtry. 
+#'         See \code{\link[randomForest]{tuneRF}} for more details.
+#' @seealso \code{\link{randomForest}}
+#' @noRd         
 get_popfit <- function(x_data, 
                        y_data, 
                        init_popfit=NULL, 

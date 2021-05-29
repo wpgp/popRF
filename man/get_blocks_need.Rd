@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_blocks_need.R
 \name{get_blocks_need}
 \alias{get_blocks_need}
-\title{get_blocks_need function will return a number of blocks
+\title{Function will return a number of blocks
 sugesting for processing raster file. It will take into consideration
 number of layers, cells, cores and avalible memory on computer
 (not maximum memory but avalible)}
@@ -22,13 +22,13 @@ get_blocks_need(x, cores, n = 1, number_type = "numeric")
 integer
 }
 \description{
-get_blocks_need function will return a number of blocks
+Function will return a number of blocks
 sugesting for processing raster file. It will take into consideration
 number of layers, cells, cores and avalible memory on computer
 (not maximum memory but avalible)
 }
 \examples{
 \dontrun{
-get_blocks_need( x, cores=2, n=1 )
+get_blocks_need(x, cores=2, n=1)
 }
 }

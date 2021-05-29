@@ -13,6 +13,7 @@
 #' @param silent If FALSE then the progress will be shown
 #' @rdname rasterize_parallel_start
 #' @return Raster* object
+#' @noRd 
 rasterize_parallel_start <- function(x, 
                                      df, 
                                      minblk, 
@@ -114,19 +115,25 @@ rasterize_parallel_start <- function(x,
 }
 
 
-#' rasterize_parallel function will transfer values associated with 'object' type spatial data (data.frame)
+#' @title Function will transfer values associated with 'object' type spatial data (data.frame)
 #' to raster cells. Function is using paralle library to work with a big raster data. The raster
 #' file will be splited to blocks and processed per block
 #'
+#' @author Maksym Bondarenko <mb4@soton.ac.uk> and 
+#'        Chris Jochem <W.C.Jochem@soton.ac.uk>
 #' @param x Raster* object
 #' @param df data.frame of points
-#' @param cores number of cores
+#' @param cores is a integer. Number of cores to use when executing the 
+#'        function in paralle.
 #' @param minblk Integer. Minimum number of blocks
 #' @param NAflag NO data value will be used for a new raster
 #' @param datatype Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
-#' @param filename File of a new raster file.
-#' @param overwrite Overwrite existing file
-#' @param silent If FALSE then the progress will be shown
+#' @param filename the name of the raster file.
+#' @param overwrite Overwrite existing file.
+#' @param silent is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. If FALSE then the progress will be shown. 
+#'        Default is \code{silent} = TRUE.
 #' @importFrom raster getValues writeRaster writeStart writeStop compareRaster 
 #' hasValues writeValues blockSize  getCluster returnCluster endCluster beginCluster rasterTmpFile
 #' @importFrom stats complete.cases predict sd aggregate

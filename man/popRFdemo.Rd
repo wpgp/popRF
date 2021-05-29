@@ -2,44 +2,45 @@
 % Please edit documentation in R/popRFdemo.R
 \name{popRFdemo}
 \alias{popRFdemo}
-\title{Function to demo the popFR package using WorldPop inout data}
+\title{Function to demo the popFR package using WorldPop input data}
 \usage{
-popRFdemo(
-  project_dir,
-  country = "NPL",
-  npoc = 4,
-  quant = TRUE,
-  ftp = TRUE,
-  verbose = TRUE,
-  log = TRUE
-)
+popRFdemo(project_dir, country="NPL", cores=4, quant=TRUE, ftp=TRUE, 
+verbose=TRUE, log=TRUE)
 }
 \arguments{
 \item{project_dir}{Path to the folder to save the outputs}
 
-\item{country}{ISO of the country in demo. Default one is NPL (Nepal)}
+\item{country}{ISO of the country. Default one is NPL (Nepal)}
 
-\item{npoc}{NULL or Integer. Number of process to use}
+\item{cores}{is a integer. Number of cores to use when executing the function,
+which defaults to 4. If set to 0 or NULL max number of cores will be
+used based on as many processors as the hardware and RAM allow.}
 
 \item{quant}{If FALSE then quant will not be calculated}
 
-\item{ftp}{Method to be used for downloading files. If TRUE FTP will be used otherwise https}
+\item{ftp}{is logical. TRUE or FALSE: flag indicating whether
+\href{ftp://ftp.worldpop.org}{FTP} or \href{https://data.worldpop.org}{HTTPS}
+WorldPop data hub server will be used. Default is \code{ftp} = TRUE.}
 
-\item{verbose}{logical. Should report extra information on progress?}
+\item{verbose}{is logical. TRUE or FALSE: flag indicating whether to print
+intermediate output from the function on the console, which might be
+helpful for model debugging. Default is \code{verbose} = TRUE.}
 
-\item{log}{logical. Should report on progress be saved in log file?}
+\item{log}{is logical. TRUE or FALSE: flag indicating whether to print intermediate
+output from the function on the log.txt file.
+Default is \code{log} = FALSE.}
 }
 \value{
 A data.frame with a value for each zone (unique value in zones)
 }
 \description{
-Function to demo the popFR package using WorldPop inout data
+Function to demo the popFR package using WorldPop input data
 }
 \examples{
 \dontrun{
 popRFdemo( project_dir="/home/user/demo",
            country="NPL", 
-           npoc=4
+           cores=4
          )
 } 
 }
