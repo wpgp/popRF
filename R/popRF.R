@@ -133,13 +133,12 @@
 #' input_cov <- list(
 #'                  "NPL"=list(
 #'                             "cov1" = "covariate1.tif",
-#'                             "cov2" = "covariate2.tif"
-#'                             )  
-#'                  )
-#' 
-#' input_mastergrid <- list("NPL"= "npl_mastergrid.tif")
-#' input_watermask <- list("NPL" ="npl_watermask.tif")
-#' input_px_area <- list("NPL" = "npl_px_area.tif")
+#'                             "cov2" = "covariate2.tif"))
+#'                             
+#'                  
+#' input_mastergrid <- list("NPL" = "npl_mastergrid.tif")
+#' input_watermask  <- list("NPL" = "npl_watermask.tif")
+#' input_px_area    <- list("NPL" = "npl_px_area.tif")
 #' 
 #' res <- popRF(pop=pop_table, 
 #'              cov=input_cov, 

@@ -1,16 +1,51 @@
 citHeader("To cite popRF in publications use:")
 
-citEntry(
-  entry    = "Article",
-  title    = ,
-  author   = ,
-  journal  = ,
-  year     = ,
-  volume   = ,
-  number   = ,
-  pages    = ,
-  url      = ,
-  textVersion = paste(
+citEntry(entry = "Manual",
+  title        = "popRF: Random Forest-informed Population Disaggregation R package.",
+  author       = c(
+    person( 
+          given = "Maksym", 
+          family = "Bondarenko", 
+          role = c("aut", "cre", "cph"), 
+          email = "mb4@soton.ac.uk", 
+          comment = c(ORCID = "0000-0003-4958-6551")
+          ),
+    person( 
+          given = "Jeremiah J", 
+          family = "Nieves", 
+          role = c("aut"), 
+          email = "jeremiah.j.nieves@outlook.com", 
+          comment = c(ORCID = "0000-0002-7423-1341")
+          ),
+    person( 
+          given = "Chris", 
+          family = "Jochem", 
+          role = c("ctb"), 
+          email = "W.C.Jochem@soton.ac.uk", 
+          comment = c(ORCID = "0000-0003-2192-5988")
+          ),          
+    person( 
+          given = "David", 
+          family = "Kerr", 
+          role = c("ctb"), 
+          email = "dk2n16@soton.ac.uk"
+          ),
+    person( 
+          given = "Alessandro", 
+          family = "Sorichetta", 
+          role = c("ctb"), 
+          email = "as1v13@soton.ac.uk", 
+          comment = c(ORCID = "0000-0002-3576-5826")
+          )),
+  year         = "2021",
+  journal      = "Comprehensive R Archive Network (CRAN)",
+  url          = "https://cran.r-project.org/package=popRF",
+  doi          = "10.5258/SOTON/WP00715",
+  language     = "English",
 
-  )
+  textVersion  =
+  paste("Bondarenko M., Nieves J.J., and Jochem C., Kerr D., and Sorichetta A. (2021):",
+        "popRF: Random Forest-informed Population Disaggregation R package,",
+        "_Comprehensive R Archive Network (CRAN)_.",
+        "DOI: 10.5258/SOTON/WP00715")
 )
