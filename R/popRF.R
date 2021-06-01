@@ -32,7 +32,7 @@
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
 #' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
-#' fset_cutoff=20, fix_cov=FALSE, check_result=FALSE, verbose=TRUE, log=FALSE)
+#' fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
 #' 
 #' @param pop the name of the file which the administrative ID and the population 
 #'        values are to be read from. The file should contain two columns 
@@ -98,7 +98,10 @@
 #' @param fset_incl is logical. TRUE or FALSE: flag indicating whether RF model object 
 #'        will or will not be combined with RF model run upon another 
 #'        country's(ies') RF model object.
-#' @param fset_cutoff Default 20
+#' @param fset_cutoff is a integer. This parameter only used if \code{fset_incl}  
+#'        is TRUE. If the country has less then \code{fset_cutoff} idmin units 
+#'        then RF popfit will not be combined with RF model run upon another 
+#'        country's(ies') RF model object. Default is \code{fset_cutoff} = 20.
 #' @param fix_cov is logical. TRUE or FALSE: flag indicating whether the raster 
 #'        extend of the covariates will be fixed if the extend does not match 
 #'        mastergrid.
@@ -122,12 +125,14 @@
 #' @examples
 #' \dontrun{
 #' 
+#' library("popRF")
+#' 
 #' pop_table <- list("NPL"="/user/npl_population.csv")
 #' 
 #' input_cov <- list(
 #'                  "NPL"=list(
-#'                             "covariate1" = "covariate1.tif",
-#'                             "covariate2" = "covariate2.tif"
+#'                             "cov1" = "covariate1.tif",
+#'                             "cov2" = "covariate2.tif"
 #'                             )  
 #'                  )
 #' 
@@ -135,14 +140,20 @@
 #' input_watermask <- list("NPL" ="npl_watermask.tif")
 #' input_px_area <- list("NPL" = "npl_px_area.tif")
 #' 
-#' popRF(pop=pop_table, 
-#'       cov=input_cov, 
-#'       mastergrid=input_mastergrid, 
-#'       watermask=input_watermask, 
-#'       px_area=input_px_area, 
-#'       output_dir="/user/output", 
-#'       cores=4 
-#'       )
+#' res <- popRF(pop=pop_table, 
+#'              cov=input_cov, 
+#'              mastergrid=input_mastergrid, 
+#'              watermask=input_watermask, 
+#'              px_area=input_px_area, 
+#'              output_dir="/user/output", 
+#'              cores=4) 
+#'  
+#' # Plot populataion raster 
+#' plot(res$pop) 
+#' 
+#' # Plot Error via Trees     
+#' plot(res$popfit)
+#'             
 #' }
 popRF <- function(pop, 
                   cov, 
@@ -158,7 +169,7 @@ popRF <- function(pop,
                   fset_incl = FALSE,
                   fset_cutoff = 20,
                   fix_cov=FALSE,
-                  check_result=FALSE,
+                  check_result=TRUE,
                   verbose = TRUE, 
                   log = FALSE){
   
