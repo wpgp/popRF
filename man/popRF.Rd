@@ -2,7 +2,8 @@
 % Please edit documentation in R/popRF.R
 \name{popRF}
 \alias{popRF}
-\title{popRF Random Forests population modelling scripts}
+\title{Disaggregating Census Data for Population Mapping Using Random Forests
+with Remotely-Sensed and Ancillary Data.}
 \usage{
 popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
 minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
@@ -69,7 +70,9 @@ used based on as many processors as the hardware and RAM allow.}
 for cluster prediction parallesation will be calculated based on
 available memory.}
 
-\item{quant}{If FALSE then quant will not be calculated}
+\item{quant}{is logical. TRUE or FALSE: flag indicating whether to produce
+the quantile regression forests to generate prediction intervals.
+Default is \code{quant} = TRUE.}
 
 \item{proximity}{is logical. TRUE or FALSE: flag indicating whether proximity
 measures among the rows be computed? Default is \code{proximity} = TRUE.
@@ -102,23 +105,26 @@ output from the function on the log.txt file.
 Default is \code{log} = FALSE.}
 }
 \value{
-raster object of population
+Raster* object of gridded population.
 }
 \description{
-popRF Random Forests population modelling scripts
+Disaggregating Census Data for Population Mapping Using Random Forests
+with Remotely-Sensed and Ancillary Data.
 }
 \details{
-Random Forest (RF)-based dasymetric mapping approach developed
-by Stevens et al. (2015)*
-}
-\note{
-\itemize{
-\item Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
-Disaggregating Census Data for Population Mapping Using Random Forests
-with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
-\url{http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042}
-for more details.
-}
+This function producing gridded population density estimates using
+a Random Forest model as described in
+\href{https://doi.org/10.1371/journal.pone.0107042}{Stevens, et al. (2015)}.
+The population density and covariate aggregation values for each
+census unit are then used to create a
+\href{https://doi.org/10.1023/A:1010933404324}{Random Forest model}
+to predict log population density. Random Forest models are an
+ensemble, nonparametric modeling approach that grows a "forest" of
+individual classification or regression trees and improves upon
+bagging by using the best of a random selection of predictors at
+each node in each tree. Model estimation, fitting and an estimated
+prediction weighting layer is used to dasymetrically redistribute
+the census counts.
 }
 \examples{
 \dontrun{
@@ -151,4 +157,11 @@ Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem,
 A. J. Disaggregating Census Data for Population Mapping Using Random
 Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
 (2015). \url{https://doi.org/10.1371/journal.pone.0107042}
+}
+\author{
+Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk},
+Jeremiah J. Nieves \href{mailto:jeremiah.j.nieves@outlook.com}{jeremiah.j.nieves@outlook.com},
+David Kerr \href{mailto:dk2n16@soton.ac.uk}{dk2n16@soton.ac.uk},
+Chris Jochem \href{mailto:W.C.Jochem@soton.ac.uk}{W.C.Jochem@soton.ac.uk} and
+Alessandro Sorichetta \href{mailto:as1v13@soton.ac.uk}{as1v13@soton.ac.uk}
 }

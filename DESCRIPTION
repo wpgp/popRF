@@ -1,5 +1,6 @@
 Package: popRF
-Title: Disaggregating Census Data for Population Mapping Using Random Forests
+Type: Package
+Title: Random Forest-informed Population Disaggregation
 Version: 0.0.1
 Authors@R: c(
     person( 
@@ -12,30 +13,42 @@ Authors@R: c(
     person( 
           given = "Jeremiah J", 
           family = "Nieves", 
-          role = c("aut", "cph"), 
+          role = c("aut"), 
           email = "jeremiah.j.nieves@outlook.com", 
           comment = c(ORCID = "0000-0002-7423-1341")
           ),
     person( 
+          given = "Chris", 
+          family = "Jochem", 
+          role = c("ctb"), 
+          email = "W.C.Jochem@soton.ac.uk", 
+          comment = c(ORCID = "0000-0003-2192-5988")
+          ),          
+    person( 
           given = "David", 
           family = "Kerr", 
-          role = c("aut", "cph"), 
+          role = c("ctb"), 
           email = "dk2n16@soton.ac.uk"
           ),
     person( 
           given = "Alessandro", 
           family = "Sorichetta", 
-          role = c("aut", "cph"), 
+          role = c("ctb"), 
           email = "as1v13@soton.ac.uk", 
           comment = c(ORCID = "0000-0002-3576-5826")
           )
     )
-Author: Maksym Bondarenko [aut, cre] (<https://orcid.org/0000-0003-4958-6551>),
+Author: Maksym Bondarenko [aut, cre, cph] (<https://orcid.org/0000-0003-4958-6551>),
   Jeremiah J. Nieves [aut] (<https://orcid.org/0000-0002-7423-134>),
   David Kerr [aut],
   Alessandro Sorichetta (<https://orcid.org/0000-0002-3576-5826>)
 Maintainer: Maksym Bondarenko <mb4@soton.ac.uk>    
-Description: popRF Random Forests population modelling scripts.
+Description: Disaggregating census-based areal population counts to finer 
+    gridded population surfaces using Random Forest algorithm to determine 
+    the target area weights. For more information about the method, read a paper 
+    Stevens et al. (2015) DOI: 10.1371/journal.pone.0107042.
+URL: https://sdi.worldpop.org
+BugReports: https://github.com/wpgp/popRF/issues
 Imports: doParallel, parallel, raster, methods, stats, foreach, gdalUtils, randomForest, quantregForest, snow, plyr
 Depends: R (>= 3.2.0)
 License: GPL (>= 3) + file LICENSE

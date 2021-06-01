@@ -3,7 +3,8 @@
 #' @param df data.frame of points
 #' @param minblk Integer. Minimum number of blocks
 #' @param NAflag NO data value will be used for a new raster
-#' @param datatype Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
+#' @param datatype Type of raster. Available are 
+#'        INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
 #' @param filename File of a new raster file.
 #' @param overwrite Overwrite existing file
 #' @param silent If FALSE then the progress will be shown
@@ -146,11 +147,11 @@ rasterize_parallel_start <- function(x,
 #' @importFrom foreach '%dopar%' foreach
 #' @rdname rasterize_parallel
 #' @return Raster* object
-#' @export
 #' @examples
 #' \dontrun{
 #' rasterize_parallel(x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
 #' }
+#' @noRd 
 rasterize_parallel <- function(x, 
                                df, 
                                cores=NULL, 

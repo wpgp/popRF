@@ -1,24 +1,39 @@
-## Authors & Maintainer of the script
-## Maksym Bondarenko <mb4@soton.ac.uk> 
-## Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>
-## David Kerr <dk2n16@soton.ac.uk>
-## Alessandro Sorichetta <as1v13@soton.ac.uk>
+## @note * Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
+##       Disaggregating Census Data for Population Mapping Using Random Forests
+##       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
+##       <https://doi.org/10.1371/journal.pone.0107042>
+##       for more details.
+##
+#' @title Disaggregating Census Data for Population Mapping Using Random Forests
+#'        with Remotely-Sensed and Ancillary Data.
 #' 
-#' @title popRF Random Forests population modelling scripts
+#' @author Maksym Bondarenko <mb4@soton.ac.uk>, 
+#'         Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>, 
+#'         David Kerr <dk2n16@soton.ac.uk>, 
+#'         Chris Jochem <W.C.Jochem@soton.ac.uk> and 
+#'         Alessandro Sorichetta <as1v13@soton.ac.uk>
+#'          
+#'         
+#' @details This function producing gridded population density estimates using 
+#'          a Random Forest model as described in 
+#'          \href{https://doi.org/10.1371/journal.pone.0107042}{Stevens, et al. (2015)}.
+#'          The population density and covariate aggregation values for each 
+#'          census unit are then used to create a 
+#'          \href{https://doi.org/10.1023/A:1010933404324}{Random Forest model} 
+#'          to predict log population density. Random Forest models are an 
+#'          ensemble, nonparametric modeling approach that grows a "forest" of 
+#'          individual classification or regression trees and improves upon 
+#'          bagging by using the best of a random selection of predictors at 
+#'          each node in each tree. Model estimation, fitting and an estimated 
+#'          prediction weighting layer is used to dasymetrically redistribute 
+#'          the census counts. 
 #' 
-#' @details Random Forest (RF)-based dasymetric mapping approach developed
-#' by Stevens et al. (2015)*
-#' 
-#' @note * Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
-#'       Disaggregating Census Data for Population Mapping Using Random Forests
-#'       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
-#'       <http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042> 
-#'       for more details.
-#' 
+#'  
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
 #' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 #' fset_cutoff=20, fix_cov=FALSE, check_result=FALSE, verbose=TRUE, log=FALSE)
+#' 
 #' @param pop the name of the file which the administrative ID and the population 
 #'        values are to be read from. The file should contain two columns 
 #'        comma-separated with the value of administrative ID and population 
@@ -71,7 +86,9 @@
 #' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
 #'        for cluster prediction parallesation will be calculated based on 
 #'        available memory.
-#' @param quant If FALSE then quant will not be calculated
+#' @param quant is logical. TRUE or FALSE: flag indicating whether to produce 
+#'        the quantile regression forests to generate prediction intervals.
+#'        Default is \code{quant} = TRUE.
 #' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
 #'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.
@@ -100,7 +117,7 @@
 #'        (2015). <https://doi.org/10.1371/journal.pone.0107042>        
 #' @importFrom randomForest varImpPlot
 #' @rdname popRF
-#' @return raster object of population
+#' @return Raster* object of gridded population.
 #' @export
 #' @examples
 #' \dontrun{
@@ -243,8 +260,8 @@ popRF <- function(pop,
                                                   pop, 
                                                   save_zst=TRUE, 
                                                   cores=cores, 
-                                                  verbose=TRUE, 
-                                                  log=FALSE)
+                                                  verbose=verbose, 
+                                                  log=log)
   
   
   covariates.var.names <- list()
@@ -263,7 +280,7 @@ popRF <- function(pop,
                                          covariates, 
                                          rfg.countries.tag, 
                                          rfg.countries.merged, 
-                                         verbose=TRUE)
+                                         verbose=verbose)
     
     covariates <- merged_covariates
     
@@ -486,13 +503,13 @@ popRF <- function(pop,
     
     popfit.final.old <- get_popfit_final_old(fset, 
                                              only.names=FALSE, 
-                                             proximity=TRUE, 
+                                             proximity=proximity, 
                                              verbose=verbose, 
                                              log=log)
     
     popfit.quant.old <- get_popfit_quant_old(fset, 
                                              only.names=FALSE, 
-                                             proximity=TRUE, 
+                                             proximity=proximity, 
                                              verbose=verbose, 
                                              log=log) 
     
@@ -553,7 +570,7 @@ popRF <- function(pop,
   invisible(gc())
   
 
-  log_info("MSG", paste0("Starting prediction"), verbose=verbose, log=log)   
+  log_info("MSG", paste0("Creating the population density weighting layer."), verbose=verbose, log=log)   
   
   
   if (!file.exists( file.path(rfg.output.path.countries,
@@ -577,7 +594,7 @@ popRF <- function(pop,
                                              popfit_quant,
                                              rfg.output.path.countries, 
                                              rfg.countries.tag, 
-                                             quant = TRUE)
+                                             quant = quant)
         },
         error = function(e){          
           message( paste0("There was an error. ",e))
@@ -587,7 +604,7 @@ popRF <- function(pop,
           message( paste0("There was an error message. ",w))
         },
         finally = {                   
-          log_info("MSG", paste0("Completed prediction"), verbose=verbose, log=log) 
+          log_info("MSG", paste0("Completed prediction."), verbose=verbose, log=log) 
         }
       )
       
@@ -643,7 +660,9 @@ popRF <- function(pop,
                                                   npoc_blocks, 
                                                   rfg.countries.tag, 
                                                   quant = quant, 
-                                                  minblocks=NULL)
+                                                  minblocks=minblocks,
+                                                  verbose=verbose, 
+                                                  log=log)
       
       ##  Terminate the cluster:
       endCluster()
@@ -664,6 +683,11 @@ popRF <- function(pop,
   #####
 
   
+  
+  log_info("MSG", paste0("Start dasymetrically distribute census-level population counts"), 
+           verbose=verbose, 
+           log=log)
+  
   p_raster <- apply_pop_density(pop, 
                                 censusmaskPathFileName, 
                                 rfg.output.path.countries, 
@@ -678,12 +702,14 @@ popRF <- function(pop,
 
   if (check_result){
     
+    log_info("MSG", paste0("Checking results."), verbose=verbose, log=log)
+    
     c_result <- check_result(pop, 
                              censusmaskPathFileName, 
                              rfg.output.path.countries, 
                              cores, 
                              rfg.countries.tag,  
-                             minblocks=NULL, 
+                             minblocks=minblocks, 
                              verbose=verbose, 
                              log=log)
     

@@ -9,11 +9,11 @@
 #' @importFrom raster nlayers ncell
 #' @rdname get_blocks_need
 #' @return integer
-#' @export
 #' @examples
 #' \dontrun{
 #' get_blocks_need(x, cores=2, n=1)
 #' }
+#' @noRd 
 get_blocks_need <- function( x, cores, n=1, number_type = "numeric"){
   
   #stopifnot(hasValues(x))

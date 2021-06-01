@@ -2,15 +2,22 @@
 % Please edit documentation in R/popRFdemo.R
 \name{popRFdemo}
 \alias{popRFdemo}
-\title{Function to demo the popFR package using WorldPop input data}
+\title{Function to demo the popRF package using WorldPop input data.}
 \usage{
-popRFdemo(project_dir, country="NPL", cores=4, quant=TRUE, ftp=TRUE, 
-verbose=TRUE, log=TRUE)
+popRFdemo(project_dir, 
+          country="NPL", 
+          cores=4, 
+          quant=TRUE, 
+          ftp=TRUE, 
+          verbose=TRUE, 
+          log=TRUE)
 }
 \arguments{
-\item{project_dir}{Path to the folder to save the outputs}
+\item{project_dir}{Path to the folder to save the outputs.}
 
-\item{country}{ISO of the country. Default one is NPL (Nepal)}
+\item{country}{character. ISO of the country
+(see \href{https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3}{country codes}).
+Default one is NPL (Nepal)}
 
 \item{cores}{is a integer. Number of cores to use when executing the function,
 which defaults to 4. If set to 0 or NULL max number of cores will be
@@ -19,8 +26,9 @@ used based on as many processors as the hardware and RAM allow.}
 \item{quant}{If FALSE then quant will not be calculated}
 
 \item{ftp}{is logical. TRUE or FALSE: flag indicating whether
-\href{ftp://ftp.worldpop.org}{FTP} or \href{https://data.worldpop.org}{HTTPS}
-WorldPop data hub server will be used. Default is \code{ftp} = TRUE.}
+\href{ftp://ftp.worldpop.org}{FTP} or \href{https://data.worldpop.org}{HTTPS} of
+\href{https://sdi.worldpop.org/wpdata}{WorldPop data} hub server will be used.
+Default is \code{ftp} = TRUE.}
 
 \item{verbose}{is logical. TRUE or FALSE: flag indicating whether to print
 intermediate output from the function on the console, which might be
@@ -31,16 +39,62 @@ output from the function on the log.txt file.
 Default is \code{log} = FALSE.}
 }
 \value{
-A data.frame with a value for each zone (unique value in zones)
+Raster* object of gridded population surfaces.
 }
 \description{
-Function to demo the popFR package using WorldPop input data
+This function allows the user to generate a population layer
+using the \href{https://www.worldpop.org}{WorldPop} geospatial covariates and
+subnational census-based population estimates for 230 countries.
+All input datasets use a geographical coordinate system (GCS) with WGS 1984
+datum (EPSG:4326) in Geotiff format at a resolution of 3 arc-second
+(0.00083333333 decimal degree, approximately 100m at the equator).
+Mastergrid of sub-national administrative unit boundary was rasterised
+by \href{http://www.ciesin.org}{CIESIN}.
+
+Following covariates will be downloaded and used to disaggregat population
+(2020 year) from census units into grid cells.
+\itemize{
+\item subnational_admin_2000_2020.tif  - sub-national units provided by  nationalEAs
+\item esaccilc_dst011_2015.tif - Distance to ESA-CCI-LC cultivated area edges 2015.
+\item esaccilc_dst040_2015.tif - Distance to ESA-CCI-LC woody-tree area edges 2015.
+\item esaccilc_dst130_2015.tif - Distance to ESA-CCI-LC shrub area edges 2015.
+\item esaccilc_dst140_2015.tif - Distance to ESA-CCI-LC herbaceous area edges 2015.
+\item esaccilc_dst150_2015.tif - Distance to ESA-CCI-LC sparse vegetation area edges 2015.
+\item esaccilc_dst160_2015.tif - Distance to ESA-CCI-LC aquatic vegetation area edges 2015.
+\item esaccilc_dst190_2015.tif - Distance to ESA-CCI-LC artificial surface edges 2015.
+\item esaccilc_dst200_2015.tif - Distance to ESA-CCI-LC bare area edges 2015.
+\item esaccilc_dst_water_100m_2000_2012.tif - ESA-CCI-LC inland waterbodies 2000-2012.
+\item coastline_100m_2000_2020.tif - Distance to coastline 2000-2020.
+\item dst_roadintersec_100m_2016.tif - Distance to OSM major road intersections.
+\item dst_waterway_100m_2016.tif - Distance to OSM major waterways.
+\item dst_road_100m_2016.tif - Distance to OSM major roads.
+\item px_area.tif - Grid-cell surface areas.
+\item srtm_slope_100m.tif - SRTM-based slope 2000 ( SRTM is Shuttle Radar Topography Mission).
+\item srtm_topo_100m.tif - SRTM elevation 2000.
+\item viirs_100m_2016.tif - VIIRS night-time lights 2015 (VIIRS is Visible Infrared Imaging Radiometer Suite).
+\item wdpa_dst_cat1_100m_2017.tif - Distance to IUCN strict nature reserve and wilderness area edges 2017.
+\item dst_bsgme_100m_2020.tif	- Distance to predicted built-settlement extents in 2020.
+}
+All downloaded files will be saved into subrirectory \code{covariates}.
 }
 \examples{
 \dontrun{
-popRFdemo( project_dir="/home/user/demo",
-           country="NPL", 
-           cores=4
-         )
+popRFdemo(project_dir="/home/user/demo",
+          country="NPL", 
+          cores=4)
 } 
+}
+\references{
+\itemize{
+\item Global spatio-temporally harmonised datasets for producing high-resolution
+gridded population distribution datasets.
+\href{https://doi.org/10.1080/20964471.2019.1625151}{https://doi.org/10.1080/20964471.2019.1625151}
+\item WorldPop (www.worldpop.org - School of Geography and Environmental Science,
+University of Southampton; Department of Geography and Geosciences,
+University of Louisville; Departement de Geographie, Universite de Namur)
+and Center for International Earth Science Information Network (CIESIN),
+Columbia University (2018). Global High Resolution Population Denominators
+Project - Funded by The Bill and Melinda Gates Foundation (OPP1134076).
+\href{https://dx.doi.org/10.5258/SOTON/WP00649}{https://dx.doi.org/10.5258/SOTON/WP00649}
+}
 }

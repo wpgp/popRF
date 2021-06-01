@@ -120,6 +120,8 @@ apply_pop_density <- function(pop,
     colnames(df) <- c("ADMINID", "ADMINPOP")
     minblks <- get_blocks_need(zonal_raster, cores, n=2)
     
+    log_info("MSG", paste0("Rasterizing input population data."), verbose=verbose, log=log)
+    
     rst.pop.census <- rasterize_parallel(zonal_raster, 
                                          df, 
                                          cores=cores, 
@@ -132,6 +134,7 @@ apply_pop_density <- function(pop,
     
     
     
+    log_info("MSG", paste0("Computing zonal statistics of final RF prediction layer."), verbose=verbose, log=log)
     
     out.zonal.stats.rf.pred.sum <- calculate_zs_parallel(rst.predict.density.rf.pred,
                                                          zonal_raster, 
@@ -149,6 +152,8 @@ apply_pop_density <- function(pop,
     ##  Return the zonal stats excluding "Admin ID 0":
     out.zonal.stats.rf.pred.sum <- as.data.frame(out.zonal.stats.rf.pred.sum[out.zonal.stats.rf.pred.sum[,1] != 0, ]) 
     
+    
+    log_info("MSG", paste0("Rasterizing the results of zonal statistics."), verbose=verbose, log=log)
     rst.zonal.stats.rf.pred <- rasterize_parallel(zonal_raster, 
                                                   out.zonal.stats.rf.pred.sum, 
                                                   cores=cores, 

@@ -20,11 +20,11 @@
 #' @importFrom raster compareRaster hasValues getValues blockSize
 #' @importFrom stats aggregate 
 #' @importFrom foreach '%dopar%' foreach
-#' @export
 #' @examples
 #' \dontrun{
 #' calculate_zs_parallel( x=rasterObj1, y=rasterObj2, cores=2, minblk=4  )
 #' }
+#' @noRd 
 calculate_zs_parallel <- function(x, 
                                   y, 
                                   fun='mean', 
