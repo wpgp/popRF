@@ -44,7 +44,8 @@ transY <- function(x, inverse=FALSE) {
 log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
   
   if (verbose){
-    print(stext)
+    cat(stext)
+    cat("\n")
   }
 
   if (log){

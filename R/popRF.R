@@ -30,7 +30,7 @@
 #' 
 #'  
 #' @usage
-#' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
+#' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
 #' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 #' fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
 #' 
@@ -80,9 +80,10 @@
 #'    )
 #'``` 
 #' @param output_dir Path to the folder to save the outputs. 
-#' @param cores is a integer. Number of cores to use when executing the function, 
-#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
-#'        used based on as many processors as the hardware and RAM allow.
+#' @param cores is a integer. Number of cores to use when executing the function. 
+#'        If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as 
+#'        many processors as the hardware and RAM allow. 
+#'        Default is \code{cores} = 0.
 #' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
 #'        for cluster prediction parallesation will be calculated based on 
 #'        available memory.
@@ -104,7 +105,7 @@
 #'        country's(ies') RF model object. Default is \code{fset_cutoff} = 20.
 #' @param fix_cov is logical. TRUE or FALSE: flag indicating whether the raster 
 #'        extend of the covariates will be fixed if the extend does not match 
-#'        mastergrid.
+#'        mastergrid. \code{fix_cov} = FALSE.
 #' @param check_result is logical. TRUE or FALSE: flag indicating whether the 
 #'        results will be compare with input data. 
 #'        Default is \code{check_result} = TRUE.
@@ -161,7 +162,7 @@ popRF <- function(pop,
                   watermask,
                   px_area,
                   output_dir, 
-                  cores = NULL, 
+                  cores = 0, 
                   minblocks=NULL, 
                   quant = TRUE,
                   proximity = TRUE,
@@ -174,6 +175,8 @@ popRF <- function(pop,
                   log = FALSE){
   
   
+  
+  timeStart <- Sys.time()
   
   # input_covariates <- cov
   # input_mastergrid <- mastergrid
@@ -191,6 +194,8 @@ popRF <- function(pop,
                                       output_dir, cores, minblocks)
   
   
+  options("pj.output.dir"=output_dir)
+  
   if (rfg.initial.checks != TRUE ){
     
     message(rfg.initial.checks)
@@ -198,8 +203,27 @@ popRF <- function(pop,
     
   }
 
+  
+  # get real physical cores
+  if ( cores == 0 ){
+    
+    cores <- parallel::detectCores(logical = TRUE) - 1
+    
+    log_info("MSG", paste(""), verbose=verbose, log=log)
+    #log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+    log_info("MSG", paste0("Parameter cores is set to 0"), verbose=verbose, log=log)  
+    log_info("MSG", 
+             paste0("popRF will use maximum avalible cores on the PC which is ", 
+                    cores), 
+             verbose=verbose, 
+             log=log)
+    
+    log_info("MSG", paste(""), verbose=verbose, log=log)
+  } 
+
+
   #set a global variabal getOption("pj.output.dir")
-  options("pj.output.dir"=output_dir)
+
   
   fixed_set <- ifelse(is.null(fset), FALSE, TRUE)
   
@@ -730,7 +754,20 @@ popRF <- function(pop,
     return_results <- list(pop=p_raster, popfit=popfit_final)
   }
   
-
+  
+  
+  timeEnd <-  Sys.time()
+  
+  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+  
+  log_info("MSG", paste0("popRF completed. "), verbose=verbose, log=log)
+  log_info("MSG", paste0("Total processing Time: ", 
+                         tmDiff(timeStart,timeEnd)), verbose=verbose, log=log)
+  
+  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+  
+  
   return(return_results)
   
 }

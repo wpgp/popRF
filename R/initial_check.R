@@ -37,19 +37,26 @@ initial_check <- function(cov,
                           minblocks){
   
    
-  if ( !is(cores,  "numeric") & !is.null(cores) ){
-    
-    msg <- paste0("Error :: cores " , cores , " should be integer or NULL value")
-    return(msg)
-
-  } 
+  # if ( !is(cores,  "numeric") & !is.null(cores) ){
+  #   
+  #   msg <- paste0("Error :: cores " , cores , " should be integer or NULL value")
+  #   return(msg)
+  # 
+  # }
   
-  if ( is(cores,  "numeric")){
-    if ( cores < 1 ){
-      msg <- paste0("Error :: cores " , cores , " should be integer equal 1 or 2.. value")
-      return(msg)
-    }
-  } 
+  if ( !is(cores,  "numeric") ){
+    
+    msg <- paste0("Error :: cores value ", cores ," should be integer value.")
+    return(msg)
+    
+  }   
+  
+  # if ( is(cores,  "numeric")){
+  #   if ( cores < 1 ){
+  #     msg <- paste0("Error :: cores " , cores , " should be integer equal 1 or 2.. value")
+  #     return(msg)
+  #   }
+  # } 
 
   
   

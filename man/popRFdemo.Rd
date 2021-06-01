@@ -6,7 +6,7 @@
 \usage{
 popRFdemo(project_dir, 
           country="NPL", 
-          cores=4, 
+          cores=0, 
           quant=TRUE, 
           ftp=TRUE, 
           verbose=TRUE, 
@@ -19,9 +19,10 @@ popRFdemo(project_dir,
 (see \href{https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3}{country codes}).
 Default one is NPL (Nepal)}
 
-\item{cores}{is a integer. Number of cores to use when executing the function,
-which defaults to 4. If set to 0 or NULL max number of cores will be
-used based on as many processors as the hardware and RAM allow.}
+\item{cores}{is a integer. Number of cores to use when executing the function.
+If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as
+many processors as the hardware and RAM allow.
+Default is \code{cores} = 0.}
 
 \item{quant}{If FALSE then quant will not be calculated}
 
@@ -81,7 +82,7 @@ All downloaded files will be saved into subrirectory \code{covariates}.
 \dontrun{
 popRFdemo(project_dir="/home/user/demo",
           country="NPL", 
-          cores=4)
+          cores=0)
 } 
 }
 \references{

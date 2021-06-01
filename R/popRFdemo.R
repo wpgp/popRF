@@ -50,7 +50,7 @@
 #' @usage
 #' popRFdemo(project_dir, 
 #'           country="NPL", 
-#'           cores=4, 
+#'           cores=0, 
 #'           quant=TRUE, 
 #'           ftp=TRUE, 
 #'           verbose=TRUE, 
@@ -60,9 +60,10 @@
 #' @param country character. ISO of the country 
 #'        (see \href{https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3}{country codes}). 
 #'        Default one is NPL (Nepal)
-#' @param cores is a integer. Number of cores to use when executing the function, 
-#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
-#'        used based on as many processors as the hardware and RAM allow.
+#' @param cores is a integer. Number of cores to use when executing the function. 
+#'        If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as 
+#'        many processors as the hardware and RAM allow. 
+#'        Default is \code{cores} = 0.
 #' @param quant If FALSE then quant will not be calculated
 #' @param ftp is logical. TRUE or FALSE: flag indicating whether 
 #'        [FTP](ftp://ftp.worldpop.org) or [HTTPS](https://data.worldpop.org) of
@@ -82,11 +83,11 @@
 #' \dontrun{
 #' popRFdemo(project_dir="/home/user/demo",
 #'           country="NPL", 
-#'           cores=4)
+#'           cores=0)
 #' } 
 popRFdemo <- function(project_dir, 
                       country="NPL", 
-                      cores=4,
+                      cores=0,
                       quant=TRUE,
                       ftp=TRUE, 
                       verbose=TRUE, 
@@ -119,9 +120,9 @@ popRFdemo <- function(project_dir,
     cat(paste0("Error: ",country," does not exist in this demo.\n"))
     cat(paste0("***********************************************\n"))
     cat(paste0("Please use the follwoing ISO \n"))
-    cat(paste0("----------------------------------------\n"))
+    cat(paste0("================================================\n"))
     cat(iso.list)
-    cat(paste0("\n----------------------------------------\n"))
+    cat(paste0("\n================================================\n"))
     stop() 
   }
   
@@ -196,12 +197,12 @@ popRFdemo <- function(project_dir,
     
     covariates <- names(input_covariates[[i]])
     
-    cat("\n===============================================================\n")
-    cat("===============================================================\n")
+    cat("\n================================================\n")
+    cat("================================================\n")
     cat(paste0("Follwoing covariaes will be downloaded to \n",output_dir,"\n"))
-    cat("===============================================================\n")
+    cat("================================================\n")
     cat(paste0("",covariates,"\n"))
-    cat("===============================================================\n")
+    cat("================================================\n")
     
     for (c in covariates){
       file_remote <- input_covariates[[i]][[c]]
@@ -318,13 +319,13 @@ popRFdemo <- function(project_dir,
   
   if ( nrow(pop_tmp) < 20 ){
     
-    cat("\n===============================================================\n")
-    cat("===============================================================\n\n")
+    cat("\n================================================\n")
+    cat("================================================\n\n")
     cat( paste0("Country ",country," has only ",nrow(pop_tmp)," admin units.\n") )
     cat( paste0("This amount of admin units will not be enought to train the model\n") )
     cat( paste0("For the purpers of the demo please choose another country\n\n") )
-    cat("===============================================================\n")
-    cat("===============================================================\n")
+    cat("================================================\n")
+    cat("================================================\n")
     
     opt <- options(show.error.messages = FALSE)
     on.exit(options(opt))

@@ -5,7 +5,7 @@
 \title{Disaggregating Census Data for Population Mapping Using Random Forests
 with Remotely-Sensed and Ancillary Data.}
 \usage{
-popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=NULL, 
+popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
 minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
 }
@@ -62,9 +62,10 @@ Example:\if{html}{\out{<div class="r">}}\preformatted{list(
 
 \item{output_dir}{Path to the folder to save the outputs.}
 
-\item{cores}{is a integer. Number of cores to use when executing the function,
-which defaults to 4. If set to 0 or NULL max number of cores will be
-used based on as many processors as the hardware and RAM allow.}
+\item{cores}{is a integer. Number of cores to use when executing the function.
+If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as
+many processors as the hardware and RAM allow.
+Default is \code{cores} = 0.}
 
 \item{minblocks}{Integer. if \code{minblocks} is NULL then \code{minblocks}
 for cluster prediction parallesation will be calculated based on
@@ -93,7 +94,7 @@ country's(ies') RF model object. Default is \code{fset_cutoff} = 20.}
 
 \item{fix_cov}{is logical. TRUE or FALSE: flag indicating whether the raster
 extend of the covariates will be fixed if the extend does not match
-mastergrid.}
+mastergrid. \code{fix_cov} = FALSE.}
 
 \item{check_result}{is logical. TRUE or FALSE: flag indicating whether the
 results will be compare with input data.
