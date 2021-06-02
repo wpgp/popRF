@@ -60,7 +60,8 @@ Example:\if{html}{\out{<div class="r">}}\preformatted{list(
 ## [1] "npl_px_area.tif"
 }}
 
-\item{output_dir}{Path to the folder to save the outputs.}
+\item{output_dir}{path for the location of the output.
+Default is the temp directory.}
 
 \item{cores}{is a integer. Number of cores to use when executing the function.
 If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as

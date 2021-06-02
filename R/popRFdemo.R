@@ -120,9 +120,9 @@ popRFdemo <- function(project_dir,
     cat(paste0("Error: ",country," does not exist in this demo.\n"))
     cat(paste0("***********************************************\n"))
     cat(paste0("Please use the follwoing ISO \n"))
-    cat(paste0("================================================\n"))
+    cat(paste0("------------------------------------------------\n"))
     cat(iso.list)
-    cat(paste0("\n================================================\n"))
+    cat(paste0("\n------------------------------------------------\n"))
     stop() 
   }
   
@@ -197,12 +197,12 @@ popRFdemo <- function(project_dir,
     
     covariates <- names(input_covariates[[i]])
     
-    cat("\n================================================\n")
-    cat("================================================\n")
+    cat("\n------------------------------------------------\n")
+    cat("------------------------------------------------\n")
     cat(paste0("Follwoing covariaes will be downloaded to \n",output_dir,"\n"))
-    cat("================================================\n")
+    cat("------------------------------------------------\n")
     cat(paste0("",covariates,"\n"))
-    cat("================================================\n")
+    cat("------------------------------------------------\n")
     
     for (c in covariates){
       file_remote <- input_covariates[[i]][[c]]
@@ -319,13 +319,13 @@ popRFdemo <- function(project_dir,
   
   if ( nrow(pop_tmp) < 20 ){
     
-    cat("\n================================================\n")
-    cat("================================================\n\n")
+    cat("\n------------------------------------------------\n")
+    cat("------------------------------------------------\n\n")
     cat( paste0("Country ",country," has only ",nrow(pop_tmp)," admin units.\n") )
     cat( paste0("This amount of admin units will not be enought to train the model\n") )
     cat( paste0("For the purpers of the demo please choose another country\n\n") )
-    cat("================================================\n")
-    cat("================================================\n")
+    cat("------------------------------------------------\n")
+    cat("------------------------------------------------\n")
     
     opt <- options(show.error.messages = FALSE)
     on.exit(options(opt))

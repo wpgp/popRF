@@ -1,9 +1,3 @@
-## @note * Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, A. J.
-##       Disaggregating Census Data for Population Mapping Using Random Forests
-##       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 (2015).
-##       <https://doi.org/10.1371/journal.pone.0107042>
-##       for more details.
-##
 #' @title Disaggregating Census Data for Population Mapping Using Random Forests
 #'        with Remotely-Sensed and Ancillary Data.
 #' 
@@ -79,7 +73,8 @@
 #'     "NPL" = "npl_px_area.tif"
 #'    )
 #'``` 
-#' @param output_dir Path to the folder to save the outputs. 
+#' @param output_dir path for the location of the output. 
+#'        Default is the temp directory.
 #' @param cores is a integer. Number of cores to use when executing the function. 
 #'        If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as 
 #'        many processors as the hardware and RAM allow. 
@@ -160,7 +155,7 @@ popRF <- function(pop,
                   mastergrid, 
                   watermask,
                   px_area,
-                  output_dir, 
+                  output_dir=tempdir(), 
                   cores = 0, 
                   minblocks=NULL, 
                   quant = TRUE,
@@ -202,6 +197,11 @@ popRF <- function(pop,
     
   }
 
+  log_info("MSG", paste(""), verbose=verbose, log=log)
+  log_info("MSG", paste("Path for the location of the output is ", output_dir), 
+           verbose=verbose, 
+           log=log)
+  log_info("MSG", paste(""), verbose=verbose, log=log)
   
   # get real physical cores
   if ( cores == 0 ){
@@ -757,14 +757,14 @@ popRF <- function(pop,
   
   timeEnd <-  Sys.time()
   
-  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
-  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
   
   log_info("MSG", paste0("popRF completed. "), verbose=verbose, log=log)
   log_info("MSG", paste0("Total processing Time: ", 
                          tmDiff(timeStart,timeEnd)), verbose=verbose, log=log)
   
-  log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
   
   
   return(return_results)

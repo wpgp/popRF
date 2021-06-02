@@ -1,2 +1,1 @@
-# popRF
-Disaggregating Census Data for Population Mapping Using Random Forests
+# popRF: Random Forest-informed Population Disaggregation R package.
