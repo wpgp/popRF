@@ -14,9 +14,21 @@ Authors@R: c(
           given = "Jeremiah J", 
           family = "Nieves", 
           role = c("aut"), 
-          email = "jeremiah.j.nieves@outlook.com", 
+          email = "j.j.nieves@liverpool.ac.uk", 
           comment = c(ORCID = "0000-0002-7423-1341")
           ),
+    person( 
+          given = "Forrest R.", 
+          family = "Stevens", 
+          role = c("aut"), 
+          email = "forrest.stevens@louisville.edu"
+          ),
+    person( 
+          given = "Andrea E.", 
+          family = "Gaughan", 
+          role = c("aut"), 
+          email = "ae.gaughan@louisville.edu"
+          ),            
     person( 
           given = "Chris", 
           family = "Jochem", 
@@ -40,9 +52,12 @@ Authors@R: c(
     )
 Author: Maksym Bondarenko [aut, cre, cph] (<https://orcid.org/0000-0003-4958-6551>),
   Jeremiah J. Nieves [aut] (<https://orcid.org/0000-0002-7423-134>),
-  David Kerr [aut],
-  Alessandro Sorichetta (<https://orcid.org/0000-0002-3576-5826>)
-Maintainer: Maksym Bondarenko <mb4@soton.ac.uk>    
+  Forrest R. Stevens [aut],
+  Andrea E. Gaughan [aut],
+  Chris Jochem [ctb],
+  David Kerr [ctb],
+  Alessandro Sorichetta [ctb] (<https://orcid.org/0000-0002-3576-5826>)
+Maintainer: Maksym Bondarenko <mb4@soton.ac.uk> and Jeremiah J. Nieves <j.j.nieves@liverpool.ac.uk>    
 Description: Disaggregating census-based areal population counts to finer 
     gridded population surfaces using Random Forest algorithm to determine 
     the target area weights. For more information about the method, read a paper 

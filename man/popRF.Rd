@@ -173,6 +173,8 @@ Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
 \author{
 Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk},
 Jeremiah J. Nieves \href{mailto:jeremiah.j.nieves@outlook.com}{jeremiah.j.nieves@outlook.com},
+Forrest R. Stevens \href{mailto:forrest.stevens@louisville.edu}{forrest.stevens@louisville.edu},
+Andrea E. Gaughan \href{mailto:ae.gaughan@louisville.edu}{ae.gaughan@louisville.edu},
 David Kerr \href{mailto:dk2n16@soton.ac.uk}{dk2n16@soton.ac.uk},
 Chris Jochem \href{mailto:W.C.Jochem@soton.ac.uk}{W.C.Jochem@soton.ac.uk} and
 Alessandro Sorichetta \href{mailto:as1v13@soton.ac.uk}{as1v13@soton.ac.uk}

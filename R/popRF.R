@@ -2,7 +2,9 @@
 #'        with Remotely-Sensed and Ancillary Data.
 #' 
 #' @author Maksym Bondarenko <mb4@soton.ac.uk>, 
-#'         Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>, 
+#'         Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>,
+#'         Forrest R. Stevens <forrest.stevens@louisville.edu>,
+#'         Andrea E. Gaughan <ae.gaughan@louisville.edu>,
 #'         David Kerr <dk2n16@soton.ac.uk>, 
 #'         Chris Jochem <W.C.Jochem@soton.ac.uk> and 
 #'         Alessandro Sorichetta <as1v13@soton.ac.uk>

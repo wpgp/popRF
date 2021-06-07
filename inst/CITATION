@@ -18,6 +18,18 @@ citEntry(entry = "Manual",
           comment = c(ORCID = "0000-0002-7423-1341")
           ),
     person( 
+          given = "Forrest R.", 
+          family = "Stevens", 
+          role = c("aut"), 
+          email = "forrest.stevens@louisville.edu"
+          ),
+    person( 
+          given = "Andrea E.", 
+          family = "Gaughan", 
+          role = c("aut"), 
+          email = "ae.gaughan@louisville.edu"
+          ),               
+    person( 
           given = "Chris", 
           family = "Jochem", 
           role = c("ctb"), 
@@ -44,7 +56,7 @@ citEntry(entry = "Manual",
   language     = "English",
 
   textVersion  =
-  paste("Bondarenko M., Nieves J.J., and Jochem C., Kerr D., and Sorichetta A. (2021):",
+  paste("Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and Sorichetta A. (2021):",
         "popRF: Random Forest-informed Population Disaggregation R package,",
         "_Comprehensive R Archive Network (CRAN)_.",
         "DOI: 10.5258/SOTON/WP00715")
