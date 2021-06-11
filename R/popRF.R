@@ -105,9 +105,9 @@
 #' @param proximity Logical vector indicating whether proximity measures among the rows should be computed.
 #'        Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.
-#' @param fset Declare if we are using a fixed set in this modeling, i.e. are we 
-#'        parameterizing, in part or in full, this RF model run upon another 
-#'        country's(ies') RF model object.   
+#' @param fset List containing character vector elements that give the the path to the directory(ies) 
+#'        containing the random forest model objects (.RData) with which we are using as a "fixed set" in this modeling, i.e. are we 
+#'        parameterizing, in part or in full, this RF model run upon another country's(ies') RF model object.   
 #' @param fset_incl Logical vector indicating whether the RF model object 
 #'        will or will not be combined with another RF model run upon another 
 #'        country's(ies') RF model object. Default is \code{fset_incl} = FALSE
