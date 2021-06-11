@@ -2,7 +2,7 @@
 #'        with Remotely-Sensed and Ancillary Data.
 #' 
 #' @author Maksym Bondarenko <mb4@soton.ac.uk>, 
-#'         Jeremiah J. Nieves <jeremiah.j.nieves@outlook.com>,
+#'         Jeremiah J. Nieves <J.J.Nieves@liverpool.ac.uk>,
 #'         Forrest R. Stevens <forrest.stevens@louisville.edu>,
 #'         Andrea E. Gaughan <ae.gaughan@louisville.edu>,
 #'         David Kerr <dk2n16@soton.ac.uk>, 
@@ -10,19 +10,24 @@
 #'         Alessandro Sorichetta <as1v13@soton.ac.uk>
 #'          
 #'         
-#' @details This function producing gridded population density estimates using 
+#' @details This function produces gridded population density estimates using 
 #'          a Random Forest model as described in 
 #'          \href{https://doi.org/10.1371/journal.pone.0107042}{Stevens, et al. (2015)}.
-#'          The population density and covariate aggregation values for each 
-#'          census unit are then used to create a 
+#'          The unit-average log-transformed population density and covariate summary
+#'          values for each census unit are then used to train a 
 #'          \href{https://doi.org/10.1023/A:1010933404324}{Random Forest model} 
 #'          to predict log population density. Random Forest models are an 
 #'          ensemble, nonparametric modeling approach that grows a "forest" of 
 #'          individual classification or regression trees and improves upon 
 #'          bagging by using the best of a random selection of predictors at 
-#'          each node in each tree. Model estimation, fitting and an estimated 
-#'          prediction weighting layer is used to dasymetrically redistribute 
-#'          the census counts. 
+#'          each node in each tree. The Random Forest is used to produced grid, i.e. 
+#'          pixel, level populaiton density estimates that are used as unit-relative weights
+#'          to dasymetrically redistribute the census based areal population counts. This 
+#'          function also allows for modelling based upon a 
+#'          \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation} of 
+#'          other previously run models as well as the creation of models based upon 
+#'          \href{Assessing the spatial sensitivity of a random forest model: Application in gridded population modeling}{multiple countries at once}.
+#'          This function assumes that all data is unprojected and is in the WGS84 coordinate system.
 #' 
 #'  
 #' @usage
@@ -30,16 +35,19 @@
 #' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 #' fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
 #' 
-#' @param pop the name of the file which the administrative ID and the population 
+#' @param pop The name of the file from which the unique area ID and corresponding population 
 #'        values are to be read from. The file should contain two columns 
 #'        comma-separated with the value of administrative ID and population 
 #'        without columns names. If it does not contain an absolute path, the 
 #'        file name is relative to the current working directory.
-#' @param cov List contains a list of elements. Each element of a list is another 
-#'       list object with a given name of the country, the element of this list 
-#'       is the input covariates with the name of the covariates and the path to 
-#'       them. 
-#'       Example:
+#' @param cov A nested list of named list(s), i.e. where each element of the first list is a 
+#'       named list object with atomic elements.
+#'       The name of each named list corresponds to the 3-letter ISO code of a specified country.
+#'       The elements within each named list define the specified input covariates to be used 
+#'       in the random forest model, i.e. the name of the covariates and the corresponding, if 
+#'       applicable and local, path to them. If the path is not a full path, it is assumed to be 
+#'       relative to the current working directory.
+#'       Example for Nepal (NPL):
 #'```{r}      
 #'list(
 #'     "NPL"=list(
@@ -48,74 +56,92 @@
 #'               )  
 #'    )
 #'```
-#' @param mastergrid List with each element of a list is 
-#'       another object with a given name of the country, the element of 
-#'       this list is the input mastergrid with the path to the raster file. 
+#' @param mastergrid A named list where each element of the list defines the path to the input 
+#'       mastergrid. The name corresponds to the 3-letter ISO code of a specified country. Each
+#'       corresponding element defines the path to the mastergrid, i.e. the template gridded 
+#'       raster that contains the unique area IDs as their value. If the path is local and not 
+#'       a full path, it is assumed to be relative to the current working directory.
 #'       Example:
 #'```      
 #'list(
 #'     "NPL" = "npl_mastergrid.tif"
 #'    )
 #'```
-#' @param watermask List with each element of a list is 
-#'       another object with a given name of the country, the element of 
-#'       this list is the input watermask with the path to the raster file. 
+#' @param watermask A named list where each element of the list defines the path to the input 
+#'       mastergrid. The name corresponds to the 3-letter ISO code of a specified country. Each
+#'       corresponding element defines the path to the watermask, i.e. the binary
+#'       raster that delineates the presence of water (1) and non-water (0), that is used to mask
+#'       out areas from modelling. If the path is local and not a full path, it is assumed to be 
+#'       relative to the current working directory.
 #'       Example:
 #'```      
 #'list(
 #'     "NPL" = "npl_watermask.tif"
 #'    )
 #'``` 
-#' @param px_area List with each element of a list is 
-#'       another object with a given name of the country, the element of 
-#'       this list is the input px_area with the path to the raster file. 
+#' @param px_area A named list where each element of the list defines the path to the input 
+#'       mastergrid. The name corresponds to the 3-letter ISO code of a specified country. Each
+#'       corresponding element defines the path to the raster whose values indicate the area of 
+#'       each unprojected (WGS84) pixel. If the path is local and not a full path, it is assumed
+#'       to be relative to the current working directory.
 #'       Example:
 #'```{r}      
 #'list(
 #'     "NPL" = "npl_px_area.tif"
 #'    )
 #'``` 
-#' @param output_dir path for the location of the output. 
+#' @param output_dir Character vector containing the path for the location of the output. 
 #'        Default is the temp directory.
-#' @param cores is a integer. Number of cores to use when executing the function. 
-#'        If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as 
+#' @param cores Numeric vector containing an integer. Number of cores to use in parallel when executing the 
+#'        function. If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as 
 #'        many processors as the hardware and RAM allow. 
 #'        Default is \code{cores} = 0.
-#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
+#' @param minblocks Numeric character containign an integer. if \code{minblocks} is NULL then \code{minblocks} 
 #'        for cluster prediction parallesation will be calculated based on 
 #'        available memory.
-#' @param quant is logical. TRUE or FALSE: flag indicating whether to produce 
-#'        the quantile regression forests to generate prediction intervals.
+#' @param quant Logical vector indicating whether to produce the quantile regression forests (TRUE)
+#'        to generate prediction intervals.
 #'        Default is \code{quant} = TRUE.
-#' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
-#'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
+#' @param proximity Logical vector indicating whether proximity measures among the rows should be computed.
+#'        Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.
 #' @param fset Declare if we are using a fixed set in this modeling, i.e. are we 
 #'        parameterizing, in part or in full, this RF model run upon another 
 #'        country's(ies') RF model object.   
-#' @param fset_incl is logical. TRUE or FALSE: flag indicating whether RF model object 
-#'        will or will not be combined with RF model run upon another 
-#'        country's(ies') RF model object.
-#' @param fset_cutoff is a integer. This parameter only used if \code{fset_incl}  
-#'        is TRUE. If the country has less then \code{fset_cutoff} idmin units 
-#'        then RF popfit will not be combined with RF model run upon another 
+#' @param fset_incl Logical vector indicating whether the RF model object 
+#'        will or will not be combined with another RF model run upon another 
+#'        country's(ies') RF model object. Default is \code{fset_incl} = FALSE
+#' @param fset_cutoff Numeric vector containing an integer. This parameter is only used if \code{fset_incl}  
+#'        is TRUE. If the country has less then \code{fset_cutoff} admin units 
+#'        then RF popfit will not be combined with the RF model run upon another 
 #'        country's(ies') RF model object. Default is \code{fset_cutoff} = 20.
-#' @param fix_cov is logical. TRUE or FALSE: flag indicating whether the raster 
-#'        extend of the covariates will be fixed if the extend does not match 
-#'        mastergrid. \code{fix_cov} = FALSE.
-#' @param check_result is logical. TRUE or FALSE: flag indicating whether the 
-#'        results will be compare with input data. 
+#' @param fix_cov Logical vector indicating whether the raster 
+#'        extent of the covariates will be fixed if the extent does not match 
+#'        mastergrid. Default is \code{fix_cov} = FALSE.
+#' @param check_result Logical vector indicating whether the results will be compared with input data. 
 #'        Default is \code{check_result} = TRUE.
-#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
-#'        intermediate output from the function on the console, which might be 
+#' @param verbose Logical vector indicating whether to print 
+#'        intermediate output from the function to the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
-#'        output from the function on the log.txt file. 
+#' @param log Logical vector indicating whether to print intermediate 
+#'        output from the function to the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @references Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem, 
-#'        A. J. Disaggregating Census Data for Population Mapping Using Random 
+#' @references Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015.
+#'        Disaggregating Census Data for Population Mapping Using Random 
 #'        Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 
-#'        (2015). <https://doi.org/10.1371/journal.pone.0107042>        
+#'        <https://doi.org/10.1371/journal.pone.0107042>
+#'        L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32.
+#'        <https://doi.org/10.1023/A:1010933404324>
+#'        Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., & A. J. Tatem. 2015.
+#'        Exploring Nationally and Regionally Defined Models for Large Area Population
+#'        Mapping. International Journal of Digital Earth, 12(8): 989-1006
+#'        <https://doi.org/10.1080/17538947.2014.965761>
+#'        Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J., Sorichetta, A., &
+#'        A. J. Tatem. 2019. Assessing the Spatial Sensitivity of a Random Forest Model:
+#'        Application in Gridded Population Modeling. 
+#'        Computers, Environment and Urban Systems, 75: 132-145.
+#'        <Assessing the spatial sensitivity of a random forest model: Application in gridded population modeling>
+#'
 #' @importFrom randomForest varImpPlot
 #' @rdname popRF
 #' @return Raster* object of gridded population.
