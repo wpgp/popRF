@@ -199,7 +199,7 @@ popRFdemo <- function(project_dir,
     
     cat("\n------------------------------------------------\n")
     cat("------------------------------------------------\n")
-    cat(paste0("Follwoing covariaes will be downloaded to \n",output_dir,"\n"))
+    cat(paste0("Following covariates will be downloaded to \n",output_dir,"\n"))
     cat("------------------------------------------------\n")
     cat(paste0("",covariates,"\n"))
     cat("------------------------------------------------\n")
