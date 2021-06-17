@@ -27,13 +27,13 @@
 #' \item dst_waterway_100m_2016.tif - Distance to OSM major waterways.
 #' \item dst_road_100m_2016.tif - Distance to OSM major roads.
 #' \item px_area.tif - Grid-cell surface areas.
-#' \item srtm_slope_100m.tif - SRTM-based slope 2000 ( SRTM is Shuttle Radar Topography Mission).
+#' \item srtm_slope_100m.tif - SRTM-based slope 2000 (SRTM is Shuttle Radar Topography Mission).
 #' \item srtm_topo_100m.tif - SRTM elevation 2000.
 #' \item viirs_100m_2016.tif - VIIRS night-time lights 2015 (VIIRS is Visible Infrared Imaging Radiometer Suite). 
 #' \item wdpa_dst_cat1_100m_2017.tif - Distance to IUCN strict nature reserve and wilderness area edges 2017.	
 #' \item dst_bsgme_100m_2020.tif	- Distance to predicted built-settlement extents in 2020.
 #' }
-#'  All downloaded files will be saved into subrirectory \code{covariates}.
+#'  All downloaded files will be saved into subdirectory \code{covariates}.
 #' @references 
 #' \itemize{
 #' \item Global spatio-temporally harmonised datasets for producing high-resolution 
