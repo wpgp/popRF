@@ -75,7 +75,7 @@ initial_check <- function(cov,
   } 
   
   
-  if (is.null(output_dir) | !file.exists(output_dir)) {
+  if (is.null(output_dir) | !dir.exists(output_dir)) {
     
     msg <- paste0("Error :: Output directory ",output_dir," does not exsit. Please choose a different directory.")
     return(msg)
