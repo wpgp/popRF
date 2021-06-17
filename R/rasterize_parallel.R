@@ -113,8 +113,8 @@ rasterize_parallel_start <- function(x,
 
 
 #' @title Function will transfer values associated with 'object' type spatial 
-#' data (data.frame) to raster cells. Function is using paralle library to work 
-#' with a big raster data. The raster file will be splited to blocks and 
+#' data (data.frame) to raster cells. Function is using parallel library to work 
+#' with a big raster data. The raster file will be split to blocks and 
 #' processed per block.
 #'
 #' @author Maksym Bondarenko <mb4@soton.ac.uk> and 
