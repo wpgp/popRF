@@ -106,7 +106,7 @@
 #' @param minblocks Integer vector containing an integer. Indicates the minimum 
 #'        number of blocks to break the processing extent into for parallel 
 #'        processing. If \code{minblocks} is NULL then \code{minblocks} 
-#'        for cluster prediction parallesation will be calculated based on 
+#'        for cluster prediction parallelisation will be calculated based on 
 #'        available memory.
 #' @param quant Logical vector indicating whether to produce the quantile 
 #'        regression forests (TRUE) to generate prediction intervals.
@@ -118,7 +118,15 @@
 #'        path to the directory(ies) containing the random forest model objects 
 #'        (.RData) with which we are using as a "fixed set" in this modeling, 
 #'        i.e. are we parameterizing, in part or in full, this RF model run upon
-#'        another country's(ies') RF model object.   
+#'        another country's(ies') RF model object. The list should have two 
+#'        named character vectors, "final" and "quant", with the character 
+#'        vectors corresponding to the directory paths of the corresponding 
+#'        folders that hold the random forest model objects and the quantile 
+#'        regression random forest model objects, respectively.
+#'        Numerous model objects can be in each folder "./final/" and "./quant/"
+#'        representing numerous countries with the understanding that the model 
+#'        being run will incorporate all model objects in the folder, e.g. if 
+#'        a model object for Mexico and 
 #' @param fset_incl Logical vector indicating whether the RF model object 
 #'        will or will not be combined with another RF model run upon another 
 #'        country's(ies') RF model object. Default is \code{fset_incl} = FALSE
