@@ -110,7 +110,7 @@ rf_prediction_parallel <- function(covariates,
   nodes <- length(cl)
   blocks <- blockSize(prediction_raster,minblocks=minblocks)
   
-  log_info("MSG", paste0("covariate_stack will be devided to ",blocks$n," blocks"), verbose=verbose, log=log) 
+  log_info("MSG", paste0("covariate_stack will be divided to ",blocks$n," blocks"), verbose=verbose, log=log) 
   
   clusterEvalQ(cl, {
     require(raster)
