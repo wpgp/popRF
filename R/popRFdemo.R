@@ -210,7 +210,7 @@ popRFdemo <- function(project_dir,
       output_file <- file.path(output_dir, paste0(c,".tif"))
       if (!file.exists(output_file)){
         cat(paste0("Downloading... ", c ,"\n"))
-        download.file(file_remote, output_file, quiet, method="auto")
+        download_file(file_remote, output_file, quiet, method="auto")
         
       }
     }
@@ -222,7 +222,7 @@ popRFdemo <- function(project_dir,
   file_remote_px_area <- input_px_area[[country]]
   if (!file.exists(output_px_area)){
     cat(paste0("Downloading... px_area px_area_100m\n"))
-    download.file(file_remote_px_area, output_px_area, quiet, method="auto")  
+    download_file(file_remote_px_area, output_px_area, quiet, method="auto")  
   }  
   
   
@@ -230,7 +230,7 @@ popRFdemo <- function(project_dir,
   file_remote_watermask <- input_watermask[[country]]
   if (!file.exists(output_watermask)){
     cat(paste0("Downloading... watermask esaccilc_water_100m_2000_2012\n"))
-    download.file(file_remote_watermask, output_watermask, quiet, method="auto") 
+    download_file(file_remote_watermask, output_watermask, quiet, method="auto") 
   }   
   
   
@@ -238,7 +238,7 @@ popRFdemo <- function(project_dir,
   file_remote_mastergrid <- input_mastergrid[[country]]
   if (!file.exists(output_mastergrid)){
     cat(paste0("Downloading... mastergrid subnational_admin_2000_2020\n"))
-    download.file(file_remote_mastergrid, output_mastergrid, quiet, method="auto")
+    download_file(file_remote_mastergrid, output_mastergrid, quiet, method="auto")
   }   
   
   ####
