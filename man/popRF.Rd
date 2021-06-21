@@ -10,17 +10,22 @@ minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE,
 fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
 }
 \arguments{
-\item{pop}{the name of the file which the administrative ID and the population
-values are to be read from. The file should contain two columns
-comma-separated with the value of administrative ID and population
-without columns names. If it does not contain an absolute path, the
-file name is relative to the current working directory.}
+\item{pop}{Character vector containing the name of the file from which the
+unique area ID and corresponding population values are to be read
+from. The file should contain two columns comma-separated with the
+value of administrative ID and population without columns names.
+If it does not contain an absolute path, the file name is relative to
+the current working directory.}
 
-\item{cov}{List contains a list of elements. Each element of a list is another
-list object with a given name of the country, the element of this list
-is the input covariates with the name of the covariates and the path to
-them.
-Example:\if{html}{\out{<div class="r">}}\preformatted{list(
+\item{cov}{A nested list of named list(s), i.e. where each element of the
+first list is a named list object with atomic elements. The name of
+each named list corresponds to the 3-letter ISO code of a specified
+country. The elements within each named list define the specified
+input covariates to be used in the random forest model, i.e. the name
+of the covariates and the corresponding, if applicable and local, path
+to them. If the path is not a full path, it is assumed to be relative
+to the current working directory.
+Example for Nepal (NPL):\if{html}{\out{<div class="r">}}\preformatted{list(
     "NPL"=list(
                "covariate1" = "covariate1.tif",
                "covariate2" = "covariate2.tif"
@@ -34,25 +39,36 @@ Example:\if{html}{\out{<div class="r">}}\preformatted{list(
 ## [1] "covariate2.tif"
 }}
 
-\item{mastergrid}{List with each element of a list is
-another object with a given name of the country, the element of
-this list is the input mastergrid with the path to the raster file.
+\item{mastergrid}{A named list where each element of the list defines the
+path to the input mastergrid(s), i.e. the template gridded raster(s)
+that contains the unique area IDs as their value. The name(s)
+corresponds to the 3-letter ISO code(s) of a specified country(ies).
+Each corresponding element defines the path to the mastergrid(s). If
+the path is local and not a full path, it is assumed to be relative to
+the current working directory.
 Example:\preformatted{list(
     "NPL" = "npl_mastergrid.tif"
    )
 }}
 
-\item{watermask}{List with each element of a list is
-another object with a given name of the country, the element of
-this list is the input watermask with the path to the raster file.
+\item{watermask}{A named list where each element of the list defines the path
+to the input country-specific watermask. The name corresponds to the
+3-letter ISO code of a specified country. Each corresponding element
+defines the path to the watermask, i.e. the binary raster that
+delineates the presence of water (1) and non-water (0), that is used
+to mask out areas from modelling. If the path is local and not a full
+path, it is assumed to be relative to the current working directory.
 Example:\preformatted{list(
     "NPL" = "npl_watermask.tif"
    )
 }}
 
-\item{px_area}{List with each element of a list is
-another object with a given name of the country, the element of
-this list is the input px_area with the path to the raster file.
+\item{px_area}{A named list where each element of the list defines the path
+to the input raster(s) containing the pixel area. The name corresponds
+to the 3-letter ISO code of a specified country. Each corresponding
+element defines the path to the raster whose values indicate the area
+of each unprojected (WGS84) pixel. If the path is local and not a full
+path, it is assumed to be relative to the current working directory.
 Example:\if{html}{\out{<div class="r">}}\preformatted{list(
     "NPL" = "npl_px_area.tif"
    )
@@ -60,53 +76,65 @@ Example:\if{html}{\out{<div class="r">}}\preformatted{list(
 ## [1] "npl_px_area.tif"
 }}
 
-\item{output_dir}{path for the location of the output.
-Default is the temp directory.}
+\item{output_dir}{Character vector containing the path to the directory for
+writing output files. Default is the temp directory.}
 
-\item{cores}{is a integer. Number of cores to use when executing the function.
-If set to 0 \code{(max_number_of_cores - 1)}  will be used based on as
-many processors as the hardware and RAM allow.
-Default is \code{cores} = 0.}
+\item{cores}{Integer vector containing an integer. Indicates the number of
+cores to use in parallel when executing the function. If set to 0
+\code{(max_number_of_cores - 1)}  will be used based on as many
+processors as the hardware and RAM allow. Default is \code{cores} = 0.}
 
-\item{minblocks}{Integer. if \code{minblocks} is NULL then \code{minblocks}
-for cluster prediction parallesation will be calculated based on
+\item{minblocks}{Integer vector containing an integer. Indicates the minimum
+number of blocks to break the processing extent into for parallel
+processing. If \code{minblocks} is NULL then \code{minblocks}
+for cluster prediction parallelisation will be calculated based on
 available memory.}
 
-\item{quant}{is logical. TRUE or FALSE: flag indicating whether to produce
-the quantile regression forests to generate prediction intervals.
+\item{quant}{Logical vector indicating whether to produce the quantile
+regression forests (TRUE) to generate prediction intervals.
 Default is \code{quant} = TRUE.}
 
-\item{proximity}{is logical. TRUE or FALSE: flag indicating whether proximity
-measures among the rows be computed? Default is \code{proximity} = TRUE.
+\item{proximity}{Logical vector indicating whether proximity measures among
+the rows should be computed. Default is \code{proximity} = TRUE.
 See \code{\link[randomForest]{randomForest}} for more details.}
 
-\item{fset}{Declare if we are using a fixed set in this modeling, i.e. are we
-parameterizing, in part or in full, this RF model run upon another
-country's(ies') RF model object.}
+\item{fset}{Named list containing character vector elements that give the
+path to the directory(ies) containing the random forest model objects
+(.RData) with which we are using as a "fixed set" in this modeling,
+i.e. are we parameterizing, in part or in full, this RF model run upon
+another country's(ies') RF model object. The list should have two
+named character vectors, "final" and "quant", with the character
+vectors corresponding to the directory paths of the corresponding
+folders that hold the random forest model objects and the quantile
+regression random forest model objects, respectively.
+Numerous model objects can be in each folder "./final/" and "./quant/"
+representing numerous countries with the understanding that the model
+being run will incorporate all model objects in the folder, e.g. if
+a model object for Mexico and}
 
-\item{fset_incl}{is logical. TRUE or FALSE: flag indicating whether RF model object
-will or will not be combined with RF model run upon another
-country's(ies') RF model object.}
+\item{fset_incl}{Logical vector indicating whether the RF model object
+will or will not be combined with another RF model run upon another
+country's(ies') RF model object. Default is \code{fset_incl} = FALSE}
 
-\item{fset_cutoff}{is a integer. This parameter only used if \code{fset_incl}
-is TRUE. If the country has less then \code{fset_cutoff} idmin units
-then RF popfit will not be combined with RF model run upon another
-country's(ies') RF model object. Default is \code{fset_cutoff} = 20.}
+\item{fset_cutoff}{Numeric vector containing an integer. This parameter is
+only used if \code{fset_incl} is TRUE. If the country has less than
+\code{fset_cutoff} admin units, then RF popfit will not be combined
+with the RF model run upon another country's(ies') RF model object.
+Default is \code{fset_cutoff} = 20.}
 
-\item{fix_cov}{is logical. TRUE or FALSE: flag indicating whether the raster
-extend of the covariates will be fixed if the extend does not match
-mastergrid. \code{fix_cov} = FALSE.}
+\item{fix_cov}{Logical vector indicating whether the raster extent of the
+covariates will be corrected if the extent does not match mastergrid.
+Default is \code{fix_cov} = FALSE.}
 
-\item{check_result}{is logical. TRUE or FALSE: flag indicating whether the
-results will be compare with input data.
-Default is \code{check_result} = TRUE.}
+\item{check_result}{Logical vector indicating whether the results will be
+compared with input data. Default is \code{check_result} = TRUE.}
 
-\item{verbose}{is logical. TRUE or FALSE: flag indicating whether to print
-intermediate output from the function on the console, which might be
+\item{verbose}{Logical vector indicating whether to print
+intermediate output from the function to the console, which might be
 helpful for model debugging. Default is \code{verbose} = TRUE.}
 
-\item{log}{is logical. TRUE or FALSE: flag indicating whether to print intermediate
-output from the function on the log.txt file.
+\item{log}{Logical vector indicating whether to print intermediate
+output from the function to the log.txt file.
 Default is \code{log} = FALSE.}
 }
 \value{
@@ -117,19 +145,25 @@ Disaggregating Census Data for Population Mapping Using Random Forests
 with Remotely-Sensed and Ancillary Data.
 }
 \details{
-This function producing gridded population density estimates using
+This function produces gridded population density estimates using
 a Random Forest model as described in
 \href{https://doi.org/10.1371/journal.pone.0107042}{Stevens, et al. (2015)}.
-The population density and covariate aggregation values for each
-census unit are then used to create a
+The unit-average log-transformed population density and covariate
+summary values for each census unit are then used to train a
 \href{https://doi.org/10.1023/A:1010933404324}{Random Forest model}
 to predict log population density. Random Forest models are an
 ensemble, nonparametric modeling approach that grows a "forest" of
 individual classification or regression trees and improves upon
 bagging by using the best of a random selection of predictors at
-each node in each tree. Model estimation, fitting and an estimated
-prediction weighting layer is used to dasymetrically redistribute
-the census counts.
+each node in each tree. The Random Forest is used to produced grid,
+i.e. pixel, level population density estimates that are used as
+unit-relative weights to dasymetrically redistribute the census
+based areal population counts. This function also allows for
+modelling based upon a \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation}
+of other previously run models as well as the creation of models
+based upon \href{Assessing the spatial sensitivity of a random forest model: Application in gridded population modeling}{multiple countries at once}.
+This function assumes that all data is unprojected and is in the
+WGS84 coordinate system.
 }
 \examples{
 \dontrun{
@@ -165,14 +199,26 @@ plot(res$popfit)
 }
 }
 \references{
-Stevens, F. R., Gaughan, A. E., Linard, C. & Tatem,
-A. J. Disaggregating Census Data for Population Mapping Using Random
+Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015.
+Disaggregating Census Data for Population Mapping Using Random
 Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
-(2015). \url{https://doi.org/10.1371/journal.pone.0107042}
+\url{https://doi.org/10.1371/journal.pone.0107042}
+L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32.
+\url{https://doi.org/10.1023/A:1010933404324}
+Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., &
+A. J. Tatem. 2015. Exploring Nationally and Regionally Defined Models
+for Large Area Population Mapping. International Journal of Digital
+Earth, 12(8): 989-1006.
+\url{https://doi.org/10.1080/17538947.2014.965761}
+Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J.,
+Sorichetta, A., & A. J. Tatem. 2019. Assessing the Spatial Sensitivity
+of a Random Forest Model: Application in Gridded Population Modeling.
+Computers, Environment and Urban Systems, 75: 132-145.
+\url{https://doi.org/10.1016/j.compenvurbsys.2019.01.006}
 }
 \author{
 Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk},
-Jeremiah J. Nieves \href{mailto:jeremiah.j.nieves@outlook.com}{jeremiah.j.nieves@outlook.com},
+Jeremiah J. Nieves \href{mailto:J.J.Nieves@liverpool.ac.uk}{J.J.Nieves@liverpool.ac.uk},
 Forrest R. Stevens \href{mailto:forrest.stevens@louisville.edu}{forrest.stevens@louisville.edu},
 Andrea E. Gaughan \href{mailto:ae.gaughan@louisville.edu}{ae.gaughan@louisville.edu},
 David Kerr \href{mailto:dk2n16@soton.ac.uk}{dk2n16@soton.ac.uk},

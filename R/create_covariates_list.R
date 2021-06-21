@@ -31,7 +31,7 @@ create_covariates_list <- function(input_covariates,
       fc <- input_covariates[[i]][[j]]
       
       
-      covariates[[i]][[j]][["path"]] <- fc
+      #covariates[[i]][[j]][["path"]] <- fc
       
       covariates[[i]][[j]] <- list(
         dataset_folder      =  dirname(fc),
@@ -58,7 +58,7 @@ create_covariates_list <- function(input_covariates,
       fc <- input_mastergrid[[i]][[j]]
       
       
-      covariates[[i]][["mastergrid"]][["path"]] <- fc
+      #covariates[[i]][["mastergrid"]][["path"]] <- fc
       
       covariates[[i]][["mastergrid"]] <- list(
         dataset_folder      =  dirname(fc),
@@ -83,7 +83,7 @@ create_covariates_list <- function(input_covariates,
       fc <- input_watermask[[i]][[j]]
       
       
-      covariates[[i]][["watermask"]][["path"]] <- fc
+      #covariates[[i]][["watermask"]][["path"]] <- fc
       
       covariates[[i]][["watermask"]] <- list(
         dataset_folder      =  dirname(fc),
@@ -106,7 +106,7 @@ create_covariates_list <- function(input_covariates,
       fc <- input_px_area[[i]][[j]]
       
       
-      covariates[[i]][["px_area"]][["path"]] <- fc
+      #covariates[[i]][["px_area"]][["path"]] <- fc
       
       covariates[[i]][["px_area"]] <- list(
         dataset_folder      =  dirname(fc),
