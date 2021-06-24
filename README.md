@@ -88,7 +88,7 @@ plot(res$pop)
 plot(res$popfit)
 ```
 
-<img src="man/figures/example_ppp_ECU_v1.jpg" width="100%" />
+<img src="man/figures/example_ppp_ECU.jpg" width="100%" />
 
 ### Outputs
 
