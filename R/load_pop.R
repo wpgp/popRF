@@ -9,7 +9,7 @@
 load_pop <- function(icountry,input_poptables){
   
   file_local <- input_poptables[[icountry]]
-  df <- utils::read.csv(file_local, stringsAsFactors=FALSE,header = TRUE)
+  df <- utils::read.csv(file_local, stringsAsFactors=FALSE, header = FALSE)
   colnames(df) <-  c("ADMINID", "ADMINPOP") 
   
   return(df)
