@@ -62,9 +62,20 @@ Description: Disaggregating census-based areal population counts to finer
     gridded population surfaces using Random Forest algorithm to determine 
     the target area weights. For more information about the method, read a paper 
     Stevens et al. (2015) DOI: 10.1371/journal.pone.0107042.
-URL: https://sdi.worldpop.org
+URL: https://github.com/wpgp/popRF, https://sdi.worldpop.org
 BugReports: https://github.com/wpgp/popRF/issues
-Imports: doParallel, parallel, raster, methods, stats, foreach, gdalUtils, randomForest, quantregForest, snow, plyr
+Imports: 
+    doParallel, 
+    parallel, 
+    raster, 
+    methods, 
+    stats, 
+    foreach, 
+    gdalUtils, 
+    randomForest, 
+    quantregForest, 
+    snow, 
+    plyr
 Depends: R (>= 3.2.0)
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8

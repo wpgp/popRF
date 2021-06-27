@@ -19,22 +19,25 @@
 #'          to predict log population density. Random Forest models are an 
 #'          ensemble, nonparametric modeling approach that grows a "forest" of 
 #'          individual classification or regression trees and improves upon 
-#'          bagging by using the best of a random selection of predictors at 
+#'          bagging by using the best f a random selection of predictors at 
 #'          each node in each tree. The Random Forest is used to produced grid, 
 #'          i.e. pixel, level population density estimates that are used as 
 #'          unit-relative weights to dasymetrically redistribute the census 
 #'          based areal population counts. This function also allows for 
-#'          modelling based upon a \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation} 
-#'          of other previously run models as well as the creation of models 
-#'          based upon \href{Assessing the spatial sensitivity of a random forest model: Application in gridded population modeling}{multiple countries at once}.
+#'          modelling based upon a 
+#'          \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation} 
+#'          of other previously run models as well as the creation of models based
+#'          upon \href{https://doi.org/10.1016/j.compenvurbsys.2019.01.006}{multiple countries at once}.
 #'          This function assumes that all data is unprojected and is in the 
 #'          WGS84 coordinate system.
 #' 
 #'  
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-#' minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
-#' fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
+#' minblocks=NULL, quant=FALSE, nodesize=NULL, maxnodes=NULL, ntree=NULL, 
+#' mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+#' fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
+#' log=FALSE)
 #' 
 #' @param pop Character vector containing the name of the file from which the 
 #'        unique area ID and corresponding population values are to be read 
@@ -114,6 +117,26 @@
 #' @param proximity Logical vector indicating whether proximity measures among 
 #'        the rows should be computed. Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.
+#' @param nodesize Minimum size of terminal nodes. Setting this number larger 
+#'        causes smaller trees to be grown (and thus take less time). See 
+#'        \code{\link[randomForest]{randomForest}} for more details. Default 
+#'        is \code{nodesize} = NULL and will be calculated 
+#'        as \code{length(y_data)/1000}.
+#' @param maxnodes Maximum number of terminal nodes trees in the forest can have. 
+#'        If not given, trees are grown to the maximum possible (subject to 
+#'        limits by nodesize). If set larger than maximum possible, a warning is 
+#'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{maxnodes} = NULL.
+#' @param ntree Number of variables randomly sampled as candidates at each split. 
+#'        See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$ntree}
+#' @param mtry Number of trees to grow. This should not be set to too small a 
+#'        number, to ensure that every input row gets predicted at least a few 
+#'        times. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$mtry}
+#' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param fset Named list containing character vector elements that give the 
 #'        path to the directory(ies) containing the random forest model objects 
 #'        (.RData) with which we are using as a "fixed set" in this modeling, 
@@ -138,6 +161,10 @@
 #' @param fix_cov Logical vector indicating whether the raster extent of the 
 #'        covariates will be corrected if the extent does not match mastergrid. 
 #'        Default is \code{fix_cov} = FALSE.
+#' @param const Character vector containing the name of the file from which the 
+#'        mask will be used to constraine population layer. The mask file should
+#'         have value \code{0} as a mask. If it does not contain an absolute path, 
+#'        the file name is relative to the current working directory.
 #' @param check_result Logical vector indicating whether the results will be 
 #'        compared with input data. Default is \code{check_result} = TRUE.
 #' @param verbose Logical vector indicating whether to print 
@@ -146,23 +173,24 @@
 #' @param log Logical vector indicating whether to print intermediate 
 #'        output from the function to the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @references Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015.
-#'        Disaggregating Census Data for Population Mapping Using Random 
-#'        Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042 
-#'        <https://doi.org/10.1371/journal.pone.0107042>
-#'        L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32.
-#'        <https://doi.org/10.1023/A:1010933404324>
-#'        Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., & 
-#'        A. J. Tatem. 2015. Exploring Nationally and Regionally Defined Models 
-#'        for Large Area Population Mapping. International Journal of Digital 
-#'        Earth, 12(8): 989-1006.
-#'        <https://doi.org/10.1080/17538947.2014.965761>
-#'        Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J., 
-#'        Sorichetta, A., & A. J. Tatem. 2019. Assessing the Spatial Sensitivity
-#'        of a Random Forest Model: Application in Gridded Population Modeling. 
-#'        Computers, Environment and Urban Systems, 75: 132-145.
-#'        <https://doi.org/10.1016/j.compenvurbsys.2019.01.006>
-#'
+#' @references      
+#' \itemize{
+#' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
+#'       Disaggregating Census Data for Population Mapping Using Random Forests 
+#'       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042  
+#'       <https://doi.org/10.1371/journal.pone.0107042>
+#' \item L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32. 
+#'       <https://doi.org/10.1023/A:1010933404324>
+#' \item Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., & A. J. Tatem. 
+#'       2015. Exploring Nationally and Regionally Defined Models for Large Area 
+#'       Population Mapping. International Journal of Digital Earth, 12(8): 
+#'       989-1006. <https://doi.org/10.1080/17538947.2014.965761>
+#' \item Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J., Sorichetta, A., 
+#'       & A. J. Tatem. 2019. Assessing the Spatial Sensitivity of a Random 
+#'       Forest Model: Application in Gridded Population Modeling. Computers, 
+#'       Environment and Urban Systems, 75: 132-145. 
+#'       <https://doi.org/10.1016/j.compenvurbsys.2019.01.006>
+#' }        
 #' @importFrom randomForest varImpPlot
 #' @rdname popRF
 #' @return Raster* object of gridded population.
@@ -207,28 +235,24 @@ popRF <- function(pop,
                   output_dir=tempdir(), 
                   cores = 0, 
                   minblocks=NULL, 
-                  quant = TRUE,
+                  quant = FALSE,
+                  nodesize=NULL, 
+                  maxnodes=NULL,
+                  ntree=NULL,
+                  mtry=NULL,
+                  set_seed=2010,
                   proximity = TRUE,
                   fset = NULL,
                   fset_incl = FALSE,
                   fset_cutoff = 20,
                   fix_cov=FALSE,
+                  const=NULL,
                   check_result=TRUE,
                   verbose = TRUE, 
                   log = FALSE){
   
-  
-  
   timeStart <- Sys.time()
-  
-  # input_covariates <- cov
-  # input_mastergrid <- mastergrid
-  # input_watermask <- watermask
-  # input_px_area <- px_area
-  # input_poptables <- pop
-  # pkg.env <- new.env()
-  # pkg.env$cur.val
-  
+
   rfg.initial.checks <- initial_check(cov,
                                       mastergrid,
                                       watermask,
@@ -390,7 +414,6 @@ popRF <- function(pop,
   } 
   
   
-  
   ##	Set up response and covariate dataframes for the random forest modeling.
   ##    Retrieve the population density data:
   y_data <- census_data$POPD_PPHA
@@ -531,41 +554,125 @@ popRF <- function(pop,
   
   if (is.null(fset)) {
     
-    popfit_final <- get_popfit_final(x_data, 
-                                     y_data, 
+    # popfit_final <- get_popfit_final(x_data, 
+    #                                  y_data, 
+    #                                  popfit,
+    #                                  rfg.popfit.final.RData,
+    #                                  proximity=proximity, 
+    #                                  verbose=verbose, 
+    #                                  log=log)
+    # 
+    # popfit_quant <- get_popfit_quant(x_data, 
+    #                                  y_data, 
+    #                                  popfit,
+    #                                  rfg.popfit.quant.RData,
+    #                                  proximity=proximity, 
+    #                                  verbose=verbose, 
+    #                                  log=log)
+    
+    
+    popfit_final <- get_popfit_final(x_data=x_data, 
+                                     y_data=y_data,
+                                     nodesize=nodesize, 
+                                     maxnodes=maxnodes,
+                                     ntree=ntree,
+                                     mtry=mtry, 
+                                     set_seed=set_seed, 
                                      popfit,
                                      rfg.popfit.final.RData,
                                      proximity=proximity, 
                                      verbose=verbose, 
                                      log=log)
     
-    popfit_quant <- get_popfit_quant(x_data, 
-                                     y_data, 
+    popfit_quant <- get_popfit_quant(x_data=x_data, 
+                                     y_data=y_data,
+                                     nodesize=nodesize, 
+                                     maxnodes=maxnodes,
+                                     ntree=ntree,
+                                     mtry=mtry, 
+                                     set_seed=set_seed,                                     
                                      popfit,
                                      rfg.popfit.quant.RData,
                                      proximity=proximity, 
                                      verbose=verbose, 
-                                     log=log)
+                                     log=log)    
+    
+
+    log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
+    
+    importance_scores.log <- importance(popfit_final)[order(importance(popfit_final)[,1], decreasing=TRUE),]
+    importance_scores.log <- as.data.frame(importance_scores.log)
+    importance_scores.log <- cbind(rownames(importance_scores.log), importance_scores.log)
+    rownames(importance_scores.log) <- NULL
+    colnames(importance_scores.log) <- c("Covariate", "%IncMSE", "IncNodePurity")    
+    
+    write.csv(importance_scores.log, file.path(rfg.output.path.countries.tmp, 
+                                           paste0("IncMSE_IncNodePurity_",rfg.countries.tag,".csv") ))
+    
+    # 
+    # write.table((importance_scores.log), file.path(rfg.output.path.countries.tmp, 
+    #                                                paste0("IncMSE_IncNodePurity_",rfg.countries.tag,".csv")), sep="," )
+    
+    if (verbose) print(importance_scores.log)
+    
+    log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
+    
+    log_info("MSG", paste0("Mean of squared residuals: ", round(popfit_final$mse[length(popfit_final$mse)], 3) ), 
+             verbose=verbose, 
+             log=log) 
+    
+    log_info("MSG", paste0("% Var explained: ", round(popfit_final$rsq[length(popfit_final$rsq)], 3) ), 
+             verbose=verbose, 
+             log=log)    
+    
+    log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
+    log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
     
   }else{
     
     if (fset_incl==TRUE & (nrow(census_data) > fset_cutoff)) {
       
-      popfit_final <- get_popfit_final(x_data, 
-                                       y_data, 
+      # popfit_final <- get_popfit_final(x_data, 
+      #                                  y_data, 
+      #                                  popfit,
+      #                                  rfg.popfit.final.RData,
+      #                                  proximity=proximity, 
+      #                                  verbose=verbose, 
+      #                                  log=log)
+      # 
+      # popfit_quant <- get_popfit_quant(x_data, 
+      #                                  y_data, 
+      #                                  popfit,
+      #                                  rfg.popfit.quant.RData,
+      #                                  proximity=proximity, 
+      #                                  verbose=verbose, 
+      #                                  log=log)
+      
+      popfit_final <- get_popfit_final(x_data=x_data, 
+                                       y_data=y_data,
+                                       nodesize=nodesize, 
+                                       maxnodes=maxnodes,
+                                       ntree=ntree,
+                                       mtry=mtry, 
+                                       set_seed=set_seed,
                                        popfit,
                                        rfg.popfit.final.RData,
                                        proximity=proximity, 
                                        verbose=verbose, 
                                        log=log)
       
-      popfit_quant <- get_popfit_quant(x_data, 
-                                       y_data, 
+      popfit_quant <- get_popfit_quant(x_data=x_data, 
+                                       y_data=y_data,
+                                       nodesize=nodesize, 
+                                       maxnodes=maxnodes,
+                                       ntree=ntree,
+                                       mtry=mtry, 
+                                       set_seed=set_seed,                                       
                                        popfit,
                                        rfg.popfit.quant.RData,
                                        proximity=proximity, 
                                        verbose=verbose, 
-                                       log=log)
+                                       log=log)      
       
     }else{
       if (fset_incl){
@@ -781,8 +888,32 @@ popRF <- function(pop,
                                 verbose=verbose, 
                                 log=log)
   
-
-
+  
+  if (!is.null(const)) {
+    
+    p_raster_const <- apply_constrained(pop, 
+                                        mastergrid_filename=censusmaskPathFileName,
+                                        const=const,
+                                        output_dir=rfg.output.path.countries, 
+                                        cores=cores, 
+                                        rfg.countries.tag=rfg.countries.tag, 
+                                        quant = quant, 
+                                        minblocks=minblocks, 
+                                        verbose=verbose, 
+                                        log=log)
+    
+    c_result_const <- check_result_constrained(pop, 
+                                               censusmaskPathFileName, 
+                                               rfg.output.path.countries, 
+                                               cores, 
+                                               rfg.countries.tag,  
+                                               minblocks=minblocks, 
+                                               verbose=verbose, 
+                                               log=log)
+    
+  }  
+  
+  
   if (check_result){
     
     log_info("MSG", paste0("Checking results."), verbose=verbose, log=log)
@@ -796,10 +927,35 @@ popRF <- function(pop,
                              verbose=verbose, 
                              log=log)
     
-    return_results <- list(pop=p_raster, popfit=popfit_final, error= c_result)  
+    if (!is.null(const)) {
+      
+      return_results <- list(pop=p_raster, 
+                             pop_const=p_raster_const, 
+                             popfit=popfit_final, 
+                             error= c_result,
+                             error_const= c_result_const)  
+    }else{
+      
+      return_results <- list(pop=p_raster, 
+                             popfit=popfit_final, 
+                             error= c_result)  
+    }  
     
   }else{
-    return_results <- list(pop=p_raster, popfit=popfit_final)
+    
+    if (!is.null(const)) {
+      
+      return_results <- list(pop=p_raster,
+                             pop_const=p_raster_const,
+                             popfit=popfit_final)  
+      
+    }else{
+      
+      return_results <- list(pop=p_raster, 
+                             popfit=popfit_final)  
+      
+    }  
+    
   }
   
   

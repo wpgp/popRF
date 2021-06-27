@@ -8,6 +8,26 @@
 #' @rdname get_popfit_quant
 #' @param x_data x data for randomForest
 #' @param y_data y data for randomForest
+#' @param nodesize Minimum size of terminal nodes. Setting this number larger 
+#'        causes smaller trees to be grown (and thus take less time). See 
+#'        \code{\link[randomForest]{randomForest}} for more details. Default 
+#'        is \code{nodesize} = NULL and will be calculated 
+#'        as \code{length(y_data)/1000}.
+#' @param maxnodes Maximum number of terminal nodes trees in the forest can have. 
+#'        If not given, trees are grown to the maximum possible (subject to 
+#'        limits by nodesize). If set larger than maximum possible, a warning is 
+#'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{maxnodes} = NULL.
+#' @param ntree Number of variables randomly sampled as candidates at each split. 
+#'        See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$ntree}
+#' @param mtry Number of trees to grow. This should not be set to too small a 
+#'        number, to ensure that every input row gets predicted at least a few 
+#'        times. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$mtry}
+#' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param popfit popfit objects
 #' @param rfg.popfit.quant.RData path to load/save popfit objects
 #' @param proximity proximity
@@ -17,7 +37,12 @@
 #' @return constructed popfit objects
 #' @noRd 
 get_popfit_quant <- function(x_data, 
-                             y_data, 
+                             y_data,
+                             nodesize=NULL, 
+                             maxnodes=NULL, 
+                             ntree=NULL,
+                             mtry=NULL, 
+                             set_seed=2010, 
                              popfit,
                              rfg.popfit.quant.RData,
                              proximity=TRUE, 
@@ -31,13 +56,31 @@ get_popfit_quant <- function(x_data,
     
   }else{  
     
-    set.seed(2010)
+    set.seed(set_seed)
+    
+    rf_nodesize <- ifelse(is.null(nodesize), length(y_data)/1000, nodesize)
+    
+    if (is.null(maxnodes)){
+      rf_maxnodes <- NULL
+    }else{
+      rf_maxnodes <- maxnodes
+    }
+    
+    rf_ntree <- ifelse(is.null(ntree), popfit$ntree, ntree)
+    rf_mtry <- ifelse(is.null(mtry), popfit$mtry, mtry)   
+    
+    # popfit_quant <- quantregForest(x=x_data, 
+    #                                y=y_data, 
+    #                                mtry=popfit$mtry, 
+    #                                ntree=popfit$ntree, 
+    #                                nodesize=length(y_data)/1000)
     
     popfit_quant <- quantregForest(x=x_data, 
                                    y=y_data, 
-                                   mtry=popfit$mtry, 
-                                   ntree=popfit$ntree, 
-                                   nodesize=length(y_data)/1000)
+                                   mtry=rf_mtry, 
+                                   ntree=rf_ntree, 
+                                   nodesize=rf_nodesize,
+                                   maxnodes=rf_maxnodes)    
     
     log_info("MSG", paste0("Saving popfit_quant object ",rfg.popfit.quant.RData), verbose=verbose, log=log) 
     save(popfit_quant, file=rfg.popfit.quant.RData)

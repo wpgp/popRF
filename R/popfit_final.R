@@ -5,6 +5,26 @@
 #' @rdname get_popfit_final
 #' @param x_data matrix or data frame of predictor variables
 #' @param y_data response vector (factor for classification, numeric for regression)
+#' @param nodesize Minimum size of terminal nodes. Setting this number larger 
+#'        causes smaller trees to be grown (and thus take less time). See 
+#'        \code{\link[randomForest]{randomForest}} for more details. Default 
+#'        is \code{nodesize} = NULL and will be calculated 
+#'        as \code{length(y_data)/1000}.
+#' @param maxnodes Maximum number of terminal nodes trees in the forest can have. 
+#'        If not given, trees are grown to the maximum possible (subject to 
+#'        limits by nodesize). If set larger than maximum possible, a warning is 
+#'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{maxnodes} = NULL.
+#' @param ntree Number of variables randomly sampled as candidates at each split. 
+#'        See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$ntree}
+#' @param mtry Number of trees to grow. This should not be set to too small a 
+#'        number, to ensure that every input row gets predicted at least a few 
+#'        times. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$mtry}
+#' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param popfit the randomForest object produced with the optimal mtry. 
 #'         See \code{\link[randomForest]{tuneRF}} for more details.
 #' @param popfit_fln path to save \code{popfit} objects
@@ -22,7 +42,12 @@
 #'         see \code{\link[randomForest]{randomForest}} for more details
 #' @noRd 
 get_popfit_final <- function(x_data, 
-                             y_data, 
+                             y_data,
+                             nodesize=NULL, 
+                             maxnodes=NULL, 
+                             ntree=NULL,
+                             mtry=NULL, 
+                             set_seed=2010, 
                              popfit,
                              popfit_fln,
                              proximity=TRUE, 
@@ -36,16 +61,37 @@ get_popfit_final <- function(x_data,
     
   }else{
     
-    set.seed(2010)
+    set.seed(set_seed)
+    
+    rf_nodesize <- ifelse(is.null(nodesize), length(y_data)/1000, nodesize)
+    
+    if (is.null(maxnodes)){
+      rf_maxnodes <- NULL
+    }else{
+      rf_maxnodes <- maxnodes
+    }
+    
+    rf_ntree <- ifelse(is.null(ntree), popfit$ntree, ntree)
+    rf_mtry <- ifelse(is.null(mtry), popfit$mtry, mtry)    
+    
+    # popfit_final <- randomForest(x=x_data, 
+    #                              y=y_data, 
+    #                              mtry=popfit$mtry, 
+    #                              ntree=popfit$ntree, 
+    #                              nodesize=length(y_data)/1000, 
+    #                              importance=TRUE, 
+    #                              proximity=proximity,
+    #                              do.trace=F)
+    
     popfit_final <- randomForest(x=x_data, 
-                                 y=y_data, 
-                                 mtry=popfit$mtry, 
-                                 ntree=popfit$ntree, 
-                                 nodesize=length(y_data)/1000, 
+                                 y=y_data,
+                                 ntree=rf_ntree,
+                                 mtry=rf_mtry, 
+                                 nodesize=rf_nodesize,
+                                 maxnodes=rf_maxnodes,
                                  importance=TRUE, 
                                  proximity=proximity,
-                                 do.trace=F)
-    
+                                 do.trace=F)    
     
     log_info("MSG", paste0("Saving popfit_final object ",popfit_fln), verbose=verbose, log=log) 
     save(popfit_final, file=popfit_fln)

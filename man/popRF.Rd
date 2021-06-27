@@ -6,8 +6,10 @@
 with Remotely-Sensed and Ancillary Data.}
 \usage{
 popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-minblocks=NULL, quant=TRUE, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
-fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, log=FALSE)
+minblocks=NULL, quant=FALSE, nodesize=NULL, maxnodes=NULL, ntree=NULL, 
+mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
+log=FALSE)
 }
 \arguments{
 \item{pop}{Character vector containing the name of the file from which the
@@ -94,6 +96,31 @@ available memory.}
 regression forests (TRUE) to generate prediction intervals.
 Default is \code{quant} = TRUE.}
 
+\item{nodesize}{Minimum size of terminal nodes. Setting this number larger
+causes smaller trees to be grown (and thus take less time). See
+\code{\link[randomForest]{randomForest}} for more details. Default
+is \code{nodesize} = NULL and will be calculated
+as \code{length(y_data)/1000}.}
+
+\item{maxnodes}{Maximum number of terminal nodes trees in the forest can have.
+If not given, trees are grown to the maximum possible (subject to
+limits by nodesize). If set larger than maximum possible, a warning is
+issued. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{maxnodes} = NULL.}
+
+\item{ntree}{Number of variables randomly sampled as candidates at each split.
+See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$ntree}}
+
+\item{mtry}{Number of trees to grow. This should not be set to too small a
+number, to ensure that every input row gets predicted at least a few
+times. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$mtry}}
+
+\item{set_seed}{Integer, set the seed. Default is \code{set_seed} = 2010}
+
 \item{proximity}{Logical vector indicating whether proximity measures among
 the rows should be computed. Default is \code{proximity} = TRUE.
 See \code{\link[randomForest]{randomForest}} for more details.}
@@ -126,6 +153,11 @@ Default is \code{fset_cutoff} = 20.}
 covariates will be corrected if the extent does not match mastergrid.
 Default is \code{fix_cov} = FALSE.}
 
+\item{const}{Character vector containing the name of the file from which the
+mask will be used to constraine population layer. The mask file should
+have value \code{0} as a mask. If it does not contain an absolute path,
+the file name is relative to the current working directory.}
+
 \item{check_result}{Logical vector indicating whether the results will be
 compared with input data. Default is \code{check_result} = TRUE.}
 
@@ -154,14 +186,15 @@ summary values for each census unit are then used to train a
 to predict log population density. Random Forest models are an
 ensemble, nonparametric modeling approach that grows a "forest" of
 individual classification or regression trees and improves upon
-bagging by using the best of a random selection of predictors at
+bagging by using the best f a random selection of predictors at
 each node in each tree. The Random Forest is used to produced grid,
 i.e. pixel, level population density estimates that are used as
 unit-relative weights to dasymetrically redistribute the census
 based areal population counts. This function also allows for
-modelling based upon a \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation}
-of other previously run models as well as the creation of models
-based upon \href{Assessing the spatial sensitivity of a random forest model: Application in gridded population modeling}{multiple countries at once}.
+modelling based upon a
+\href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation}
+of other previously run models as well as the creation of models based
+upon \href{https://doi.org/10.1016/j.compenvurbsys.2019.01.006}{multiple countries at once}.
 This function assumes that all data is unprojected and is in the
 WGS84 coordinate system.
 }
@@ -199,22 +232,23 @@ plot(res$popfit)
 }
 }
 \references{
-Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015.
-Disaggregating Census Data for Population Mapping Using Random
-Forests with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
+\itemize{
+\item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015.
+Disaggregating Census Data for Population Mapping Using Random Forests
+with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042
 \url{https://doi.org/10.1371/journal.pone.0107042}
-L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32.
+\item L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32.
 \url{https://doi.org/10.1023/A:1010933404324}
-Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., &
-A. J. Tatem. 2015. Exploring Nationally and Regionally Defined Models
-for Large Area Population Mapping. International Journal of Digital
-Earth, 12(8): 989-1006.
-\url{https://doi.org/10.1080/17538947.2014.965761}
-Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J.,
-Sorichetta, A., & A. J. Tatem. 2019. Assessing the Spatial Sensitivity
-of a Random Forest Model: Application in Gridded Population Modeling.
-Computers, Environment and Urban Systems, 75: 132-145.
+\item Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., & A. J. Tatem.
+2015. Exploring Nationally and Regionally Defined Models for Large Area
+Population Mapping. International Journal of Digital Earth, 12(8):
+989-1006. \url{https://doi.org/10.1080/17538947.2014.965761}
+\item Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J., Sorichetta, A.,
+& A. J. Tatem. 2019. Assessing the Spatial Sensitivity of a Random
+Forest Model: Application in Gridded Population Modeling. Computers,
+Environment and Urban Systems, 75: 132-145.
 \url{https://doi.org/10.1016/j.compenvurbsys.2019.01.006}
+}
 }
 \author{
 Maksym Bondarenko \href{mailto:mb4@soton.ac.uk}{mb4@soton.ac.uk},
