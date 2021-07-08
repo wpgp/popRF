@@ -26,8 +26,7 @@ get_popfit <- function(x_data,
                        proximity=TRUE, 
                        verbose=FALSE, 
                        log=FALSE) {
-  
-  set.seed(2002)
+ 
   
   start_time <- Sys.time()
 
