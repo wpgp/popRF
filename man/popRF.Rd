@@ -6,10 +6,10 @@
 with Remotely-Sensed and Ancillary Data.}
 \usage{
 popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-minblocks=NULL, quant=FALSE, nodesize=NULL, maxnodes=NULL, ntree=NULL, 
+quant=FALSE, nodesize=NULL , maxnodes=NULL, ntree=NULL, 
 mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
-log=FALSE)
+log=FALSE, ...)
 }
 \arguments{
 \item{pop}{Character vector containing the name of the file from which the
@@ -85,12 +85,6 @@ writing output files. Default is the temp directory.}
 cores to use in parallel when executing the function. If set to 0
 \code{(max_number_of_cores - 1)}  will be used based on as many
 processors as the hardware and RAM allow. Default is \code{cores} = 0.}
-
-\item{minblocks}{Integer vector containing an integer. Indicates the minimum
-number of blocks to break the processing extent into for parallel
-processing. If \code{minblocks} is NULL then \code{minblocks}
-for cluster prediction parallelisation will be calculated based on
-available memory.}
 
 \item{quant}{Logical vector indicating whether to produce the quantile
 regression forests (TRUE) to generate prediction intervals.
@@ -168,6 +162,8 @@ helpful for model debugging. Default is \code{verbose} = TRUE.}
 \item{log}{Logical vector indicating whether to print intermediate
 output from the function to the log.txt file.
 Default is \code{log} = FALSE.}
+
+\item{...}{Arguments to be passed to methods}
 }
 \value{
 Raster* object of gridded population.

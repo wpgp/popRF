@@ -10,7 +10,7 @@
 #' @param y RasterLayer object with codes representing zones
 #' @param fun The function to be applied. Either as character: 'mean', 'min', 'max' and 'sum'
 #' @param cores Integer. Number of cores for parallel calculation
-#' @param minblk Integer. Minimum number of blocks
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param na.rm using na.rm = TRUE for missing data
 #' @param silent If FALSE then the progress will be shown
 #' @rdname calculate_zs_parallel
@@ -22,14 +22,14 @@
 #' @importFrom foreach '%dopar%' foreach
 #' @examples
 #' \dontrun{
-#' calculate_zs_parallel( x=rasterObj1, y=rasterObj2, cores=2, minblk=4  )
+#' calculate_zs_parallel( x=rasterObj1, y=rasterObj2, cores=2)
 #' }
 #' @noRd 
 calculate_zs_parallel <- function(x, 
                                   y, 
                                   fun='mean', 
                                   cores=NULL, 
-                                  minblk=NULL, 
+                                  blocks=NULL, 
                                   na.rm=TRUE, 
                                   silent=TRUE) {
  
@@ -53,17 +53,23 @@ calculate_zs_parallel <- function(x,
     stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
   }
   
-  if (is.null(minblk)) {
-    minblk <- get_blocks_need(x,cores,n=1)
-  }
+  if (is.null(blocks)) {
+    
+    blocks <- get_blocks_size(x, 
+                              cores,
+                              nl=2,
+                              nt=1,
+                              verbose = T) 
+    
+    cores <- ifelse(blocks$n < cores, blocks$n, cores)  
+  }  
   
   compareRaster(c(x, y))
   stopifnot(hasValues(x))
   stopifnot(hasValues(y))
   
   layernames <- names(x)
-  
-  blocks <- blockSize(x,minblocks=minblk)
+
   
   tStart <- Sys.time()
   

@@ -17,9 +17,7 @@
 #'        used based on as many processors as the hardware and RAM allow. 
 #' @param rfg.countries.tag character of tag
 #' @param quant logical. If FALSE then quant will not be calculated
-#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
-#'        for cluster prediction parallesation will be calculated based on 
-#'        available memory.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -38,7 +36,7 @@ apply_constrained <- function(pop,
                               cores=NULL,
                               rfg.countries.tag, 
                               quant = TRUE, 
-                              minblocks=NULL,
+                              blocks=NULL,
                               verbose=TRUE, 
                               log=FALSE) {
   
@@ -89,12 +87,16 @@ apply_constrained <- function(pop,
     mask_ppd_stack <- raster::stack(raster(const), 
                                     raster(rfg.predict.density.rf.pred))
 
-    if (is.null(minblocks)) {
-      if (quant) nmb=60 else nmb=30
-      minblocks <- get_blocks_need(mask_ppd_stack, cores=cores, n=nmb)
+    if (is.null(blocks)) {
+      
+      blocks <- get_blocks_size(mask_ppd_stack, 
+                                cores,
+                                nl=2,
+                                nt=1,
+                                verbose = verbose)        
+
     }
 
-    blocks <- blockSize(mask_ppd_stack, minblocks=minblocks)
     npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
 
     log_info("MSG", paste0("Constraining prediction layer"), verbose=verbose, log=log)
@@ -106,7 +108,7 @@ apply_constrained <- function(pop,
                                 datatype="FLT4S",
                                 overwrite = TRUE,
                                 cores = npoc_blocks,
-                                minblk = minblocks,
+                                blocks = blocks,
                                 cblk = 2,
                                 silent = ifelse(verbose, FALSE, TRUE))
 
@@ -114,14 +116,7 @@ apply_constrained <- function(pop,
     mastergrid_stack <- raster::stack(raster(const), 
                                       raster(mastergrid_filename))
     
-    if (is.null(minblocks)) {
-      if (quant) nmb=60 else nmb=30
-      minblocks <- get_blocks_need(mastergrid_stack, cores=cores, n=nmb)
-    }
-    blocks <- blockSize(mastergrid_stack, minblocks=minblocks)
-    npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)    
-    
-    
+
     log_info("MSG", paste0("constraining mastegrid"), verbose=verbose, log=log)
     
     mastergrid_mask <- masking_out(mastergrid_stack,
@@ -131,7 +126,7 @@ apply_constrained <- function(pop,
                                    datatype="FLT4S",
                                    overwrite = TRUE,
                                    cores = npoc_blocks,
-                                   minblk = minblocks,
+                                   blocks = blocks,
                                    cblk = 2,
                                    silent = ifelse(verbose, FALSE, TRUE))
     
@@ -174,9 +169,9 @@ apply_constrained <- function(pop,
   apply_pop_density_constrained(pop, 
                                 mastergrid.const, 
                                 output_dir, 
-                                cores=cores, 
+                                cores=npoc_blocks, 
                                 rfg.countries.tag, 
-                                minblocks=minblocks, 
+                                blocks=blocks, 
                                 verbose=verbose, 
                                 log=log)
   

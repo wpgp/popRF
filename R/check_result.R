@@ -6,7 +6,7 @@
 #' @param rfg.output.path.countries output dir
 #' @param nrpoc number of processors
 #' @param rfg.countries.tag tag of the project
-#' @param minblocks minblocks.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose If FALSE then the progress will be shown
 #' @param log If FALSE then the progress will be shown
 #' @rdname check_result
@@ -17,7 +17,7 @@ check_result <- function(input_poptables,
                          rfg.output.path.countries, 
                          nrpoc, 
                          rfg.countries.tag, 
-                         minblocks=NULL, 
+                         blocks=NULL, 
                          verbose=TRUE, 
                          log=FALSE) {
   
@@ -46,14 +46,22 @@ check_result <- function(input_poptables,
     
   }else{
     
-    minblks <- get_blocks_need(dataset_raster, nrpoc, n=2)
-    npoc_blocks <- ifelse(minblks < nrpoc, minblks, nrpoc)
+    if (is.null(blocks)) {
+      
+      blocks <- get_blocks_size(dataset_raster, 
+                                nrpoc,
+                                nl=2,
+                                nt=1,
+                                verbose = ifelse(silent, FALSE, TRUE))      
+    } 
+    
+    npoc_blocks <- ifelse(blocks$n < nrpoc, blocks$n, nrpoc)  
     
     output_stats <- calculate_zs_parallel(dataset_raster, 
                                           zonal_raster, 
                                           fun="sum", 
                                           cores=nrpoc, 
-                                          minblk=minblks, 
+                                          blocks=blocks, 
                                           silent=silent)
   }
   
@@ -84,8 +92,6 @@ check_result <- function(input_poptables,
 
 
 
-
-
 #' check_result_constrained comper input with output
 #' 
 #' @param input_poptables Input list of pop tables
@@ -93,7 +99,7 @@ check_result <- function(input_poptables,
 #' @param rfg.output.path.countries output dir
 #' @param nrpoc number of processors
 #' @param rfg.countries.tag tag of the project
-#' @param minblocks minblocks.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose If FALSE then the progress will be shown
 #' @param log If FALSE then the progress will be shown
 #' @rdname check_result_constrained
@@ -104,7 +110,7 @@ check_result_constrained <- function(input_poptables,
                                      rfg.output.path.countries, 
                                      nrpoc, 
                                      rfg.countries.tag, 
-                                     minblocks=NULL, 
+                                     blocks=NULL, 
                                      verbose=TRUE, 
                                      log=FALSE) {
   
@@ -143,14 +149,22 @@ check_result_constrained <- function(input_poptables,
     
   }else{
     
-    minblks <- get_blocks_need(dataset_raster, nrpoc, n=2)
-    npoc_blocks <- ifelse(minblks < nrpoc, minblks, nrpoc)
+    if (is.null(blocks)) {
+      
+      blocks <- get_blocks_size(dataset_raster, 
+                                nrpoc,
+                                nl=2,
+                                nt=1,
+                                verbose = ifelse(silent, FALSE, TRUE))      
+    } 
+    
+    npoc_blocks <- ifelse(blocks$n < nrpoc, blocks$n, nrpoc)  
     
     output_stats <- calculate_zs_parallel(dataset_raster, 
                                           zonal_raster, 
                                           fun="sum", 
                                           cores=nrpoc, 
-                                          minblk=minblks, 
+                                          blocks=blocks, 
                                           silent=silent)
   }
   

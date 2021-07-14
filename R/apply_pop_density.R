@@ -16,9 +16,7 @@
 #'        used based on as many processors as the hardware and RAM allow. 
 #' @param rfg.countries.tag character of tag
 #' @param quant logical. If FALSE then quant will not be calculated
-#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
-#'        for cluster prediction parallesation will be calculated based on 
-#'        available memory.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -36,7 +34,7 @@ apply_pop_density <- function(pop,
                               cores=NULL,
                               rfg.countries.tag, 
                               quant = TRUE, 
-                              minblocks=NULL,
+                              blocks=NULL,
                               verbose=TRUE, 
                               log=FALSE) {
 
@@ -111,21 +109,18 @@ apply_pop_density <- function(pop,
                                                      NAflag=-99999)
     
     rm(out.zonal.stats.rf.pred.sum.raster)
-    
-    
-    
+
   }else{
     
     
     colnames(df) <- c("ADMINID", "ADMINPOP")
-    minblks <- get_blocks_need(zonal_raster, cores, n=2)
-    
+
     log_info("MSG", paste0("Rasterizing input population data."), verbose=verbose, log=log)
     
     rst.pop.census <- rasterize_parallel(zonal_raster, 
                                          df, 
                                          cores=cores, 
-                                         minblk=minblks, 
+                                         blocks=blocks, 
                                          NAflag=NULL, 
                                          datatype=NULL, 
                                          filename=rfg.rst.pop.census.tif, 
@@ -140,7 +135,7 @@ apply_pop_density <- function(pop,
                                                          zonal_raster, 
                                                          fun="sum", 
                                                          cores=cores,  
-                                                         minblk=minblks,
+                                                         blocks=blocks,
                                                          silent=silent)
     
     
@@ -157,7 +152,7 @@ apply_pop_density <- function(pop,
     rst.zonal.stats.rf.pred <- rasterize_parallel(zonal_raster, 
                                                   out.zonal.stats.rf.pred.sum, 
                                                   cores=cores, 
-                                                  minblk=minblks, 
+                                                  blocks=blocks, 
                                                   NAflag=NULL, 
                                                   datatype=NULL, 
                                                   filename=rfg.rst.zonal.stats.rf.pred.tif, 
@@ -206,9 +201,7 @@ apply_pop_density <- function(pop,
 #'        which defaults to 4. If set to 0 or NULL max number of cores will be 
 #'        used based on as many processors as the hardware and RAM allow. 
 #' @param rfg.countries.tag character of tag
-#' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
-#'        for cluster prediction parallesation will be calculated based on 
-#'        available memory.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -225,7 +218,7 @@ apply_pop_density_constrained <- function(pop,
                                           output_dir, 
                                           cores=NULL, 
                                           rfg.countries.tag,
-                                          minblocks=NULL, 
+                                          blocks=NULL, 
                                           verbose=TRUE, 
                                           log=FALSE) {
   
@@ -307,14 +300,13 @@ apply_pop_density_constrained <- function(pop,
     
     
     colnames(df) <- c("ADMINID", "ADMINPOP")
-    minblks <- get_blocks_need(zonal_raster, cores, n=2)
-    
+
     log_info("MSG", paste0("Rasterizing input population data using constarined mastegrid"), verbose=verbose, log=log)
     
     rst.pop.census <- rasterize_parallel(zonal_raster, 
                                          df, 
                                          cores=cores, 
-                                         minblk=minblks, 
+                                         blocks=blocks, 
                                          NAflag=NULL, 
                                          datatype=NULL, 
                                          filename=rfg.rst.pop.census.tif, 
@@ -329,7 +321,7 @@ apply_pop_density_constrained <- function(pop,
                                                          zonal_raster, 
                                                          fun="sum", 
                                                          cores=cores,  
-                                                         minblk=minblks,
+                                                         blocks=blocks,
                                                          silent=silent)
     
     
@@ -346,7 +338,7 @@ apply_pop_density_constrained <- function(pop,
     rst.zonal.stats.rf.pred <- rasterize_parallel(zonal_raster, 
                                                   out.zonal.stats.rf.pred.sum, 
                                                   cores=cores, 
-                                                  minblk=minblks, 
+                                                  blocks=blocks, 
                                                   NAflag=NULL, 
                                                   datatype=NULL, 
                                                   filename=rfg.rst.zonal.stats.rf.pred.tif, 

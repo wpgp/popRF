@@ -88,13 +88,20 @@ calculate_zonal_stats_covariates <- function(x,
         if (!is.null(cores)){
           
           ##  Determine the minimum number of blocks needed for processing:
-          minblks <- get_blocks_need(dataset_raster,cores, n=2)
+          blocks <- get_blocks_size(dataset_raster, 
+                                    cores,
+                                    nl=2,
+                                    nt=1,
+                                    verbose = verbose)      
+          
+          npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+          
           ##  Calculate the stats in parallel:
           output_stats <- calculate_zs_parallel(dataset_raster, 
                                                 zonal_raster, 
                                                 fun=dataset_summary, 
-                                                cores=cores, 
-                                                minblk=minblks)  
+                                                cores=npoc_blocks, 
+                                                blocks=blocks)  
         }else{
           
           output_stats <- zonal(dataset_raster, zonal_raster, fun=dataset_summary)

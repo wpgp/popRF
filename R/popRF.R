@@ -34,10 +34,10 @@
 #'  
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-#' minblocks=NULL, quant=FALSE, nodesize=NULL, maxnodes=NULL, ntree=NULL, 
+#' quant=FALSE, nodesize=NULL , maxnodes=NULL, ntree=NULL, 
 #' mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 #' fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
-#' log=FALSE)
+#' log=FALSE, ...)
 #' 
 #' @param pop Character vector containing the name of the file from which the 
 #'        unique area ID and corresponding population values are to be read 
@@ -106,11 +106,6 @@
 #'        cores to use in parallel when executing the function. If set to 0 
 #'        \code{(max_number_of_cores - 1)}  will be used based on as many
 #'        processors as the hardware and RAM allow. Default is \code{cores} = 0.
-#' @param minblocks Integer vector containing an integer. Indicates the minimum 
-#'        number of blocks to break the processing extent into for parallel 
-#'        processing. If \code{minblocks} is NULL then \code{minblocks} 
-#'        for cluster prediction parallelisation will be calculated based on 
-#'        available memory.
 #' @param quant Logical vector indicating whether to produce the quantile 
 #'        regression forests (TRUE) to generate prediction intervals.
 #'        Default is \code{quant} = TRUE.
@@ -173,6 +168,7 @@
 #' @param log Logical vector indicating whether to print intermediate 
 #'        output from the function to the log.txt file. 
 #'        Default is \code{log} = FALSE.
+#' @param ... 	Arguments to be passed to methods
 #' @references      
 #' \itemize{
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
@@ -192,6 +188,7 @@
 #'       <https://doi.org/10.1016/j.compenvurbsys.2019.01.006>
 #' }        
 #' @importFrom randomForest varImpPlot
+#' @importFrom raster nlayers
 #' @rdname popRF
 #' @return Raster* object of gridded population.
 #' @export
@@ -234,7 +231,6 @@ popRF <- function(pop,
                   px_area,
                   output_dir=tempdir(), 
                   cores = 0, 
-                  minblocks=NULL, 
                   quant = FALSE,
                   nodesize=NULL, 
                   maxnodes=NULL,
@@ -249,7 +245,7 @@ popRF <- function(pop,
                   const=NULL,
                   check_result=TRUE,
                   verbose = TRUE, 
-                  log = FALSE){
+                  log = FALSE, ...){
   
   timeStart <- Sys.time()
 
@@ -258,7 +254,7 @@ popRF <- function(pop,
                                       watermask,
                                       px_area,
                                       pop,
-                                      output_dir, cores, minblocks)
+                                      output_dir, cores)
   
   
   options("pj.output.dir"=output_dir)
@@ -481,7 +477,8 @@ popRF <- function(pop,
         
         ## tryCatch Tuning
         tryCatch(                      
-          {                     
+          {   
+            set.seed(set_seed)
             init_popfit <- popfit_init_tuning(x_data, y_data, proximity, verbose, log)
             ##	Save off our init_popfit object for this set of data:
             save(init_popfit, file=rfg.init.popfit.RData)
@@ -505,7 +502,13 @@ popRF <- function(pop,
         ## end tryCatch Tuning
       }
       
-      popfit <- get_popfit(x_data, y_data, init_popfit, proximity, verbose, log)
+      popfit <- get_popfit(x_data, 
+                           y_data, 
+                           init_popfit, 
+                           proximity, 
+                           set_seed, 
+                           verbose, 
+                           log)
       
     }else{
       
@@ -826,11 +829,12 @@ popRF <- function(pop,
       #
       #
       
-      if (is.null(minblocks)) {
-        if (quant) nmb=60 else nmb=30
-        minblocks <- get_blocks_need(covariate_stack_tmp, cores=cores, n=nmb)
-      }
-      blocks <- blockSize(covariate_stack_tmp, minblocks=minblocks)
+      blocks <- get_blocks_size(covariate_stack_tmp, 
+                                cores,
+                                nl=nlayers(covariate_stack_tmp),
+                                nt=popfit_final$ntree,
+                                verbose = verbose, ...)      
+      
       npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
       
       rm(covariate_stack_tmp)
@@ -850,7 +854,7 @@ popRF <- function(pop,
                                                   npoc_blocks, 
                                                   rfg.countries.tag, 
                                                   quant = quant, 
-                                                  minblocks=minblocks,
+                                                  blocks=blocks,
                                                   verbose=verbose, 
                                                   log=log)
       
@@ -878,13 +882,23 @@ popRF <- function(pop,
            verbose=verbose, 
            log=log)
   
+  
+  blocks <- get_blocks_size(pop, 
+                            cores,
+                            nl=4,
+                            nt=1,
+                            verbose = verbose, ...)      
+  
+  npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores) 
+  
+  
   p_raster <- apply_pop_density(pop, 
                                 censusmaskPathFileName, 
                                 rfg.output.path.countries, 
-                                cores=cores, 
+                                cores=npoc_blocks, 
                                 rfg.countries.tag, 
                                 quant = quant, 
-                                minblocks=minblocks, 
+                                blocks=blocks, 
                                 verbose=verbose, 
                                 log=log)
   
@@ -895,19 +909,19 @@ popRF <- function(pop,
                                         mastergrid_filename=censusmaskPathFileName,
                                         const=const,
                                         output_dir=rfg.output.path.countries, 
-                                        cores=cores, 
+                                        cores=npoc_blocks, 
                                         rfg.countries.tag=rfg.countries.tag, 
                                         quant = quant, 
-                                        minblocks=minblocks, 
+                                        blocks=blocks, 
                                         verbose=verbose, 
                                         log=log)
     
     c_result_const <- check_result_constrained(pop, 
                                                censusmaskPathFileName, 
                                                rfg.output.path.countries, 
-                                               cores, 
+                                               npoc_blocks, 
                                                rfg.countries.tag,  
-                                               minblocks=minblocks, 
+                                               blocks=blocks, 
                                                verbose=verbose, 
                                                log=log)
     
@@ -921,9 +935,9 @@ popRF <- function(pop,
     c_result <- check_result(pop, 
                              censusmaskPathFileName, 
                              rfg.output.path.countries, 
-                             cores, 
+                             npoc_blocks, 
                              rfg.countries.tag,  
-                             minblocks=minblocks, 
+                             blocks=blocks, 
                              verbose=verbose, 
                              log=log)
     

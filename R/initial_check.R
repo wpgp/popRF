@@ -60,19 +60,19 @@ initial_check <- function(cov,
 
   
   
-  if ( !is(minblocks,  "numeric") & !is.null(minblocks)){
-    
-    msg <- paste0("Error :: minblocks ", minblocks , " should be integer or NULL value")
-    return(msg)
-    
-  } 
-  
-  if ( is(minblocks,  "numeric")){
-    if ( minblocks < 1 ){
-      msg <- paste0("Error :: minblocks " , minblocks , " should be integer equal 1 or 2.. value")
-      return(msg)
-    }
-  } 
+  # if ( !is(minblocks,  "numeric") & !is.null(minblocks)){
+  #   
+  #   msg <- paste0("Error :: minblocks ", minblocks , " should be integer or NULL value")
+  #   return(msg)
+  #   
+  # } 
+  # 
+  # if ( is(minblocks,  "numeric")){
+  #   if ( minblocks < 1 ){
+  #     msg <- paste0("Error :: minblocks " , minblocks , " should be integer equal 1 or 2.. value")
+  #     return(msg)
+  #   }
+  # } 
   
   
   if (is.null(output_dir) | !dir.exists(output_dir)) {
