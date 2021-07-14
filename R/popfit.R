@@ -29,7 +29,7 @@ get_popfit <- function(x_data,
  
   
   start_time <- Sys.time()
-  set.seed(set_seed)
+  # set.seed(set_seed)
   ##	Now we will optimize the model by iteratively removing any 
   ##		covariates with negative increases in node purity:
   
