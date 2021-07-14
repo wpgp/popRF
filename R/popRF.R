@@ -482,6 +482,7 @@ popRF <- function(pop,
         ## tryCatch Tuning
         tryCatch(                      
           {                     
+            set.seed(set_seed)
             init_popfit <- popfit_init_tuning(x_data, y_data, proximity, verbose, log)
             ##	Save off our init_popfit object for this set of data:
             save(init_popfit, file=rfg.init.popfit.RData)
@@ -504,7 +505,7 @@ popRF <- function(pop,
         )
         ## end tryCatch Tuning
       }
-      
+      set.seed(set_seed)
       popfit <- get_popfit(x_data, y_data, init_popfit, proximity, verbose, log)
       
     }else{
@@ -514,7 +515,7 @@ popRF <- function(pop,
                                                proximity = proximity, 
                                                verbose = verbose, 
                                                log = log)
-      
+      set.seed(set_seed)
       popfit = randomForest(x=x_data, 
                             y=y_data, 
                             mtry=popfit_final_old$mtry, 
@@ -570,7 +571,7 @@ popRF <- function(pop,
     #                                  verbose=verbose, 
     #                                  log=log)
     
-    
+    set.seed(set_seed)
     popfit_final <- get_popfit_final(x_data=x_data, 
                                      y_data=y_data,
                                      nodesize=nodesize, 
@@ -583,7 +584,7 @@ popRF <- function(pop,
                                      proximity=proximity, 
                                      verbose=verbose, 
                                      log=log)
-    
+    set.seed(set_seed)
     popfit_quant <- get_popfit_quant(x_data=x_data, 
                                      y_data=y_data,
                                      nodesize=nodesize, 
@@ -647,7 +648,7 @@ popRF <- function(pop,
       #                                  proximity=proximity, 
       #                                  verbose=verbose, 
       #                                  log=log)
-      
+      set.seed(set_seed)
       popfit_final <- get_popfit_final(x_data=x_data, 
                                        y_data=y_data,
                                        nodesize=nodesize, 
@@ -660,7 +661,7 @@ popRF <- function(pop,
                                        proximity=proximity, 
                                        verbose=verbose, 
                                        log=log)
-      
+      set.seed(set_seed)
       popfit_quant <- get_popfit_quant(x_data=x_data, 
                                        y_data=y_data,
                                        nodesize=nodesize, 
