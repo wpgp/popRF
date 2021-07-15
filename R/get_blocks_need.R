@@ -43,6 +43,8 @@ canRunInMemory <- function(cores, nc, nl=4, nt=1, rs, verbose=T) {
     
     if (verbose) {
       
+      log <- TRUE
+      
       mb <- 1048576
       
       log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
