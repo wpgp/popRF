@@ -177,7 +177,7 @@ rasterize_parallel <- function(x,
   
   if (!is.data.frame(df)) stop(paste0("df should be a data.frame"))
   if (!is(NAflag, "numeric")) stop(paste0("NAflag should be  numeric"))
-  if (!is(cores,  "integer")) stop(paste0("cores should be integer value"))
+  #if (!is(cores,  "integer")) stop(paste0("cores should be integer value"))
   if (!is(overwrite, "logical")) stop(paste0("overwrite should be  logical (e.g., TRUE, FALSE)"))
   if (!is(silent, "logical")) stop(paste0("silent should be logical (e.g., TRUE, FALSE)"))
   
