@@ -168,7 +168,7 @@
 #' @param log Logical vector indicating whether to print intermediate 
 #'        output from the function to the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @param ... 	Arguments to be passed to methods
+#' @param ... 	Arguments to be passed to methods.
 #' @references      
 #' \itemize{
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
@@ -883,9 +883,9 @@ popRF <- function(pop,
            log=log)
   
   
-  blocks <- get_blocks_size(pop, 
+  blocks <- get_blocks_size(census_mask, 
                             cores,
-                            nl=4,
+                            nl=2,
                             nt=1,
                             verbose = verbose, ...)      
   
