@@ -139,6 +139,7 @@ get_blocks_size <- function(x,
   }
   
   if (verbose){
+    log <- TRUE
     log_info("MSG", paste0("Total number of blocks: ", blocks$n), verbose=verbose, log=log)
     log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
   }
