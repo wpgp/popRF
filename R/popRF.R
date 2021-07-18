@@ -34,8 +34,8 @@
 #'  
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-#' quant=FALSE, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
-#' fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
+#' quant=FALSE, set_seed=2010, fset=NULL, fset_incl=FALSE, 
+#' fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, 
 #' log=FALSE, ...)
 #' 
 #' @param pop Character vector containing the name of the file from which the 
@@ -108,9 +108,6 @@
 #' @param quant Logical vector indicating whether to produce the quantile 
 #'        regression forests (TRUE) to generate prediction intervals.
 #'        Default is \code{quant} = TRUE.
-#' @param proximity Logical vector indicating whether proximity measures among 
-#'        the rows should be computed. Default is \code{proximity} = TRUE. 
-#'        See \code{\link[randomForest]{randomForest}} for more details.
 #' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param fset Named list containing character vector elements that give the 
 #'        path to the directory(ies) containing the random forest model objects 
@@ -136,10 +133,6 @@
 #' @param fix_cov Logical vector indicating whether the raster extent of the 
 #'        covariates will be corrected if the extent does not match mastergrid. 
 #'        Default is \code{fix_cov} = FALSE.
-#' @param const Character vector containing the name of the file from which the 
-#'        mask will be used to constraine population layer. The mask file should
-#'         have value \code{0} as a mask. If it does not contain an absolute path, 
-#'        the file name is relative to the current working directory.
 #' @param check_result Logical vector indicating whether the results will be 
 #'        compared with input data. Default is \code{check_result} = TRUE.
 #' @param verbose Logical vector indicating whether to print 
@@ -161,20 +154,27 @@
 #'        \code{\link[randomForest]{randomForest}} for more details. Default 
 #'        is \code{nodesize} = NULL and will be calculated 
 #'        as \code{length(y_data)/1000}.\cr
-#'        \code{maxnodes} Maximum number of terminal nodes trees in the forest can have. 
+#'        \code{maxnodes}: Maximum number of terminal nodes trees in the forest can have. 
 #'        If not given, trees are grown to the maximum possible (subject to 
 #'        limits by nodesize). If set larger than maximum possible, a warning is 
 #'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
 #'        Default is \code{maxnodes} = NULL.\cr 
-#'        \code{ntree} Number of variables randomly sampled as candidates at each split. 
+#'        \code{ntree}: Number of variables randomly sampled as candidates at each split. 
 #'        See \code{\link[randomForest]{randomForest}} for more details. 
 #'        Default is \code{ntree} = NULL and \code{ntree} will be used 
 #'        \code{popfit$ntree}\cr
-#'        \code{mtry} Number of trees to grow. This should not be set to too small a 
+#'        \code{mtry}: Number of trees to grow. This should not be set to too small a 
 #'        number, to ensure that every input row gets predicted at least a few 
 #'        times. See \code{\link[randomForest]{randomForest}} for more details. 
 #'        Default is \code{ntree} = NULL and \code{ntree} will be used 
-#'        \code{popfit$mtry}.
+#'        \code{popfit$mtry}.\cr
+#'        \code{proximity}: Logical vector indicating whether proximity measures among 
+#'        the rows should be computed. Default is \code{proximity} = TRUE. 
+#'        See \code{\link[randomForest]{randomForest}} for more details.\cr
+#'        \code{const}: Character vector containing the name of the file from which the 
+#'        mask will be used to constraine population layer. The mask file should
+#'         have value \code{0} as a mask. If it does not contain an absolute path, 
+#'        the file name is relative to the current working directory.
 #' @references      
 #' \itemize{
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
@@ -239,12 +239,10 @@ popRF <- function(pop,
                   cores = 0, 
                   quant = FALSE,
                   set_seed=2010,
-                  proximity = TRUE,
                   fset = NULL,
                   fset_incl = FALSE,
                   fset_cutoff = 20,
                   fix_cov=FALSE,
-                  const=NULL,
                   check_result=TRUE,
                   verbose = TRUE, 
                   log = FALSE, ...){
@@ -486,6 +484,14 @@ popRF <- function(pop,
     mtry <- NULL
   }    
   
+  if ("proximity" %in% names(args)){
+    proximity <- args[["proximity"]]
+  }else{
+    proximity <- TRUE
+  }    
+
+  
+    
   
   #####
   ##  BEGIN:  FITTING RANDOM FOREST
@@ -962,6 +968,13 @@ popRF <- function(pop,
                                 verbose=verbose, 
                                 log=log)
   
+  
+  
+  if ("const" %in% names(args)){
+    const <- args[["const"]]
+  }else{
+    const <- NULL
+  }    
   
   if (!is.null(const)) {
     

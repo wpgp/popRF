@@ -6,8 +6,8 @@
 with Remotely-Sensed and Ancillary Data.}
 \usage{
 popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-quant=FALSE, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
-fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
+quant=FALSE, set_seed=2010, fset=NULL, fset_incl=FALSE, 
+fset_cutoff=20, fix_cov=FALSE, check_result=TRUE, verbose=TRUE, 
 log=FALSE, ...)
 }
 \arguments{
@@ -91,10 +91,6 @@ Default is \code{quant} = TRUE.}
 
 \item{set_seed}{Integer, set the seed. Default is \code{set_seed} = 2010}
 
-\item{proximity}{Logical vector indicating whether proximity measures among
-the rows should be computed. Default is \code{proximity} = TRUE.
-See \code{\link[randomForest]{randomForest}} for more details.}
-
 \item{fset}{Named list containing character vector elements that give the
 path to the directory(ies) containing the random forest model objects
 (.RData) with which we are using as a "fixed set" in this modeling,
@@ -123,11 +119,6 @@ Default is \code{fset_cutoff} = 20.}
 covariates will be corrected if the extent does not match mastergrid.
 Default is \code{fix_cov} = FALSE.}
 
-\item{const}{Character vector containing the name of the file from which the
-mask will be used to constraine population layer. The mask file should
-have value \code{0} as a mask. If it does not contain an absolute path,
-the file name is relative to the current working directory.}
-
 \item{check_result}{Logical vector indicating whether the results will be
 compared with input data. Default is \code{check_result} = TRUE.}
 
@@ -152,20 +143,27 @@ causes smaller trees to be grown (and thus take less time). See
 \code{\link[randomForest]{randomForest}} for more details. Default
 is \code{nodesize} = NULL and will be calculated
 as \code{length(y_data)/1000}.\cr
-\code{maxnodes} Maximum number of terminal nodes trees in the forest can have.
+\code{maxnodes}: Maximum number of terminal nodes trees in the forest can have.
 If not given, trees are grown to the maximum possible (subject to
 limits by nodesize). If set larger than maximum possible, a warning is
 issued. See \code{\link[randomForest]{randomForest}} for more details.
 Default is \code{maxnodes} = NULL.\cr
-\code{ntree} Number of variables randomly sampled as candidates at each split.
+\code{ntree}: Number of variables randomly sampled as candidates at each split.
 See \code{\link[randomForest]{randomForest}} for more details.
 Default is \code{ntree} = NULL and \code{ntree} will be used
 \code{popfit$ntree}\cr
-\code{mtry} Number of trees to grow. This should not be set to too small a
+\code{mtry}: Number of trees to grow. This should not be set to too small a
 number, to ensure that every input row gets predicted at least a few
 times. See \code{\link[randomForest]{randomForest}} for more details.
 Default is \code{ntree} = NULL and \code{ntree} will be used
-\code{popfit$mtry}.}
+\code{popfit$mtry}.\cr
+\code{proximity}: Logical vector indicating whether proximity measures among
+the rows should be computed. Default is \code{proximity} = TRUE.
+See \code{\link[randomForest]{randomForest}} for more details.\cr
+\code{const}: Character vector containing the name of the file from which the
+mask will be used to constraine population layer. The mask file should
+have value \code{0} as a mask. If it does not contain an absolute path,
+the file name is relative to the current working directory.}
 }
 \value{
 Raster* object of gridded population.
