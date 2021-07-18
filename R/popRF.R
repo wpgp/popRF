@@ -34,8 +34,7 @@
 #'  
 #' @usage
 #' popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-#' quant=FALSE, nodesize=NULL , maxnodes=NULL, ntree=NULL, 
-#' mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+#' quant=FALSE, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 #' fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
 #' log=FALSE, ...)
 #' 
@@ -112,25 +111,6 @@
 #' @param proximity Logical vector indicating whether proximity measures among 
 #'        the rows should be computed. Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.
-#' @param nodesize Minimum size of terminal nodes. Setting this number larger 
-#'        causes smaller trees to be grown (and thus take less time). See 
-#'        \code{\link[randomForest]{randomForest}} for more details. Default 
-#'        is \code{nodesize} = NULL and will be calculated 
-#'        as \code{length(y_data)/1000}.
-#' @param maxnodes Maximum number of terminal nodes trees in the forest can have. 
-#'        If not given, trees are grown to the maximum possible (subject to 
-#'        limits by nodesize). If set larger than maximum possible, a warning is 
-#'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
-#'        Default is \code{maxnodes} = NULL.
-#' @param ntree Number of variables randomly sampled as candidates at each split. 
-#'        See \code{\link[randomForest]{randomForest}} for more details. 
-#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
-#'        \code{popfit$ntree}
-#' @param mtry Number of trees to grow. This should not be set to too small a 
-#'        number, to ensure that every input row gets predicted at least a few 
-#'        times. See \code{\link[randomForest]{randomForest}} for more details. 
-#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
-#'        \code{popfit$mtry}
 #' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param fset Named list containing character vector elements that give the 
 #'        path to the directory(ies) containing the random forest model objects 
@@ -168,7 +148,33 @@
 #' @param log Logical vector indicating whether to print intermediate 
 #'        output from the function to the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @param ... 	Arguments to be passed to methods.
+#' @param ...	Additional arguments:\cr 
+#'        \code{binc}: Numeric. Increase number of blocks sugesting for 
+#'        processing raster file.\cr 
+#'        \code{boptimise}: Logical. Optimize total memory requires to 
+#'        processing raster file by reducing the memory need to 35%.\cr
+#'        \code{bsoft}: Numeric. If raster can be processed on less 
+#'        then \code{cores} it will be foresed to use less number 
+#'        of \code{cores}.\cr
+#'        \code{nodesize}: Minimum size of terminal nodes. Setting this number larger 
+#'        causes smaller trees to be grown (and thus take less time). See 
+#'        \code{\link[randomForest]{randomForest}} for more details. Default 
+#'        is \code{nodesize} = NULL and will be calculated 
+#'        as \code{length(y_data)/1000}.\cr
+#'        \code{maxnodes} Maximum number of terminal nodes trees in the forest can have. 
+#'        If not given, trees are grown to the maximum possible (subject to 
+#'        limits by nodesize). If set larger than maximum possible, a warning is 
+#'        issued. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{maxnodes} = NULL.\cr 
+#'        \code{ntree} Number of variables randomly sampled as candidates at each split. 
+#'        See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$ntree}\cr
+#'        \code{mtry} Number of trees to grow. This should not be set to too small a 
+#'        number, to ensure that every input row gets predicted at least a few 
+#'        times. See \code{\link[randomForest]{randomForest}} for more details. 
+#'        Default is \code{ntree} = NULL and \code{ntree} will be used 
+#'        \code{popfit$mtry}.
 #' @references      
 #' \itemize{
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
@@ -232,10 +238,6 @@ popRF <- function(pop,
                   output_dir=tempdir(), 
                   cores = 0, 
                   quant = FALSE,
-                  nodesize=NULL, 
-                  maxnodes=NULL,
-                  ntree=NULL,
-                  mtry=NULL,
                   set_seed=2010,
                   proximity = TRUE,
                   fset = NULL,
@@ -265,6 +267,7 @@ popRF <- function(pop,
     stop_quietly()
     
   }
+  
 
   log_info("MSG", paste(""), verbose=verbose, log=log)
   log_info("MSG", paste("Path for the location of the output is ", output_dir), 
@@ -338,6 +341,8 @@ popRF <- function(pop,
                                       paste0("popfit_quant_",rfg.countries.tag, ".Rdata"))  
   
   
+
+  
   ##  Pre allocate a list to hold all possible covariate names we will be dealing 
   ##  with:
   covariates <- list()
@@ -358,11 +363,20 @@ popRF <- function(pop,
   }    
   
   
+  
+  #get blokcs for parallel calculation of zonal stats
+  
+  blocks_zs <- get_blocks_size(raster(covariates[[1]]$mastergrid$dataset_path), 
+                               cores,
+                               verbose=verbose, ...)
+  
+  
   census_data <- calculate_zonal_stats_covariates(covariates, 
                                                   rfg.output.path.countries.cvr, 
                                                   pop, 
                                                   save_zst=TRUE, 
-                                                  cores=cores, 
+                                                  cores=cores,
+                                                  blocks = blocks_zs,
                                                   verbose=verbose, 
                                                   log=log)
   
@@ -444,6 +458,35 @@ popRF <- function(pop,
   
   
   
+  ### checking  arguments for RF
+  ###
+  args <- list(...);
+  
+  if ("nodesize" %in% names(args)){
+    nodesize <- args[["nodesize"]]
+  }else{
+    nodesize <- NULL
+  }
+  
+  if ("maxnodes" %in% names(args)){
+    maxnodes <- args[["maxnodes"]]
+  }else{
+    maxnodes <- NULL
+  }
+  
+  if ("ntree" %in% names(args)){
+    ntree <- args[["ntree"]]
+  }else{
+    ntree <- NULL
+  }  
+  
+  if ("mtry" %in% names(args)){
+    mtry <- args[["mtry"]]
+  }else{
+    mtry <- NULL
+  }    
+  
+  
   #####
   ##  BEGIN:  FITTING RANDOM FOREST
   #####
@@ -502,6 +545,7 @@ popRF <- function(pop,
         ## end tryCatch Tuning
       }
       
+      set.seed(set_seed)
       popfit <- get_popfit(x_data, 
                            y_data, 
                            init_popfit, 
@@ -518,6 +562,7 @@ popRF <- function(pop,
                                                verbose = verbose, 
                                                log = log)
       
+      set.seed(set_seed)
       popfit = randomForest(x=x_data, 
                             y=y_data, 
                             mtry=popfit_final_old$mtry, 
@@ -573,7 +618,7 @@ popRF <- function(pop,
     #                                  verbose=verbose, 
     #                                  log=log)
     
-    
+    set.seed(set_seed)
     popfit_final <- get_popfit_final(x_data=x_data, 
                                      y_data=y_data,
                                      nodesize=nodesize, 
@@ -587,6 +632,7 @@ popRF <- function(pop,
                                      verbose=verbose, 
                                      log=log)
     
+    set.seed(set_seed)
     popfit_quant <- get_popfit_quant(x_data=x_data, 
                                      y_data=y_data,
                                      nodesize=nodesize, 
@@ -829,13 +875,21 @@ popRF <- function(pop,
       #
       #
       
-      blocks <- get_blocks_size(covariate_stack_tmp, 
-                                cores,
-                                nl=nlayers(covariate_stack_tmp),
-                                nt=popfit_final$ntree,
-                                verbose = verbose, ...)      
+      # blocks <- get_blocks_size(covariate_stack_tmp, 
+      #                           cores,
+      #                           nl=nlayers(covariate_stack_tmp),
+      #                           nt=popfit_final$ntree,
+      #                           verbose = verbose, ...)
       
-      npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+      #get blokcs for parallel calculation of zonal stats
+      
+      blocks_prediction <- get_blocks_size(covariate_stack_tmp,
+                                           cores,
+                                           nt=popfit_final$ntree,
+                                           n=4,
+                                           verbose=verbose, ...)      
+      
+      npoc_blocks <- ifelse(blocks_prediction$n < cores, blocks_prediction$n, cores)
       
       rm(covariate_stack_tmp)
       rm(r)
@@ -854,7 +908,7 @@ popRF <- function(pop,
                                                   npoc_blocks, 
                                                   rfg.countries.tag, 
                                                   quant = quant, 
-                                                  blocks=blocks,
+                                                  blocks=blocks_prediction,
                                                   verbose=verbose, 
                                                   log=log)
       
@@ -883,11 +937,17 @@ popRF <- function(pop,
            log=log)
   
   
-  blocks <- get_blocks_size(census_mask, 
-                            cores,
-                            nl=2,
-                            nt=1,
-                            verbose = verbose, ...)      
+  # blocks <- get_blocks_size(census_mask, 
+  #                           cores,
+  #                           nl=2,
+  #                           nt=1,
+  #                           verbose = verbose, ...)   
+  
+  #get blokcs for parallel calculation of zonal stats
+  
+  blocks <- get_blocks_size(census_mask,
+                            cores, 
+                            verbose=verbose, ...) 
   
   npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores) 
   

@@ -208,8 +208,6 @@ rasterize_parallel <- function(x,
     
     blocks <- get_blocks_size(x, 
                               cores,
-                              nl=2,
-                              nt=1,
                               verbose = ifelse(silent, FALSE, TRUE))      
   }  
 

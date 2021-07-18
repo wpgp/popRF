@@ -6,8 +6,7 @@
 with Remotely-Sensed and Ancillary Data.}
 \usage{
 popRF(pop, cov, mastergrid, watermask, px_area, output_dir, cores=0, 
-quant=FALSE, nodesize=NULL , maxnodes=NULL, ntree=NULL, 
-mtry=NULL, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
+quant=FALSE, set_seed=2010, proximity=TRUE, fset=NULL, fset_incl=FALSE, 
 fset_cutoff=20, fix_cov=FALSE, const=NULL, check_result=TRUE, verbose=TRUE, 
 log=FALSE, ...)
 }
@@ -90,29 +89,6 @@ processors as the hardware and RAM allow. Default is \code{cores} = 0.}
 regression forests (TRUE) to generate prediction intervals.
 Default is \code{quant} = TRUE.}
 
-\item{nodesize}{Minimum size of terminal nodes. Setting this number larger
-causes smaller trees to be grown (and thus take less time). See
-\code{\link[randomForest]{randomForest}} for more details. Default
-is \code{nodesize} = NULL and will be calculated
-as \code{length(y_data)/1000}.}
-
-\item{maxnodes}{Maximum number of terminal nodes trees in the forest can have.
-If not given, trees are grown to the maximum possible (subject to
-limits by nodesize). If set larger than maximum possible, a warning is
-issued. See \code{\link[randomForest]{randomForest}} for more details.
-Default is \code{maxnodes} = NULL.}
-
-\item{ntree}{Number of variables randomly sampled as candidates at each split.
-See \code{\link[randomForest]{randomForest}} for more details.
-Default is \code{ntree} = NULL and \code{ntree} will be used
-\code{popfit$ntree}}
-
-\item{mtry}{Number of trees to grow. This should not be set to too small a
-number, to ensure that every input row gets predicted at least a few
-times. See \code{\link[randomForest]{randomForest}} for more details.
-Default is \code{ntree} = NULL and \code{ntree} will be used
-\code{popfit$mtry}}
-
 \item{set_seed}{Integer, set the seed. Default is \code{set_seed} = 2010}
 
 \item{proximity}{Logical vector indicating whether proximity measures among
@@ -163,7 +139,33 @@ helpful for model debugging. Default is \code{verbose} = TRUE.}
 output from the function to the log.txt file.
 Default is \code{log} = FALSE.}
 
-\item{...}{Arguments to be passed to methods}
+\item{...}{Additional arguments:\cr
+\code{binc}: Numeric. Increase number of blocks sugesting for
+processing raster file.\cr
+\code{boptimise}: Logical. Optimize total memory requires to
+processing raster file by reducing the memory need to 35\%.\cr
+\code{bsoft}: Numeric. If raster can be processed on less
+then \code{cores} it will be foresed to use less number
+of \code{cores}.\cr
+\code{nodesize}: Minimum size of terminal nodes. Setting this number larger
+causes smaller trees to be grown (and thus take less time). See
+\code{\link[randomForest]{randomForest}} for more details. Default
+is \code{nodesize} = NULL and will be calculated
+as \code{length(y_data)/1000}.\cr
+\code{maxnodes} Maximum number of terminal nodes trees in the forest can have.
+If not given, trees are grown to the maximum possible (subject to
+limits by nodesize). If set larger than maximum possible, a warning is
+issued. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{maxnodes} = NULL.\cr
+\code{ntree} Number of variables randomly sampled as candidates at each split.
+See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$ntree}\cr
+\code{mtry} Number of trees to grow. This should not be set to too small a
+number, to ensure that every input row gets predicted at least a few
+times. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$mtry}.}
 }
 \value{
 Raster* object of gridded population.

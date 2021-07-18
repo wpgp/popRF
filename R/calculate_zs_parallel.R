@@ -57,8 +57,6 @@ calculate_zs_parallel <- function(x,
     
     blocks <- get_blocks_size(x, 
                               cores,
-                              nl=2,
-                              nt=1,
                               verbose = T) 
     
     cores <- ifelse(blocks$n < cores, blocks$n, cores)  

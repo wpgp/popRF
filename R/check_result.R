@@ -50,8 +50,6 @@ check_result <- function(input_poptables,
       
       blocks <- get_blocks_size(dataset_raster, 
                                 nrpoc,
-                                nl=2,
-                                nt=1,
                                 verbose = ifelse(silent, FALSE, TRUE))      
     } 
     
@@ -153,8 +151,6 @@ check_result_constrained <- function(input_poptables,
       
       blocks <- get_blocks_size(dataset_raster, 
                                 nrpoc,
-                                nl=2,
-                                nt=1,
                                 verbose = ifelse(silent, FALSE, TRUE))      
     } 
     

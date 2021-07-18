@@ -91,8 +91,6 @@ apply_constrained <- function(pop,
       
       blocks <- get_blocks_size(mask_ppd_stack, 
                                 cores,
-                                nl=2,
-                                nt=1,
                                 verbose = verbose)        
 
     }

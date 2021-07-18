@@ -10,7 +10,7 @@ popRFdemo(project_dir,
           quant=TRUE, 
           ftp=TRUE, 
           verbose=TRUE, 
-          log=TRUE)
+          log=TRUE, ...)
 }
 \arguments{
 \item{project_dir}{Path to the folder to save the outputs.}
@@ -38,6 +38,34 @@ helpful for model debugging. Default is \code{verbose} = TRUE.}
 \item{log}{is logical. TRUE or FALSE: flag indicating whether to print intermediate
 output from the function on the log.txt file.
 Default is \code{log} = FALSE.}
+
+\item{...}{Additional arguments:\cr
+\code{binc}: Numeric. Increase number of blocks sugesting for
+processing raster file.\cr
+\code{boptimise}: Logical. Optimize total memory requires to
+processing raster file by reducing the memory need to 35\%.\cr
+\code{bsoft}: Numeric. If raster can be processed on less
+then \code{cores} it will be foresed to use less number
+of \code{cores}.\cr
+\code{nodesize}: Minimum size of terminal nodes. Setting this number larger
+causes smaller trees to be grown (and thus take less time). See
+\code{\link[randomForest]{randomForest}} for more details. Default
+is \code{nodesize} = NULL and will be calculated
+as \code{length(y_data)/1000}.\cr
+\code{maxnodes} Maximum number of terminal nodes trees in the forest can have.
+If not given, trees are grown to the maximum possible (subject to
+limits by nodesize). If set larger than maximum possible, a warning is
+issued. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{maxnodes} = NULL.\cr
+\code{ntree} Number of variables randomly sampled as candidates at each split.
+See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$ntree}\cr
+\code{mtry} Number of trees to grow. This should not be set to too small a
+number, to ensure that every input row gets predicted at least a few
+times. See \code{\link[randomForest]{randomForest}} for more details.
+Default is \code{ntree} = NULL and \code{ntree} will be used
+\code{popfit$mtry}.}
 }
 \value{
 Raster* object of gridded population surfaces.
