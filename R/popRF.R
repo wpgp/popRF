@@ -364,9 +364,9 @@ popRF <- function(pop,
   
   #get blokcs for parallel calculation of zonal stats
   
-  blocks_zs <- get_blocks_size(raster(covariates[[1]]$mastergrid$dataset_path), 
-                               cores,
-                               verbose=verbose, ...)
+  # blocks_zs <- get_blocks_size(raster(covariates[[1]]$mastergrid$dataset_path), 
+  #                              cores,
+  #                              verbose=verbose, ...)
   
   
   census_data <- calculate_zonal_stats_covariates(covariates, 
@@ -374,7 +374,7 @@ popRF <- function(pop,
                                                   pop, 
                                                   save_zst=TRUE, 
                                                   cores=cores,
-                                                  blocks = blocks_zs,
+                                                  blocks = NULL,
                                                   verbose=verbose, 
                                                   log=log)
   

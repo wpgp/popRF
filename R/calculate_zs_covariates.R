@@ -56,6 +56,15 @@ calculate_zonal_stats_covariates <- function(x,
     ##  Set up the matrix to hold the census data for that country:
     census_data.country <- matrix(nrow=0, ncol = 2)
     
+    
+    #get blokcs for parallel calculation of zonal stats
+    
+    blocks <- get_blocks_size(zonal_raster, 
+                              cores, 
+                              verbose=verbose, ...)
+    
+    npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+    
     for ( icvr in 1:length(x[[icountry]]) ){
       
    
@@ -99,7 +108,7 @@ calculate_zonal_stats_covariates <- function(x,
           #                           nt=1,
           #                           verbose = verbose)      
           
-          npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+          # npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
           
           ##  Calculate the stats in parallel:
           output_stats <- calculate_zs_parallel(dataset_raster, 
