@@ -29,7 +29,7 @@ get_pop_census_all  <- function(x) {
   
   census_data <- load_pop(c[[1]], x)
   
-  for ( i in length(c) ) {
+  for ( i in 1:length(c) ) {
     if (i==1) next()
     census_data <- rbind(census_data, load_pop(c[[i]], x)) 
   }
