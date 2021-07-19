@@ -34,7 +34,7 @@ calculate_zonal_stats_covariates <- function(x,
                                              cores=NULL,
                                              blocks=NULL,
                                              verbose=FALSE,
-                                             log=FALSE){
+                                             log=FALSE, ...){
 
   
   log_info("MSG", paste0("Start calculating zonal-statistics for all covariates"), verbose=verbose, log=log)  

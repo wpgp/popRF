@@ -376,7 +376,7 @@ popRF <- function(pop,
                                                   cores=cores,
                                                   blocks = NULL,
                                                   verbose=verbose, 
-                                                  log=log)
+                                                  log=log, ...)
   
   
   covariates.var.names <- list()
