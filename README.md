@@ -1,5 +1,7 @@
 ## popRF: Random Forest-informed Population Disaggregation R package
 
+[![DOI](https://zenodo.org/badge/369354393.svg)](https://zenodo.org/badge/latestdoi/369354393)
+
 High resolution, recent data on human population distributions are important for measuring impacts of population growth, monitoring human-environment interactions and for planning and policy development. Many methods are used to disaggregate census data and predict population densities for finer scale, gridded population data sets.  
 `popRF` is a population modelling R package utilizing Random Forests to inform a dasymetric redistribution of census-based population count data. A description of using Random Forests machine learning method  in `popRF` is described in [Stevens et al](https://doi.org/10.1371/journal.pone.0107042). 
 
