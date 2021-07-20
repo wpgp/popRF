@@ -14,7 +14,7 @@ devtools::install_github("wpgp/popRF")
 ### Demo 
 
 The `popRF` package has a demo function `popRFdemo` to generate a population layer
-using the \href{https://www.worldpop.org}{WorldPop} geospatial covariates and
+using the [WorldPop](https://www.worldpop.org) geospatial covariates and
 subnational census-based population estimates for 230 countries. 
 All necessary covariates will be downloaded and used to disaggregat population.
 All input datasets use a geographical coordinate system (GCS) with WGS 1984

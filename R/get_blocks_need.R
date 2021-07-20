@@ -258,24 +258,7 @@ get_blocks_size <- function(x,
   blocks <- get_blocks(nrow(x), bl)
   
   if (verbose){
-    
-    # log <- TRUE
-    # 
-    # log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
-    # 
-    # log_info("MSG", paste0("Total avalible memory per core: ", 
-    #                        round(memavail_core.mg, 2), " Mb" ), 
-    #          verbose=verbose, 
-    #          log=log)
-    # log_info("MSG", paste0("Memory needs per block of data: ", 
-    #                        round(memneed, 2), " Mb" ), 
-    #          verbose=verbose, 
-    #          log=log)
-    # 
-    # log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
-    # log_info("MSG", paste0("Total number of blocks: ", blocks$n), verbose=verbose, log=log)
-    # log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
-    
+
     log_mem_info(memavail_core.mg, 
                  maxmem.mg, 
                  memneed, 
@@ -286,48 +269,6 @@ get_blocks_size <- function(x,
   
   
   return(blocks)
-  
-  # canProcess <- FALSE
-  # 
-  # minblocks <- raster::blockSize(x)$n
-  # 
-  # while (!canProcess) {
-  #   
-  #   blocks <- raster::blockSize(x, minblocks=minblocks)
-  #   
-  #   #get number of cells in block
-  #   nc <- blocks$nrows[[1]] * ncol(x)
-  #   
-  #   #get number of layers +  optional increment
-  #   if (nl > nlayers(x)){
-  #     nl <- nl * binc
-  #   }else{
-  #     nl <- nlayers(x) * binc  
-  #   }
-  #   
-  #   
-  #   #get the size of the raster object multiply
-  #   rs <- as.integer(object.size(x))
-  #   
-  #   canProcess <- canRunInMemory(cores,
-  #                                nc, 
-  #                                nl,
-  #                                nt,
-  #                                rs, 
-  #                                verbose = T)
-  #   minblocks <- blocks$n + 1
-  #   
-  #   
-  # }
-  # 
-  # if (verbose){
-  #   log <- TRUE
-  #   log_info("MSG", paste0("Total number of blocks: ", blocks$n), verbose=verbose, log=log)
-  #   log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
-  # }
-  # 
-  # return(blocks)
-  
 }
 
 
