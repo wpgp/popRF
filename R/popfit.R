@@ -6,7 +6,8 @@
 #' @param y_data response vector.
 #' @param proximity is logical. TRUE or FALSE: flag indicating whether proximity
 #'        measures among the rows be computed? Default is \code{proximity} = TRUE. 
-#'        See \code{\link[randomForest]{randomForest}} for more details.
+#'        See \code{\link[randomForest]{randomForest}} for more details.4
+#' @param set_seed Integer, set the seed. Default is \code{set_seed} = 2010
 #' @param init_popfit randomForest object with the optimal mtry.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
@@ -23,7 +24,8 @@
 get_popfit <- function(x_data, 
                        y_data, 
                        init_popfit=NULL, 
-                       proximity=TRUE, 
+                       proximity=TRUE,
+                       set_seed=2010, 
                        verbose=FALSE, 
                        log=FALSE) {
  

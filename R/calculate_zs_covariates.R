@@ -11,6 +11,7 @@
 #'        zonal statistics will be sved into the file. 
 #'        Default is \code{save_zst} = TRUE.
 #' @param cores is a integer. Number of cores to use when executing the function.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -31,8 +32,9 @@ calculate_zonal_stats_covariates <- function(x,
                                              pop,
                                              save_zst=TRUE,
                                              cores=NULL,
+                                             blocks=NULL,
                                              verbose=FALSE,
-                                             log=FALSE){
+                                             log=FALSE, ...){
 
   
   log_info("MSG", paste0("Start calculating zonal-statistics for all covariates"), verbose=verbose, log=log)  
@@ -54,7 +56,18 @@ calculate_zonal_stats_covariates <- function(x,
     ##  Set up the matrix to hold the census data for that country:
     census_data.country <- matrix(nrow=0, ncol = 2)
     
+    
+    #get blokcs for parallel calculation of zonal stats
+    
+    blocks <- get_blocks_size(zonal_raster, 
+                              cores, 
+                              verbose=verbose, ...)
+    
+    npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+    
     for ( icvr in 1:length(x[[icountry]]) ){
+      
+   
       
       # icvr <- 1
       ## Skip water mask and L1 in covariates based upon names of covariates:
@@ -82,19 +95,27 @@ calculate_zonal_stats_covariates <- function(x,
       fname <- paste0(tolower(icountry),"_",var_name_class,"_ZS_",dataset_summary,".csv")
       file.path.csv <- file.path(y, fname)
       
+
       if(!file.exists(file.path.csv )){
 
         
         if (!is.null(cores)){
           
           ##  Determine the minimum number of blocks needed for processing:
-          minblks <- get_blocks_need(dataset_raster,cores, n=2)
+          # blocks <- get_blocks_size(dataset_raster, 
+          #                           cores,
+          #                           nl=2,
+          #                           nt=1,
+          #                           verbose = verbose)      
+          
+          # npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
+          
           ##  Calculate the stats in parallel:
           output_stats <- calculate_zs_parallel(dataset_raster, 
                                                 zonal_raster, 
                                                 fun=dataset_summary, 
-                                                cores=cores, 
-                                                minblk=minblks)  
+                                                cores=npoc_blocks, 
+                                                blocks=blocks)  
         }else{
           
           output_stats <- zonal(dataset_raster, zonal_raster, fun=dataset_summary)

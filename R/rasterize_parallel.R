@@ -1,7 +1,7 @@
 #' @title rasterize_parallel_start function will return a string with OS
 #' @param x Raster* object
 #' @param df data.frame of points
-#' @param minblk Integer. Minimum number of blocks
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param NAflag NO data value will be used for a new raster
 #' @param datatype Type of raster. Available are 
 #'        INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
@@ -13,7 +13,7 @@
 #' @noRd 
 rasterize_parallel_start <- function(x, 
                                      df, 
-                                     minblk, 
+                                     blocks, 
                                      NAflag, 
                                      datatype, 
                                      filename, 
@@ -24,23 +24,17 @@ rasterize_parallel_start <- function(x,
   
   layernames <- names(x)
   
-  blocks <- raster::blockSize(x,minblocks=minblk)
-  
   cat('\n')
   cat('Rasterising')
   # To let user know how many blocks will be used
-  if (minblk != blocks$n) cat(paste0('\nTotal blocks ',blocks$n))
+  cat(paste0('\nTotal blocks ',blocks$n))
   cat('\n')
   
   cl <- raster::getCluster()
   
   #on.exit( returnCluster() )
   nodes <- length(cl)
-  
-  
-  if (is.null(minblk)) {
-    minblk <- nodes
-  }
+
   
   clusterExport(cl, c("blocks", "x","df", "silent"), envir=environment())
   
@@ -119,14 +113,14 @@ rasterize_parallel_start <- function(x,
 #'
 #' @author Maksym Bondarenko <mb4@soton.ac.uk> and 
 #'        Chris Jochem <W.C.Jochem@soton.ac.uk>
-#' @usage rasterize_parallel(x, df, cores=NULL, minblk=NULL, NAflag=NULL, 
+#' @usage rasterize_parallel(x, df, cores=NULL, blocks=NULL, NAflag=NULL, 
 #'                           datatype=NULL, filename=rasterTmpFile(), 
 #'                           overwrite=TRUE, silent=TRUE)
 #' @param x Raster* object.
 #' @param df data.frame of points.
 #' @param cores is a integer. Number of cores to use when executing the 
 #'        function in paralle.
-#' @param minblk Integer. Minimum number of blocks.
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param NAflag NO data value will be used for a new raster.
 #' @param datatype Type of raster. Available are 
 #'        INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S.
@@ -149,13 +143,13 @@ rasterize_parallel_start <- function(x,
 #' @return Raster* object
 #' @examples
 #' \dontrun{
-#' rasterize_parallel(x=rasterObj, df=df, cores=2,minblk=4,NAflag=-99999,datatype='INT1U' )
+#' rasterize_parallel(x=rasterObj, df=df, cores=2,NAflag=-99999,datatype='INT1U' )
 #' }
 #' @noRd 
 rasterize_parallel <- function(x, 
                                df, 
                                cores=NULL, 
-                               minblk=NULL, 
+                               blocks=NULL, 
                                NAflag=NULL, 
                                datatype=NULL, 
                                filename=rasterTmpFile(), 
@@ -176,24 +170,14 @@ rasterize_parallel <- function(x,
     cores <- max.cores - 1
   }
   
-  # if user did not tell how many minblk to use then minblk will
-  # calculated by get_blocks_need() function
-  #
-  if (is.null(minblk)) {
-    minblk <- get_blocks_need(x,cores,n=1)
-  }
-  
-  cores <- as.integer(cores)
-  minblk <- as.integer(minblk)
-  
+
   if (cores > max.cores) {
     stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
   }
   
   if (!is.data.frame(df)) stop(paste0("df should be a data.frame"))
   if (!is(NAflag, "numeric")) stop(paste0("NAflag should be  numeric"))
-  if (!is(cores,  "integer")) stop(paste0("cores should be integer value"))
-  if (!is(minblk, "integer")) stop(paste0("minblk should be integer"))
+  #if (!is(cores,  "integer")) stop(paste0("cores should be integer value"))
   if (!is(overwrite, "logical")) stop(paste0("overwrite should be  logical (e.g., TRUE, FALSE)"))
   if (!is(silent, "logical")) stop(paste0("silent should be logical (e.g., TRUE, FALSE)"))
   
@@ -217,13 +201,21 @@ rasterize_parallel <- function(x,
     stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
   }
   
+  # if user did not tell how many blocks to use then blocks will
+  # calculated by get_blocks_need() function
+  #
+  if (is.null(blocks)) {
+    
+    blocks <- get_blocks_size(x, 
+                              cores,
+                              verbose = ifelse(silent, FALSE, TRUE))      
+  }  
 
-  blocks <- blockSize(x ,minblocks=minblk)
   npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)  
   
   beginCluster(n=npoc_blocks)
   
-  out <- rasterize_parallel_start(x, df, minblk, NAflag, datatype, filename, overwrite, silent)
+  out <- rasterize_parallel_start(x, df, blocks, NAflag, datatype, filename, overwrite, silent)
   
   endCluster()
   

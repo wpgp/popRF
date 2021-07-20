@@ -10,7 +10,7 @@
 #' @param nrpoc path to load/save popfit objects
 #' @param tag proximity
 #' @param quant proximity
-#' @param minblocks proximity
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose If FALSE then the progress will be shown
 #' @param log If FALSE then the progress will be shown
 #' @importFrom raster getValues writeRaster writeStart writeStop
@@ -33,7 +33,7 @@ rf_prediction_parallel <- function(covariates,
                                    nrpoc, 
                                    tag, 
                                    quant = TRUE, 
-                                   minblocks=NULL, 
+                                   blocks=NULL, 
                                    verbose=TRUE, 
                                    log=FALSE) {
   
@@ -92,15 +92,15 @@ rf_prediction_parallel <- function(covariates,
   #
 
   
-  # set additional param for geting min blocks for cluster
-  if (quant) nmb=60 else nmb=30
-  
-  ##  Stack all of our covariates and masks together:
-  #covariate_stack <- creat_raster_stack(covariates, popfit_final)
-  
-  if (is.null(minblocks)) {
-    minblocks <- get_blocks_need(covariate_stack, cores=nrpoc, n=nmb)  
-  }
+  # # set additional param for geting min blocks for cluster
+  # if (quant) nmb=60 else nmb=30
+  # 
+  # ##  Stack all of our covariates and masks together:
+  # #covariate_stack <- creat_raster_stack(covariates, popfit_final)
+  # 
+  # if (is.null(minblocks)) {
+  #   minblocks <- get_blocks_need(covariate_stack, cores=nrpoc, n=nmb)  
+  # }
   
   
   
@@ -108,7 +108,7 @@ rf_prediction_parallel <- function(covariates,
   on.exit( returnCluster() )  
   
   nodes <- length(cl)
-  blocks <- blockSize(prediction_raster,minblocks=minblocks)
+  # blocks <- blockSize(prediction_raster,minblocks=minblocks)
   
   log_info("MSG", paste0("covariate_stack will be divided to ",blocks$n," blocks"), verbose=verbose, log=log) 
   

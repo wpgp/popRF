@@ -69,7 +69,7 @@ merg_covariates <- function(input.countries,
       
     }
     
-    covariates_merged[[rfg.countries.tag]][[cname]][["path"]] <- dstfile
+    #covariates_merged[[rfg.countries.tag]][[cname]][["path"]] <- dstfile
     covariates_merged[[rfg.countries.tag]][[cname]] <- list(dataset_folder = dirname(dstfile), 
                                                             dataset_filename    = basename(dstfile),
                                                             dataset_description = cname,

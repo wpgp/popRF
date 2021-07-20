@@ -7,7 +7,7 @@
 #' @param datatype Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
 #' @param overwrite Overwrite existing file
 #' @param cores Integer. Number of cores for parallel calculation
-#' @param minblk Integer. Minimum number of blocks. If NULL then it will be calculated automaticly
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param silent If FALSE then the progress will be shown
 #' @rdname masking_out_start
 #' @return Raster* object
@@ -19,14 +19,11 @@ masking_out_start <- function(x,
                               datatype, 
                               overwrite, 
                               cores, 
-                              minblk, 
+                              blocks, 
                               silent) {
   
   tStart <- Sys.time()
-  
-  blocks <- raster::blockSize(x,minblocks=minblk)
-  
-  
+
   if (!silent) { 
     cat(paste0('\nTotal blocks ',blocks$n))
     cat('\n')
@@ -36,10 +33,7 @@ masking_out_start <- function(x,
   
   nodes <- length(cl)
   
-  if (is.null(minblk)) {
-    minblk <- nodes
-  }
-  
+
   clusterExport(cl, c("blocks", "x","fun"), envir=environment())
   
   
@@ -135,10 +129,11 @@ masking_out_start <- function(x,
 #' @param datatype Type of raster. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S
 #' @param overwrite Overwrite existing file
 #' @param cores Integer. Number of cores for parallel calculation
-#' @param minblk Integer. Minimum number of blocks. If NULL then it will be calculated automaticly
+#' @param blocks number of blocks sugesting for processing raster file.
 #' @param cblk Integer. param to controle min number of blocks during paralisation
 #' @param silent If FALSE then the progress will be shown
 #' @param na.rm Optional
+#' @importFrom raster nlayers
 #' @rdname masking_out
 #' @return Raster* object
 #' @noRd 	
@@ -149,7 +144,7 @@ masking_out <- function(x,
                         datatype=NULL, 
                         overwrite=TRUE, 
                         cores=NULL,
-                        minblk=NULL, 
+                        blocks=NULL, 
                         cblk=NULL, 
                         silent=TRUE, 
                         na.rm) {
@@ -252,14 +247,16 @@ masking_out <- function(x,
   }
   
   
-  if (is.null(minblk)) {
+  if (is.null(blocks)) {
     
-    if (nl > 1) nln <- nl
-    minblk <- get_blocks_need(x,cores,n=nln*cblk)
-    
-  }
+    blocks <- get_blocks_size(x, 
+                              cores,
+                              verbose = ifelse(silent, FALSE, TRUE))      
+  }  
   
-  beginCluster(n=cores)
+  npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)  
+  
+  beginCluster(n=npoc_blocks)
   
   out <- masking_out_start(x, 
                            fun, 
@@ -267,8 +264,8 @@ masking_out <- function(x,
                            NAflag, 
                            datatype, 
                            overwrite, 
-                           cores, 
-                           minblk, 
+                           npoc_blocks, 
+                           blocks, 
                            silent)
   
   endCluster()
