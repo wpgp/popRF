@@ -58,7 +58,7 @@ citEntry(entry = "Manual",
   textVersion  =
   paste("Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and Sorichetta A. (2021):",
         "popRF: Random Forest-informed Population Disaggregation R package,",
-        "_Comprehensive R Archive Network (CRAN)_.", 
-        "url:https://cran.r-project.org/package=popRF",
-        "DOI: 10.5258/SOTON/WP00715")
+        "_Comprehensive R Archive Network (CRAN)_,", 
+        "url:https://cran.r-project.org/package=popRF,",
+        "DOI:10.5258/SOTON/WP00715.")
 )
