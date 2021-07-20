@@ -123,22 +123,25 @@ branch to develop a feature/modification and submit a pull request.
 ## Acknowledgements
 
 ``` r
-citation("popRF")
-#> 
-#> To cite package 'popRF' in publications use:
-#> 
-#> Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and 
-#> Sorichetta A. (2021)  popRF: Random Forest-informed Population Disaggregation R package. 
-#> DOI: 10.5258/SOTON/WP00715,  https://github.com/wpgp/popRF.
-#> 
-#> A BibTeX entry for LaTeX users is
-#> 
-#>   @Manual{,
-#>     title = {popRF: Random Forest-informed Population Disaggregation R package.},
-#>     author = {{Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and Sorichetta A}},
-#>     year = {2021},
-#>     note = {DOI: 10.5258/SOTON/WP00715,  https://github.com/wpgp/popRF},
-#>   }
+> citation("popRF")
+
+To cite popRF in publications use:
+
+  Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and Sorichetta A. (2021): popRF: Random Forest-informed Population
+  Disaggregation R package, _Comprehensive R Archive Network (CRAN)_, url:https://cran.r-project.org/package=popRF, DOI:10.5258/SOTON/WP00715.
+
+A BibTeX entry for LaTeX users is
+
+  @Manual{,
+    title = {popRF: Random Forest-informed Population Disaggregation R package.},
+    author = {Maksym Bondarenko and Jeremiah J Nieves and Forrest R. Stevens and Andrea E. Gaughan and Chris Jochem and David Kerr and Alessandro Sorichetta},
+    year = {2021},
+    journal = {Comprehensive R Archive Network (CRAN)},
+    url = {https://cran.r-project.org/package=popRF},
+    doi = {10.5258/SOTON/WP00715},
+    language = {English},
+  }
+  
 ```
 
 ### License
