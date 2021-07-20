@@ -2,7 +2,7 @@
 * Red Hat Enterprise Linux Server release 7.9 R version 3.6.2 
 * Ubuntu 20.04.2 LTS (GNU/Linux 5.8.0-50-generic x86_64) R version 4.0.5
 * Windows 10/64 R version 4.0.5
-* Southampton University HPC cluster RH7 R version 3.6.2
+* Southampton University HPC cluster Iridis5 RH7 R version 3.6.2
 
 ## Tested on R-hub building platforms
 * Debian Linux, R-devel, clang, ISO-8859-15 locale (debian-clang-devel)
