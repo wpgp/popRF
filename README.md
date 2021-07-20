@@ -1,5 +1,6 @@
 ## popRF: Random Forest-informed Population Disaggregation R package
 
+[![DOI](https://img.shields.io/badge/DOI-10.5258%2FSOTON%2FWP00715-blue)](https://dx.doi.org/10.5258/SOTON/WP00715)
 [![DOI](https://zenodo.org/badge/369354393.svg)](https://zenodo.org/badge/latestdoi/369354393)
 
 High resolution, recent data on human population distributions are important for measuring impacts of population growth, monitoring human-environment interactions and for planning and policy development. Many methods are used to disaggregate census data and predict population densities for finer scale, gridded population data sets.  
