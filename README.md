@@ -11,6 +11,27 @@ install.packages("devtools")
 devtools::install_github("wpgp/popRF")
 ```
 
+### Demo 
+
+The `popRF` package has a demo function `popRFdemo` to generate a population layer
+using the \href{https://www.worldpop.org}{WorldPop} geospatial covariates and
+subnational census-based population estimates for 230 countries. 
+All necessary covariates will be downloaded and used to disaggregat population.
+All input datasets use a geographical coordinate system (GCS) with WGS 1984
+datum (EPSG:4326) in Geotiff format at a resolution of 3 arc-second
+(0.00083333333 decimal degree, approximately 100m at the equator).
+
+The following script will produce a population layer for Nepal (NPL) using 4 cores.
+
+``` r
+library("popRF")
+
+popRFdemo(project_dir="/home/user/demo",
+          country="NPL", 
+          cores=4)
+ 
+```
+
 ### Basic Usage
 
 ``` r
