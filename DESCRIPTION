@@ -50,6 +50,7 @@ Authors@R: c(
           comment = c(ORCID = "0000-0002-3576-5826")
           )
     )
+Maintainer: Maksym Bondarenko <mb4@soton.ac.uk> 
 Description: Disaggregating census-based areal population counts to finer 
     gridded population surfaces using Random Forest algorithm to determine 
     the target area weights. 
