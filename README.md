@@ -1,10 +1,7 @@
 ## popRF: Random Forest-informed Population Disaggregation R package
 
-[![DOI](https://img.shields.io/badge/DOI-10.5258%2FSOTON%2FWP00715-blue)](https://dx.doi.org/10.5258/SOTON/WP00715)
-[![DOI](https://zenodo.org/badge/369354393.svg)](https://zenodo.org/badge/latestdoi/369354393)
-
 High resolution, recent data on human population distributions are important for measuring impacts of population growth, monitoring human-environment interactions and for planning and policy development. Many methods are used to disaggregate census data and predict population densities for finer scale, gridded population data sets.  
-`popRF` is a population modelling R package utilizing Random Forests to inform a dasymetric redistribution of census-based population count data. A description of using Random Forests machine learning method  in `popRF` is described in [Stevens et al](https://doi.org/10.1371/journal.pone.0107042). 
+`popRF` is a population modelling R package utilizing Random Forests to inform a dasymetric redistribution of census-based population count data. A description of using Random Forests machine learning method  in `popRF` is described in [Stevens et al](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0107042). 
 
 ### Installation
 The `popRF` package can be installed directly from Github.
@@ -131,7 +128,7 @@ branch to develop a feature/modification and submit a pull request.
 #> To cite popRF in publications use:
 #> 
 #> Bondarenko M., Nieves J.J., Forrest R.S., Andrea E.G., Jochem C., Kerr D., and Sorichetta A. (2021): popRF: Random Forest-informed Population
-#> Disaggregation R package, _Comprehensive R Archive Network (CRAN)_, url:https://cran.r-project.org/package=popRF, DOI:10.5258/SOTON/WP00715.
+#> Disaggregation R package, _Comprehensive R Archive Network (CRAN)_, url:https://cran.r-project.org/package=popRF.
 #>
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -141,11 +138,10 @@ branch to develop a feature/modification and submit a pull request.
 #>  year = {2021},
 #>  journal = {Comprehensive R Archive Network (CRAN)},
 #>  url = {https://cran.r-project.org/package=popRF},
-#>  doi = {10.5258/SOTON/WP00715},
 #>  language = {English},
 #> }
   
 ```
 
 ### License
-<a href='COPYING' target='_blank'>GNU General Public License v3.0 (GNU GPLv3)]</a>
+[GNU General Public License v3.0 (GNU GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html)

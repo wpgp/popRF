@@ -1,6 +1,6 @@
 Package: popRF
 Type: Package
-Title: Random Forest-informed Population Disaggregation
+Title: Random Forest-Informed Population Disaggregation
 Version: 1.0.0
 Authors@R: c(
     person( 
@@ -50,22 +50,13 @@ Authors@R: c(
           comment = c(ORCID = "0000-0002-3576-5826")
           )
     )
-Author: Maksym Bondarenko [aut, cre, cph] (<https://orcid.org/0000-0003-4958-6551>),
-  Jeremiah J. Nieves [aut] (<https://orcid.org/0000-0002-7423-134>),
-  Forrest R. Stevens [aut],
-  Andrea E. Gaughan [aut],
-  Chris Jochem [ctb],
-  David Kerr [ctb],
-  Alessandro Sorichetta [ctb] (<https://orcid.org/0000-0002-3576-5826>)
-Maintainer: Maksym Bondarenko <mb4@soton.ac.uk> and Jeremiah J. Nieves <j.j.nieves@liverpool.ac.uk>    
 Description: Disaggregating census-based areal population counts to finer 
     gridded population surfaces using Random Forest algorithm to determine 
-    the target area weights. For more information about the method, read a paper 
-    Stevens et al. (2015) DOI: 10.1371/journal.pone.0107042.
-URL: https://github.com/wpgp/popRF, https://sdi.worldpop.org
+    the target area weights. 
+URL: https://github.com/wpgp/popRF
 BugReports: https://github.com/wpgp/popRF/issues
 Imports: 
-    doParallel, 
+    doParallel,
     parallel, 
     raster, 
     methods, 
@@ -73,8 +64,7 @@ Imports:
     foreach, 
     gdalUtils, 
     randomForest, 
-    quantregForest, 
-    snow, 
+    quantregForest,
     plyr
 Depends: R (>= 3.2.0)
 License: GPL (>= 3) + file LICENSE
