@@ -11,11 +11,11 @@
 #'          
 #'         
 #' @details This function produces gridded population density estimates using 
-#'          a Random Forest model as described in 
-#'          \href{https://doi.org/10.1371/journal.pone.0107042}{Stevens, et al. (2015)}.
+#'          a Random Forest model as described in _Stevens, et al. (2015)_ 
+#'          \doi{10.1371/journal.pone.0107042}.
 #'          The unit-average log-transformed population density and covariate 
 #'          summary values for each census unit are then used to train a 
-#'          \href{https://doi.org/10.1023/A:1010933404324}{Random Forest model} 
+#'          Random Forest model (\doi{10.1023/A:1010933404324})
 #'          to predict log population density. Random Forest models are an 
 #'          ensemble, nonparametric modeling approach that grows a "forest" of 
 #'          individual classification or regression trees and improves upon 
@@ -25,9 +25,9 @@
 #'          unit-relative weights to dasymetrically redistribute the census 
 #'          based areal population counts. This function also allows for 
 #'          modelling based upon a 
-#'          \href{https://doi.org/10.1080/17538947.2014.965761}{regional parameterisation} 
+#'          regional parameterisation (\doi{10.1080/17538947.2014.965761})
 #'          of other previously run models as well as the creation of models based
-#'          upon \href{https://doi.org/10.1016/j.compenvurbsys.2019.01.006}{multiple countries at once}.
+#'          upon multiple countries at once (\doi{10.1016/j.compenvurbsys.2019.01.006}).
 #'          This function assumes that all data is unprojected and is in the 
 #'          WGS84 coordinate system.
 #' 
@@ -180,18 +180,18 @@
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
 #'       Disaggregating Census Data for Population Mapping Using Random Forests 
 #'       with Remotely-Sensed and Ancillary Data. PLoS ONE 10, e0107042  
-#'       <https://doi.org/10.1371/journal.pone.0107042>
+#'       \doi{10.1371/journal.pone.0107042}
 #' \item L. Breiman. 2001. Random Forests. Machine Learning, 45: 5-32. 
-#'       <https://doi.org/10.1023/A:1010933404324>
+#'       \doi{10.1023/A:1010933404324}
 #' \item Gaughan, A. E., Stevens, F. R., Linard, C., Patel, N. N., & A. J. Tatem. 
 #'       2015. Exploring Nationally and Regionally Defined Models for Large Area 
 #'       Population Mapping. International Journal of Digital Earth, 12(8): 
-#'       989-1006. <https://doi.org/10.1080/17538947.2014.965761>
+#'       989-1006. \doi{10.1080/17538947.2014.965761}
 #' \item Sinha, P., Gaughan, A. E, Stevens, F. R., Nieves, J. J., Sorichetta, A., 
 #'       & A. J. Tatem. 2019. Assessing the Spatial Sensitivity of a Random 
 #'       Forest Model: Application in Gridded Population Modeling. Computers, 
 #'       Environment and Urban Systems, 75: 132-145. 
-#'       <https://doi.org/10.1016/j.compenvurbsys.2019.01.006>
+#'       \doi{10.1016/j.compenvurbsys.2019.01.006}
 #' }        
 #' @importFrom randomForest varImpPlot
 #' @importFrom raster nlayers

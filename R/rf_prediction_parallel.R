@@ -16,11 +16,9 @@
 #' @importFrom raster getValues writeRaster writeStart writeStop
 #' compareRaster hasValues writeValues blockSize  getCluster returnCluster
 #' @importFrom stats complete.cases predict sd aggregate
-#' @importFrom utils stack
-#' @importFrom doParallel registerDoParallel 
-#' @importFrom parallel detectCores  
-#' @importFrom snow sendCall recvOneData
-#' clusterEvalQ clusterExport
+#' @importFrom utils stack getFromNamespace
+#' @importFrom doParallel registerDoParallel  
+#' @importFrom parallel detectCores clusterEvalQ clusterExport
 #' @importFrom foreach '%dopar%' foreach
 #' @return raster objects
 #' @noRd 
@@ -37,13 +35,7 @@ rf_prediction_parallel <- function(covariates,
                                    verbose=TRUE, 
                                    log=FALSE) {
   
-  
-  # outdir <- rfg.output.path.countries
-  # nrpoc <- 4
-  # tag <- rfg.countries.tag
-  # minblocks=NULL
-  # quant = TRUE
-  
+
   prediction_raster <- census_mask
     
   log_info("MSG", paste0("Start predict for gridded covariates"), verbose=verbose, log=log) 
@@ -60,6 +52,12 @@ rf_prediction_parallel <- function(covariates,
                                               paste0("predict_density_rf_pred_50_", tag , ".tif")) 
   rfg.predict.density.rf.pred_95 <- file.path(outdir, 
                                               paste0("predict_density_rf_pred_90_", tag , ".tif")) 
+  
+  
+  
+  recvOneData <- getFromNamespace("recvOneData", "parallel")
+  sendCall <- getFromNamespace("sendCall", "parallel")
+  
   
   tStart <- Sys.time()
   
@@ -125,6 +123,7 @@ rf_prediction_parallel <- function(covariates,
   
   clusterExport(cl, "blocks", envir=environment())
   clusterExport(cl, "quant", envir=environment())
+  clusterExport(cl, c("recvOneData", "sendCall"), envir=environment())
   
   #################################################################################
   #################################################################################
@@ -213,7 +212,7 @@ rf_prediction_parallel <- function(covariates,
   
   ##	Start all nodes on a prediction:
   for (i in 1:nodes) {
-    snow::sendCall(cl[[i]], call_predictions, i, tag=i)
+    sendCall(cl[[i]], call_predictions, i, tag=i)
   }  
   
   ## Start the raster writer object so we can store our results as they
@@ -274,7 +273,7 @@ rf_prediction_parallel <- function(covariates,
   for (i in 1:blocks$n) {
     
     ##	Receive results from a node:
-    predictions <- snow::recvOneData(cl)
+    predictions <- recvOneData(cl)
     
     ##	Check if there was an error:
     if (!predictions$value$success) {
@@ -312,7 +311,7 @@ rf_prediction_parallel <- function(covariates,
     ##	Check to see if we are at the end of our block list:
     ni <- nodes + i
     if (ni <= blocks$n) {
-      snow::sendCall(cl[[predictions$node]], call_predictions, ni, tag=ni)
+      sendCall(cl[[predictions$node]], call_predictions, ni, tag=ni)
     }
     tEnd <-  Sys.time()
     

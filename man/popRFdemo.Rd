@@ -116,14 +116,13 @@ popRFdemo(project_dir="/home/user/demo",
 \references{
 \itemize{
 \item Global spatio-temporally harmonised datasets for producing high-resolution
-gridded population distribution datasets.
-\href{https://doi.org/10.1080/20964471.2019.1625151}{https://doi.org/10.1080/20964471.2019.1625151}
+gridded population distribution datasets \doi{10.1080/20964471.2019.1625151}.
 \item WorldPop (www.worldpop.org - School of Geography and Environmental Science,
 University of Southampton; Department of Geography and Geosciences,
 University of Louisville; Departement de Geographie, Universite de Namur)
 and Center for International Earth Science Information Network (CIESIN),
 Columbia University (2018). Global High Resolution Population Denominators
-Project - Funded by The Bill and Melinda Gates Foundation (OPP1134076).
-\href{https://dx.doi.org/10.5258/SOTON/WP00649}{https://dx.doi.org/10.5258/SOTON/WP00649}
+Project - Funded by The Bill and Melinda Gates Foundation (OPP1134076)
+\doi{10.5258/SOTON/WP00649}.
 }
 }

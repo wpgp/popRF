@@ -8,6 +8,7 @@
 #' @param filename File of a new raster file.
 #' @param overwrite Overwrite existing file
 #' @param silent If FALSE then the progress will be shown
+#' @importFrom utils getFromNamespace
 #' @rdname rasterize_parallel_start
 #' @return Raster* object
 #' @noRd 
@@ -20,6 +21,9 @@ rasterize_parallel_start <- function(x,
                                      overwrite=TRUE, 
                                      silent=TRUE) {
   
+  
+
+  
   tStart <- Sys.time()
   
   layernames <- names(x)
@@ -30,6 +34,9 @@ rasterize_parallel_start <- function(x,
   cat(paste0('\nTotal blocks ',blocks$n))
   cat('\n')
   
+  recvOneData <- getFromNamespace("recvOneData", "parallel")
+  sendCall <- getFromNamespace("sendCall", "parallel")  
+  
   cl <- raster::getCluster()
   
   #on.exit( returnCluster() )
@@ -37,7 +44,7 @@ rasterize_parallel_start <- function(x,
 
   
   clusterExport(cl, c("blocks", "x","df", "silent"), envir=environment())
-  
+  clusterExport(cl, c("recvOneData", "sendCall"), envir=environment())
   
   clRasteriseFun <- function(i) {
     # tryCatch({
@@ -51,7 +58,7 @@ rasterize_parallel_start <- function(x,
   
   # get all nodes going
   for (i in 1:nodes) {
-    snow::sendCall(cl[[i]], clRasteriseFun, i, tag=i)
+    sendCall(cl[[i]], clRasteriseFun, i, tag=i)
   }
   
   #out <- raster:::setValues(x, 0)
@@ -67,7 +74,7 @@ rasterize_parallel_start <- function(x,
   
   for (i in 1:blocks$n) {
     
-    d <- snow::recvOneData(cl)
+    d <- recvOneData(cl)
     
     if (!d$value$success) {
       stop('cluster error')
@@ -96,7 +103,7 @@ rasterize_parallel_start <- function(x,
     #
     ni <- nodes + i
     if (ni <= blocks$n) {
-      snow::sendCall(cl[[d$node]], clRasteriseFun, ni, tag=ni)
+      sendCall(cl[[d$node]], clRasteriseFun, ni, tag=ni)
     }
   }
   
@@ -137,7 +144,6 @@ rasterize_parallel_start <- function(x,
 #' @importFrom utils stack
 #' @importFrom doParallel registerDoParallel 
 #' @importFrom parallel detectCores 
-#' @importFrom snow sendCall sendCall recvOneData clusterEvalQ clusterExport
 #' @importFrom foreach '%dopar%' foreach
 #' @rdname rasterize_parallel
 #' @return Raster* object

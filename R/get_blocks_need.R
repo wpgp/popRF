@@ -128,7 +128,7 @@ log_mem_info <- function(memavail, maxmem.mg, totalmem_need, blks, verbose){
 #' @param verbose Logical vector indicating whether to print 
 #'        intermediate output from the function to the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @importFrom utils object.size
+#' @importFrom utils object.size getFromNamespace
 #' @importFrom raster nlayers ncell
 #' @rdname get_blocks_size
 #' @return integer
@@ -165,8 +165,8 @@ get_blocks_size <- function(x,
   
   # importing .availableRAM and .maxmemory function from raster package
   #
-  maxmemory.rf <- utils::getFromNamespace(".maxmemory", "raster")
-  availableRAM.rf <- utils::getFromNamespace(".availableRAM", "raster")
+  maxmemory.rf <- getFromNamespace(".maxmemory", "raster")
+  availableRAM.rf <- getFromNamespace(".availableRAM", "raster")
   
   
   # maxmem.mg: integer. The maximum amount of memory (in bytes) to use for a 

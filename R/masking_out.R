@@ -9,6 +9,7 @@
 #' @param cores Integer. Number of cores for parallel calculation
 #' @param blocks number of blocks sugesting for processing raster file.
 #' @param silent If FALSE then the progress will be shown
+#' @importFrom utils getFromNamespace
 #' @rdname masking_out_start
 #' @return Raster* object
 #' @noRd 
@@ -22,6 +23,8 @@ masking_out_start <- function(x,
                               blocks, 
                               silent) {
   
+
+  
   tStart <- Sys.time()
 
   if (!silent) { 
@@ -29,12 +32,16 @@ masking_out_start <- function(x,
     cat('\n')
   }  
   
+  recvOneData <- getFromNamespace("recvOneData", "parallel")
+  sendCall <- getFromNamespace("sendCall", "parallel")  
+  
   cl <- raster::getCluster()
   
   nodes <- length(cl)
   
 
   clusterExport(cl, c("blocks", "x","fun"), envir=environment())
+  clusterExport(cl, c("recvOneData", "sendCall"), envir=environment())
   
   
   clwpRasterCalcFun <- function(i) {
@@ -52,7 +59,7 @@ masking_out_start <- function(x,
   
   
   for (i in 1:nodes) {
-    snow::sendCall(cl[[i]], clwpRasterCalcFun, i, tag=i)
+    sendCall(cl[[i]], clwpRasterCalcFun, i, tag=i)
   }
   
   
@@ -68,7 +75,7 @@ masking_out_start <- function(x,
   
   for (i in 1:blocks$n) {
     
-    d <- snow::recvOneData(cl)
+    d <- recvOneData(cl)
     
     if (! d$value$success ) {
       stop('cluster error')
@@ -108,7 +115,7 @@ masking_out_start <- function(x,
     #
     ni <- nodes + i
     if (ni <= blocks$n) {
-      snow::sendCall(cl[[d$node]], clwpRasterCalcFun, ni, tag=ni)
+      sendCall(cl[[d$node]], clwpRasterCalcFun, ni, tag=ni)
     }
   }
   
