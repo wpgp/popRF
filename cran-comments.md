@@ -1,3 +1,6 @@
+## 22 July 2021
+* Omited the licence file and the reference as it was advised by CRAN team member after first submution 
+* Removed DOI: 10.5258/SOTON/WP00715  which was "Not Found" 
 
 ## Tested on environments
 * Red Hat Enterprise Linux Server release 7.9 R-version 3.6.2 
