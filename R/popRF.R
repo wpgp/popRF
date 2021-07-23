@@ -309,7 +309,10 @@ popRF <- function(pop,
   } 
   
   
-  glPaths <- create_dirs_for_prj(rfg.input.countries, output_dir)  
+  glPaths <- create_dirs_for_prj(rfg.input.countries, 
+                                 output_dir, 
+                                 verbose, 
+                                 log)   
   
   
   ##  Declare where we are outputting things:

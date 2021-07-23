@@ -28,11 +28,10 @@ rasterize_parallel_start <- function(x,
   
   layernames <- names(x)
   
-  cat('\n')
-  cat('Rasterising')
-  # To let user know how many blocks will be used
-  cat(paste0('\nTotal blocks ',blocks$n))
-  cat('\n')
+  verbose <- if (silent) FALSE else TRUE
+  
+  log_info("MSG", paste0("Rasterizing using total blocks ",blocks$n ), verbose=verbose, log=FALSE)
+
   
   recvOneData <- getFromNamespace("recvOneData", "parallel")
   sendCall <- getFromNamespace("sendCall", "parallel")  

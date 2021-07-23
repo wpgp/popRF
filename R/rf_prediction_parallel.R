@@ -123,6 +123,7 @@ rf_prediction_parallel <- function(covariates,
   
   clusterExport(cl, "blocks", envir=environment())
   clusterExport(cl, "quant", envir=environment())
+  clusterExport(cl, "verbose", envir=environment())
   clusterExport(cl, c("recvOneData", "sendCall"), envir=environment())
   
   #################################################################################
@@ -315,10 +316,12 @@ rf_prediction_parallel <- function(covariates,
     }
     tEnd <-  Sys.time()
     
-    progress_message(x=i, 
-                     max=blocks$n, 
-                     label=paste0("received block ",ni, " Processing Time: ", tmDiff(tStart,tEnd))
-    ) 
+    if (verbose){
+      progress_message(x=i, 
+                       max=blocks$n, 
+                       label=paste0("received block ",ni, " Processing Time: ", tmDiff(tStart,tEnd))
+      ) 
+    }
   }
   
   prediction_raster <- writeStop(prediction_raster)
