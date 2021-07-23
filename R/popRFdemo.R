@@ -142,14 +142,7 @@ popRFdemo <- function(project_dir,
   country <- toupper(country)
   
   if (!is.populated(country, iso.list)) {
-    cat(paste0("***********************************************\n"))
-    cat(paste0("Error: ",country," does not exist in this demo.\n"))
-    cat(paste0("***********************************************\n"))
-    cat(paste0("Please use the follwoing ISO \n"))
-    cat(paste0("------------------------------------------------\n"))
-    cat(iso.list)
-    cat(paste0("\n------------------------------------------------\n"))
-    stop() 
+    stop(paste0("Error: ",country," does not exist in this demo.\n")) 
   }
   
   quiet <- ifelse(verbose, FALSE, TRUE)
@@ -157,7 +150,10 @@ popRFdemo <- function(project_dir,
   output_dir <- file.path(project_dir, country, "covariates")
   
   if(!file.exists(output_dir)){ 
-    message("Info :: Creating dir ", output_dir)
+    
+    if (verbose){
+      message("Info :: Creating dir ", output_dir)  
+    }
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE) 
   }
   
@@ -223,19 +219,23 @@ popRFdemo <- function(project_dir,
     
     covariates <- names(input_covariates[[i]])
     
-    cat("\n------------------------------------------------\n")
-    cat("------------------------------------------------\n")
-    cat(paste0("Following covariates will be downloaded to \n",output_dir,"\n"))
-    cat("------------------------------------------------\n")
-    cat(paste0("",covariates,"\n"))
-    cat("------------------------------------------------\n")
+    if (verbose){
+      cat("\n------------------------------------------------\n")
+      cat("------------------------------------------------\n")
+      cat(paste0("Following covariates will be downloaded to \n",output_dir,"\n"))
+      cat("------------------------------------------------\n")
+      cat(paste0("",covariates,"\n"))
+      cat("------------------------------------------------\n")
+    }
     
     for (c in covariates){
       file_remote <- input_covariates[[i]][[c]]
       
       output_file <- file.path(output_dir, paste0(c,".tif"))
       if (!file.exists(output_file)){
-        cat(paste0("Downloading... ", c ,"\n"))
+        if (verbose){
+          cat(paste0("Downloading... ", c ,"\n"))  
+        }
         download_file(file_remote, output_file, quiet, method="auto")
         
       }
@@ -247,7 +247,9 @@ popRFdemo <- function(project_dir,
   output_px_area <- file.path(output_dir, paste0("px_area_100m.tif"))
   file_remote_px_area <- input_px_area[[country]]
   if (!file.exists(output_px_area)){
-    cat(paste0("Downloading... px_area px_area_100m\n"))
+    if (verbose){
+      cat(paste0("Downloading... px_area px_area_100m\n"))  
+    }
     download_file(file_remote_px_area, output_px_area, quiet, method="auto")  
   }  
   
@@ -255,7 +257,9 @@ popRFdemo <- function(project_dir,
   output_watermask <- file.path(output_dir, paste0("esaccilc_water_100m_2000_2012.tif"))
   file_remote_watermask <- input_watermask[[country]]
   if (!file.exists(output_watermask)){
-    cat(paste0("Downloading... watermask esaccilc_water_100m_2000_2012\n"))
+    if (verbose){
+      cat(paste0("Downloading... watermask esaccilc_water_100m_2000_2012\n"))
+    }  
     download_file(file_remote_watermask, output_watermask, quiet, method="auto") 
   }   
   
@@ -263,7 +267,9 @@ popRFdemo <- function(project_dir,
   output_mastergrid <- file.path(output_dir, paste0("subnational_admin_2000_2020.tif"))
   file_remote_mastergrid <- input_mastergrid[[country]]
   if (!file.exists(output_mastergrid)){
-    cat(paste0("Downloading... mastergrid subnational_admin_2000_2020\n"))
+    if (verbose){
+      cat(paste0("Downloading... mastergrid subnational_admin_2000_2020\n"))  
+    }
     download_file(file_remote_mastergrid, output_mastergrid, quiet, method="auto")
   }   
   
@@ -313,8 +319,12 @@ popRFdemo <- function(project_dir,
     country = file.path(output_dir,"px_area_100m.tif")
   )
   names(input_px_area) <- c(country)  
-  cat( paste0("Saving input covariates, watermask, px_area and mastergrid") )
-  cat( paste0("\nas R objects RData in :",output_dir,"\n") )
+  
+  if (verbose){
+    cat( paste0("Saving input covariates, watermask, px_area and mastergrid") )
+    cat( paste0("\nas R objects RData in :",output_dir,"\n") )
+  }
+  
   save(input_covariates, file=file.path(output_dir,"input_covariates.RData"))
   save(input_mastergrid, file=file.path(output_dir,"input_mastergrid.RData"))
   save(input_watermask, file=file.path(output_dir,"input_watermask.RData"))
@@ -326,8 +336,10 @@ popRFdemo <- function(project_dir,
   dpop_file <- file.path(output_dir, paste0(iso.s, "_population.csv"))
   
   if (!file.exists(dpop_file)){
-    cat( paste0("\nDownloading and saving population table for ",country) )
-    cat( paste0(" in ", paste0(iso.s, "_population.csv"), "\n" ,dpop_file,"\n") )
+    if (verbose){
+      cat( paste0("\nDownloading and saving population table for ",country) )
+      cat( paste0(" in ", paste0(iso.s, "_population.csv"), "\n" ,dpop_file,"\n") )
+    }
     
     dpop <- read.csv(file.path(url_prefix,
                                "GIS/Population/Global_2000_2020/CensusTables",
@@ -345,17 +357,26 @@ popRFdemo <- function(project_dir,
   
   if ( nrow(pop_tmp) < 20 ){
     
-    cat("\n------------------------------------------------\n")
-    cat("------------------------------------------------\n\n")
-    cat( paste0("Country ",country," has only ",nrow(pop_tmp)," admin units.\n") )
-    cat( paste0("This amount of admin units will not be enought to train the model\n") )
-    cat( paste0("For the purpers of the demo please choose another country\n\n") )
-    cat("------------------------------------------------\n")
-    cat("------------------------------------------------\n")
-    
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
+    if (verbose){
+      
+      cat("\n------------------------------------------------\n")
+      cat("------------------------------------------------\n\n")
+      cat( paste0("Country ",country," has only ",nrow(pop_tmp)," admin units.\n") )
+      cat( paste0("This amount of admin units will not be enought to train the model\n") )
+      cat( paste0("For the purpers of the demo please choose another country\n\n") )
+      cat("------------------------------------------------\n")
+      cat("------------------------------------------------\n")
+      
+      opt <- options(show.error.messages = FALSE)
+      on.exit(options(opt))
+      stop()
+      
+    }else{
+      
+      stop(paste0("Country ",country," has only ",nrow(pop_tmp)," admin units."))
+      
+    }
+
   } 
   
   input_poptables <- list(
