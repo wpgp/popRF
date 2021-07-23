@@ -253,7 +253,8 @@ change_raster_extend <- function(srcfile,
 #' @noRd 
 create_dirs_for_prj <- function(input.countries, 
                                 output_dir, 
-                                verbose=FALSE, logFALSE){
+                                verbose=FALSE, 
+                                log=FALSE){
   
   
   countries_tag_output <- paste(input.countries, collapse="_")
@@ -331,8 +332,8 @@ check_cov <- function(covariates,
             return(FALSE)
           }else{
             
-            log_info("Error", paste0("Covariate ", ffile ," extend is not match mastergrid extend."), verbose=verbose, log=log)
-            stop(paste0("Error:: Covariate ", ffile ," extend is not match mastergrid extend.")) 
+            #log_info("Error", paste0("Covariate ", ffile ," extend is not match mastergrid extend."), verbose=verbose, log=log)
+            stop(paste0("Covariate ", ffile ," extend is not match mastergrid extend.")) 
             
             return(TRUE)
           } 
