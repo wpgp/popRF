@@ -243,11 +243,17 @@ change_raster_extend <- function(srcfile,
 
 #' Create project directory based on tag of the countries.
 #' @param input.countries input list of the countries. 
-#' @param output_dir path to project dir 
+#' @param output_dir path to project dir
+#' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the console, which might be 
+#'        helpful for model debugging. Default is \code{verbose} = TRUE.
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate  
 #' @rdname create_dirs_for_prj
 #' @return list of project directories
 #' @noRd 
-create_dirs_for_prj <- function(input.countries, output_dir){
+create_dirs_for_prj <- function(input.countries, 
+                                output_dir, 
+                                verbose=FALSE, logFALSE){
   
   
   countries_tag_output <- paste(input.countries, collapse="_")
@@ -255,14 +261,14 @@ create_dirs_for_prj <- function(input.countries, output_dir){
   subDir.country <- file.path(output_dir, countries_tag_output, "tmp")
   
   if(!file.exists(subDir.country)){ 
-    message("Info :: Creating dir ", subDir.country)
+    log_info("Info", paste0("Creating dir ", subDir.country), verbose=verbose, log=log)
     dir.create(subDir.country, recursive = TRUE, showWarnings = FALSE) 
   }
   
   subDir.country.output.zst <- file.path(output_dir, countries_tag_output, "zonal_stats")
   
   if(!file.exists(subDir.country.output.zst)){ 
-    message("Info :: Creating dir ", subDir.country.output.zst)
+    log_info("Info", paste0("Creating dir ", subDir.country.output.zst), verbose=verbose, log=log)    
     dir.create(subDir.country.output.zst, recursive = TRUE, showWarnings = FALSE) 
   }
   
@@ -271,7 +277,7 @@ create_dirs_for_prj <- function(input.countries, output_dir){
   if (length(input.countries) > 1){
     
     if(!file.exists(subDir.countrys.merged)){ 
-      message("Info :: Creating dir ", subDir.countrys.merged)
+      log_info("Info", paste0("Creating dir ", subDir.countrys.merged), verbose=verbose, log=log)    
       dir.create(subDir.countrys.merged, recursive = TRUE, showWarnings = FALSE) 
     }  
   }
@@ -326,11 +332,8 @@ check_cov <- function(covariates,
           }else{
             
             log_info("Error", paste0("Covariate ", ffile ," extend is not match mastergrid extend."), verbose=verbose, log=log)
+            stop(paste0("Error:: Covariate ", ffile ," extend is not match mastergrid extend.")) 
             
-            if (!verbose){
-              message(paste0("Covariate ", ffile ," extend is not match mastergrid extend."))  
-            }
-
             return(TRUE)
           } 
         }
