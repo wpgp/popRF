@@ -1,6 +1,11 @@
+## 23 July 2021
+* Included a references describing the methods into the package DESCRIPTION file
+* Cleaned up the code to make sure there is no console output if "verbose" is FALSE
+
 ## 22 July 2021
-* Omited the licence file and the reference as it was advised by CRAN team member after first submution 
+* Omitted the licence file and the reference as it was advised by CRAN team member after first submution 
 * Removed DOI: 10.5258/SOTON/WP00715  which was "Not Found" 
+* There were no ERRORs or WARNINGs after "R CMD check results" 
 
 ## Tested on environments
 * Red Hat Enterprise Linux Server release 7.9 R-version 3.6.2 
