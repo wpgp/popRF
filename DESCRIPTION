@@ -53,7 +53,8 @@ Authors@R: c(
 Maintainer: Maksym Bondarenko <mb4@soton.ac.uk> 
 Description: Disaggregating census-based areal population counts to finer 
     gridded population surfaces using Random Forest algorithm to determine 
-    the target area weights. 
+    the target area weights 
+    (see _Stevens, et al._ (2015) <doi:10.1371/journal.pone.0107042>). 
 URL: https://github.com/wpgp/popRF
 BugReports: https://github.com/wpgp/popRF/issues
 Imports: 
