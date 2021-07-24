@@ -279,7 +279,6 @@ popRF <- function(pop,
     cores <- parallel::detectCores(logical = TRUE) - 1
     
     log_info("MSG", paste(""), verbose=verbose, log=log)
-    #log_info("MSG", paste(replicate(48, "="), collapse = ""), verbose=verbose, log=log)
     log_info("MSG", paste0("Parameter cores is set to 0"), verbose=verbose, log=log)  
     log_info("MSG", 
              paste0("popRF will use maximum avalible cores on the PC which is ", 
@@ -291,9 +290,7 @@ popRF <- function(pop,
   } 
 
 
-  #set a global variabal getOption("pj.output.dir")
 
-  
   fixed_set <- ifelse(is.null(fset), FALSE, TRUE)
   
   rfg.output.dir.covariates <- file.path(output_dir,"covariates")
@@ -311,8 +308,8 @@ popRF <- function(pop,
   
   glPaths <- create_dirs_for_prj(rfg.input.countries, 
                                  output_dir, 
-                                 verbose, 
-                                 log)   
+                                 verbose=verbose, 
+                                 log=log)   
   
   
   ##  Declare where we are outputting things:
@@ -324,9 +321,7 @@ popRF <- function(pop,
   ##  Retrieve the country tag:
   rfg.countries.tag <- glPaths$countries_tag 
   rfg.countries.merged <- glPaths$data_merged
-  
-  #rfg.data.old.popfits.final  <- popfits$final
-  #rfg.data.old.popfits.quant <- popfits$quant
+
   
   
   rfg.init.popfit.RData <- file.path(rfg.output.path.countries.tmp, 
@@ -666,11 +661,7 @@ popRF <- function(pop,
     
     write.csv(importance_scores.log, file.path(rfg.output.path.countries.tmp, 
                                            paste0("IncMSE_IncNodePurity_",rfg.countries.tag,".csv") ))
-    
-    # 
-    # write.table((importance_scores.log), file.path(rfg.output.path.countries.tmp, 
-    #                                                paste0("IncMSE_IncNodePurity_",rfg.countries.tag,".csv")), sep="," )
-    
+
     if (verbose) print(importance_scores.log)
     
     log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
