@@ -1,6 +1,8 @@
-## 23 July 2021
+## 24 July 2021
 * Included a references describing the methods into the package DESCRIPTION file
-* Cleaned up the code to make sure there is no console output if "verbose" is FALSE
+* Cleaned up the code to make sure there is no console output if "verbose" is FALSE. popRF is the package to work with a raster files, therefore calculation can take some time and for a user convenience parameter "verbose" is TRUE by default .
+Only the output which can not be suppressed in popRF package is from tuneRF function from randomeForest package. Even if "trace" paramenter is "False" in tuneRF function, there is a place where tuneRF function is using "cat" to print text (cat(Improve, improve, "\n")).
+* There were no ERRORs or WARNINGs after "R CMD check results" 
 
 ## 22 July 2021
 * Omitted the licence file and the reference as it was advised by CRAN team member after first submution 
