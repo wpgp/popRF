@@ -302,7 +302,7 @@ popRF <- function(pop,
   rfg.input.countries <- c()
   
   for ( i in names(cov) ) {
-    rfg.input.countries <- append(rfg.input.countries, i, 1)
+    rfg.input.countries <- append(rfg.input.countries, i)
   } 
   
   
