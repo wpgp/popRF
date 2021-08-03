@@ -1,0 +1,1398 @@
+---
+title: "popRF"
+description:  Random Forest-informed Disaggregative Population Modelling and Mapping
+date: August 2, 2021
+author:
+  - name: Jeremiah J. Nieves
+    affiliation: Geographic Data Science Lab, University of Liverpool
+    affiliation_url: https://www.liverpool.ac.uk/geographic-data-science/
+    url: https://www.liverpool.ac.uk/environmental-sciences/staff/jeremiah-nieves/
+    orcid_id: 0000-0002-7423-1341
+  - name: Maksym Bondarenko
+    affiliation: WorldPop, University of Southampton
+    affiliation_url: https://www.worldpop.org
+    url: https://www.southampton.ac.uk/engineering/about/staff/mb4.page
+    orcid_id: 0000-0003-4958-6551
+  - name: Forrest R. Stevens
+    affiliation: University of Louisville
+    affiliation_url: https://louisville.edu/geogeo
+    url: https://louisville.edu/geogeo/our-people/profiles/forrest-r-stevens-ph-d
+    orcid_id: 0000-0002-9328-3753
+  - name: Andrea E. Gaughan
+    affiliation: University of Louisville
+    affiliation_url: https://louisville.edu/geogeo
+    url: https://louisville.edu/geogeo/our-people/profiles/andrea-gaughan
+    orcid_id: 0000-0002-4898-1587
+  - name: Warren C. Jochem
+    affiliation: WorldPop, University of Southampton
+    affiliation_url: https://www.worldpop.org
+    url: https://www.wcjochem.com/
+    orcid_id: 0000-0003-2192-5988
+  - name: David Kerr
+    affiliation: WorldPop, University of Southampton
+    affiliation_url: https://www.worldpop.org
+    url: https://www.worldpop.org
+  - name: Andrew J. Tatem
+    affiliation: WorldPop, University of Southampton
+    affiliation_url: https://www.worldpop.org
+    url: https://www.southampton.ac.uk/geography/about/staff/ajt1m11.page
+    orcid_id: 0000-0002-7270-941X
+  - name: Alessandro Sorichetta
+    affiliation: WorldPop, University of Southampton
+    affiliation_url: https://www.worldpop.org
+    url: https://www.southampton.ac.uk/geography/about/staff/as1v13.page
+    orcid_id: 0000-0002-3576-5826
+
+vignette: >
+  %\VignetteIndexEntry{popRF: Random Forest-informed Dasymetric Population Disaggregation and Mapping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  
+bibliography: refs.bib
+output: 
+  distill::distill_article:
+    toc: true
+    toc_depth: 3
+  
+repository_url: https://github.com/wpgp/popRF
+creative_commons: CC BY
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, setup, include=FALSE}
+options(prompt = 'R> ', continue = '+ ', width = 80)
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+
+require(raster)
+require(randomForest)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+```
+
+# Introduction
+Methods of disaggregating census-based areal population counts to finer gridded population surfaces have become more prevalent since the 1990s with advances in computation and digitisation of data [@Martin1991; @Balk2004;@Bhaduri2007; @CIESIN2011; @Doxsey-Whitfield2015; @EuropeanCommission2015; @Friere2016; @Esch2018; @Palacios-Lopez2019; @Kugler2019; @Leyk2019]. However, disaggregation, the process of distributing values in a "top-down" manner from a larger source area to a series of smaller target areas contained within the source area, has been utilised for population mapping since at least 1936 [@Wright1936]. Mennis [-@Mennis2009] presents a short history of dasymetric disaggregation in its introduction. Within dasymetric disaggregations of populations, grids with uniform spatial resolution have become common target areas [@Leyk2019], albeit these are still aggregate representation of population from, say, household data. These disaggregated gridded population data have the potential to better represent the true underlying spatial distribution of population densities [@Eicher2001; @Mennis2003; @Mennis2006; @Leyk2019] as compared to the areal census-based counts. While these census-based counts are often available at high resolution, i.e. small areas such as enumeration districts, within government, publicly released versions are often much coarser. These coarser areal, census-based counts, lacking any other information, can only imply a homogeneous population density within a given area. Further, gridded population data obtained from disaggregation allow for the ready incorporation of other gridded data, e.g. access to health facilities, for further analyses as well as the ability to aggregate up to non-census-based areas for further interpretation.
+
+Given these characteristics, disaggregated gridded population data have been increasingly been used for a broad number of applications in sustainability [@Dunnett2020], public health and surveys [@James2018; @Ruktanonchai2020; @Thomson2020], and urban expansion projections [@Nieves2020; @Nieves2020c], to name a few. While the specifics of the disaggregative method can vary, in general, dasymetric disaggregation has become the most prevalent means of top-down gridded population modelling [@Balk2004; @Bhaduri2007; @CIESIN2011; @Doxsey-Whitfield2015; @EuropeanCommission2015; @Friere2016; @Esch2018; @Leyk2019; @Palacios-Lopez2019]. Dasymetric disaggregation being the redistribution of counts using the relationships between population counts and spatially-coincident ancillary geographic data [@Mennis2003; @Mennis2006; @Mennis2009]. In particular, the WorldPop dasymetrically mapped gridded population products ([https://worldpop.org](https://worldpop.org)) have become widely used by researchers, government and non-governmental organisations, and international organisations, particularly within low- and middle-income contexts. Their dasymetric mapping procedure utilises a random forest model and environmental covariates to generate the weights used to disaggregate population counts to the final, gridded surface [@Gaughan2013; @Gaughan2014; @Sorichetta2015; @Stevens2015].
+
+There have been some packages and code-based tools for the express purpose of disaggregative mapping, both past and current. The USGS has an ArcGIS-based tool [@Sleeter2008; @Gould2014]. Within `Python`, there is a subpackage to **`pySAL`** [@Rey2010; @Rey2019; @Rey2021] called **`tobler`** which provides a library of tools for areal interpolation and dasymetric mapping [@Knaap2021]. Within `R`, there is the **`disaggregation`** package which takes an INLA [@Nandi2020] Bayesian approach to disaggregative mapping. There is also the web-based, yet written with a `R` back-end, **`peanutbutter`** [@Leasure2021] that disaggregates population counts into building footprints based upon manually defined average household densities and estimated proportion of buildings that are residential. A similar field to disaggregative count mapping, small area estimation, have packages in `R` as well, such as **`emdi`** [@Kreutzmann2019]. However, none of these disaggregative mapping methods utilise a random forest approach which provides great flexibility, automability, and parallelisation across different data landscapes [@Gaughan2014; @Stevens2015; @Reed2018; @Leyk2019]. Further, with the exception of **`disaggregation`** [@Nandi2020], these disaggregative mapping approaches are relatively naive and can rely on manually defined weights and or weighting parameters.
+
+While the code for this random forest-informed disaggregative mapping procedure has been made openly available via GitHub since 2014 [@Stevens2014], its accessibility, utility and efficiency have noted limitations for practitioners and end users. Because it was a multi-script procedure written in a combination of `R` and `Python` [@Stevens2014], a high barrier of programming skill was required for its utilisation. The multi-script format made workflows and general folder structures largely static and difficult to customise. Further, the `Python` portions, which flexibly handled the geoprocessing of covariates, was dependent upon an ArcGIS license to utilise the **`arcpy`** library. This limited the running of the scripts to Windows-based environments and, more importantly, the license cost served as another  access barrier. While capable of application across large spatial extents, given its time of development and reliance on **`arcpy`** for processing, the multi-script workflow was not optimised for efficiency or parallelisation outside of the RF portions. Lastly, because of the relatively high programming requirements for usage of this multi-script procedure, requests for disaggregative population data produced using end-user specified covariate sets was often done when the WorldPop group had spare time. Other times data security and license concerns precluded end-users from sharing data that would have led to improved disaggregative population data.
+
+
+Here we introduce the **`popRF`** package in `R` that largely addresses these issues. This is done by functionalising the RF-informed dasymetric population modelling procedure [@Stevens2015] in a single language that is completely free, open source, and environment agnostic. Further, the package has been parallelised where possible to achieve efficient prediction and geoprocessing over large extents, providing functions that have applied utility outside of simply performing disaggregative population modelling. This package was utilised already to predict population and inform the mapping of modelled human settlement [@Nieves2020; @Nieves2020c; @Nieves2021] at 100m resolution across 249 countries from 2000-2020, ingesting over 10TB of covariates [@Lloyd2019] and producing another 70 TB of population and population related datasets.
+
+## Disaggregative population mapping
+
+There are multiple means to disaggregate count type data, particularly population counts [@Leyk2019; @Palacios-Lopez2019; @Martin1991; @Mennis2003; @Mennis2006; @Mennis2009]. In general however, the idea is to produce weights, whether by expert opinion, a function of the source and target area geometries, or statistical relationships between ancillary data and the counts or densities, that are used to inform the disaggregation of counts [@Mennis2003; @Mennis2006; @Mennis2009]. Areal reweighting is one of the simplest disaggregative processes which uses the relationship of the geometries of the source and target areas. While the **`popRF`** package does not perform simple areal reweighting, understanding areal reweighting in comparison to the, slightly, more involved dasymetric disaggregation is useful. We briefly cover area reweighting as a primer for dasymetric disaggregation.We then move to dasymetric disaggregation, specifically "intelligent" dasymetric disaggregation which uses a statistical or machine learning approach to generate the weights based upon spatially coincident ancillary data, such as land cover [@Mennis2006]. We finally cover a specific case of dasymetric disaggregation of population counts using a random forest to generate the weights [@Stevens2015], which is the focus of the **`popRF`** package.
+
+### Areal reweighting
+
+Given some source area which is comprised of smaller target areas, areal reweighting is where the value of the source area is redistributed to the smaller constituent target areas in proportion to the targets’ areas (Figure \@ref(fig:areal)). That is a larger target area will receive a larger disaggregated value, compared to a smaller target area, because its area is proportionally larger relative to their common source area. The sum of all weights adds up to 1.
+
+```{r areal, echo=FALSE, fig.cap = "Basic diagram of areal reweighting with the original source area and its value; the target areas; the target area weights, as calculated by their proportional area of the source area; and the final disaggregated values of the target areas."}
+knitr::include_graphics(here::here("vignettes/figures","figure1.png"))
+```
+
+
+### Dasymetric disaggregation
+
+Dasymetric disaggregation is similar to areal reweighting in that the target areas have an assigned weight, which is relative to their larger common source area [@Eicher2001]. However, dasymetric weights are not determined by proportional area, but based upon ancillary or supporting data that is at the target area scale, such as classified landcover [@Mennis2003]. These weights can be determined *a priori*, by expert opinion, or by statistical means, i.e. models [@Mennis2003; @Mennis2006]. This last scenario has been referred to as “intelligent” dasymetric mapping [@Mennis2006]. In this case, a modelling or algorithmic procedure determines a weighting value for each target area based upon the ancillary covariates provided [@Mennis2006]. These weights are normalised within each source area, to ensure they add up to 1, before being used to disaggregate the value from the source area [@Mennis2006] (Figure \@ref(fig:dasy)).
+
+```{r dasy, echo=FALSE, fig.cap = "Basic diagram of dasymetric reweighting with the source area; the target areas; the ancillary information, in this case classified land cover; the source area normalised weights; and the final disaggregated values."}
+knitr::include_graphics(here::here("vignettes/figures","figure2.png"))
+```
+
+## Random forest-informed population disaggregation
+
+Building upon the dasymetric disaggregation concept, [@Stevens2015] selected a random forest (RF) to be the algorithm to determine the target area weights. RFs are a non-parametric ensemble modelling method that are capable of handling continuous and categorical data and capture highly non-linear phenomena and complex interactions [@Breiman2001]. A RF was selected due to these attributes and for: their robustness to noise and overfitting, their ability to handle small and large samples, their lack of user input, and their ability to be run in parallel [@Breiman2001; @Liaw2002; @Stevens2015].
+
+RFs are an ensemble modelling method composed of numerous, typically hundreds, classification and regression trees (CARTs), hence the “forest” in RF [@Breiman2001]. In the **`popRF`** package, we utilise the basic RF version given in the **`randomForest`** [@Liaw2002] package as a regression model, although many alternative implementations exist. Given a set of data, each CART is independently constructed by first performing bagging, or sampling of the entire dataset with replacement, typically with each observation being included in 2/3 of all samples [@Breiman2001]. The unsampled data is set aside as the out-of-bag (OOB) sample [@Breiman2001]. The bagged sample is then used to construct the CART in an iterative fashion where, at each node (Figure \@ref(fig:rfbasic)), a random subsample of the input covariates are tested to determine a splitting value that maximises an information criterion and by which the data is split into two smaller subsets [@Breiman2001]. This is repeated until some stopping criteria are met or there is a single observation in each “leaf” node [@Breiman2001]. The OOB data is then run through the CART to determine its error and, when combined with the OOB error of other CARTS in the RF, serve as an internal cross-validation estimate of the RFs general error [@Breiman2001]. After the total number of CARTs to be in the RF are constructed, predictions are made by giving the data to each CART and then their individual predictions are aggregated into a single prediction by taking the average [@Breiman2001].
+
+```{r rfbasic, echo=FALSE, fig.cap="Generalised RF process diagram."}
+knitr::include_graphics(here::here("vignettes/figures","figure3.png"))
+```
+
+In this dasymetric mapping scenario, the source areas were subnational areal units with associated census-based population counts (Figure \@ref(fig:rfdasy)). The target areas were pixels representing approximately 100m at the equator (0.0008333$^{\circ}$) (Figure \@ref(fig:rfdasy)). Population counts were first log transformed at the source area scale [@Stevens2015]. Ancillary data regarding land cover, topography, climate, and the built environment are aggregated to the source area scale and given to the RF as covariates to be trained against source area population density [@Gaughan2014; @Stevens2015] (Figure \@ref(fig:rfdasy)). 
+Given the input covariates, a conservative covariate selection procedure is conducted. An initial RF is fit using all input covariates and each variables’ importance recorded [@Stevens2015]. When using a RF as a regression, the variable importance is measured by the percent increase in the mean square error (Per.Inc.MSE) when a given covariate’s values are randomly permutated, i.e. shuffled, effectively breaking its relationship with the outcome of interest [@Breiman2001]. The larger the Per.Inc.MSE of the covariate, the more important the covariate within the RF [@Breiman2001]. Covariates with Per.Inc.MSE values less than zero are removed, the RF refit on the reduced covariate set, and covariate importance rechecked (Figure \@ref(fig:rfdasy)) [@Stevens2015]. This is repeated until only non-zero, positive importance covariates remain. The final RF model is then fit and used to predict back-transformed population density at the pixel level for use as dasymetric weights [@Stevens2015]. These pixel level population density weights are then normalised by their sum within each source area, to have all normalised weights within a source area add up to one (Figure \@ref(fig:rfdasy)). The normalised weights are then used to disaggregate the source area population counts, with the disaggregated target counts always summing back up to the source area total [@Stevens2015].
+
+```{r rfdasy, echo=FALSE, fig.cap = "Generalised process diagram of a RF-informed dasymetric disaggregation of census-based population counts as described in @Stevens2015 and implemented in **`popRF`**."}
+knitr::include_graphics(here::here("vignettes/figures","figure4.png"))
+```
+
+
+Because RFs are an ensemble modelling method, this means that multiple RFs can naturally be combined [@Breiman2001}. This is particularly useful in scenarios where one country has poor quality areal population data, i.e. few and large areal units, or too few subnational units to train an RF model [@Gaughan2014]. In this case, the RF model trained on a similar country can be used in conjunction with poor quality data, or by itself to predict the density weights [@Gaughan2014]. This regional parameterisation scenario is detailed more in @Gaughan2014 and @Sinha2019. The **`popRF`** package follows the described RF-informed dasymetric disaggregation procedure and allows for the regional parameterisation scenarios.
+
+# Using **`popRF`**
+The **`popRF`** package contains one primary function: `popRF()`. `popRF()` provides a single function call to produce RF-informed dasymetric disaggregations of population count data in a gridded format, following the process in Figure \@ref(fig:rfdasy). The input data can either be from local paths, from the online geospatial library provided by WorldPop [@Lloyd2019], other network/internet locations, or a mix of all of these. It is assumed that all of the input data is raster-based, unprojected, e.g. WGS84 coordinate system, and already spatially aligned. Models using the `popRF()` function can be run specifically for a single country, multiple countries, for a single country using the RF from a previously run country/countries, or for a single country combining the given country’s RF with another previously run country/countries RF(s). In the remainder of this section, we’ll cover the specifications of the input data, the types of model specifications that can be run using the `popRF()` function, as well as the how the internal helper functions carry out the modelling.
+
+**`popRF`** utilises the following packages: **`Rcpp`** [@RRcpp; @Rcpp2011; @Rcpp2018], **`doParallel`** [@RdoParallel], **`foreach`** [@Rforeach], **`gdalUtils`** [@RgdalUtils], **`plyr`** [@plyr2011; @Rplyr], **`quantregForest`** [@RquantregForest], **`randomForest`** [@Liaw2002], **`raster`**[@Rraster], **`rgdal`** [@Rrgdal], and **`sp`** [@sp2005; @sp2013]. Additionally, throughout the rest of the article, we also utilise: **`ggplot2`** [@Rggplot2], **`ggspatial`** [@Dunnington2021], and **`viridis`** [@Rviridis]. All operations were run using `R` 4.0.5 "Shake and Throw" [@R405].
+
+
+## General data requirements
+
+All input data should be of a raster format and is assumed to be unprojected but with a common, defined coordinate system, e.g. WGS84. This is why, as one of the parameters input to the `popRF()` function, we require a raster for “pixel area” whose values should contain the precalculated area of each output pixel. This unprojected approach to modelling was chosen to avoid the need for manual specification of projections, of which there are many for a given country, as well as facilitate the creation of models that incorporate multiple countries of data at once [@Gaughan2014; @Sinha2019]. Further, all input raster data should be spatially aligned and harmonised, i.e. each raster layer should have the same extents, a common origin, and a common, uniform resolution. The `popRF()` function is focused on the modelling and disaggregation and as such, the geoprocessing that must occur prior to the use of the function is left to the user to facilitate.
+
+## Minimum data requirements
+
+Data requirements for carrying out the `popRF()` function workflow will vary based upon the specific type of model being run, e.g. “single country general” versus “single country hybrid” (Table \@ref(tab:model-tbl)). Though, at a minimum, zonal data representing subnational areas, corresponding tabular population count data for those areas, a binary water mask indicating pixels of water (*1*) and no water (*0*), a raster containing the area of each pixel as its pixel values, and at least one ancillary covariate dataset must be provided. The areal zonal data must have a unique ID for each zone and these IDs must correspond to the tabular population count data. Common ways the `popRF()` function can be run and their data requirements are given below in Table \ref(tab:model-tbl).
+
+```{r model-tbl, echo = FALSE}
+library(dplyr)
+library(readr)
+library(stringr)
+options(knitr.kable.NA = '')
+tbl <- "|Model Type Designation|Input Data| \\n
+| --------------------- | ---------- | \\n
+|General | Zonal Data (Raster)| \\n
+|                       |Population Counts (Tabular)| \\n
+|                       |Water Mask (Raster)| \\n
+|                       |Pixel Area (Raster)| \\n
+|                       |Ancillary Datasets (Rasters)| \\n
+|Hybrid-parameterised| Zonal Data (Raster)| \\n
+|                       |Population Counts (Tabular)| \\n
+|                       |Water Mask (Raster)| \\n
+|                       |Pixel Area (Raster)| \\n
+|                       |Ancillary Datasets (Rasters)| \\n
+|                       |RF Model Object from Other Country(ies) (.RData)| \\n
+| Fully-parameterised|Zonal Data (Raster)| \\n
+|                       |Population Counts (Tabular)| \\n
+|                       |Water Mask (Raster)| \\n
+|                       |Pixel Area (Raster)| \\n
+|                       |Ancillary Datasets (Rasters)| \\n
+|                       |RF Model Object from Other Country(ies) (.RData) |" 
+tbl_df <- data_frame <- read_delim(tbl, delim = '|') %>% select(`Model Type Designation`, `Input Data`)
+tbl_df <- tbl_df[c(2:nrow(tbl_df)),]
+knitr::kable(tbl_df, caption = "Common **`popRF`** model run types and corresponding data requirements. For all model runs, zonal data, corresponding tabular population count data, and at least one ancillary dataset must be provided in addition to the below specified data. Each of these models can be run for either a single or multiple country scenario.")
+```
+
+In the case of the hybrid- and fully-parameterised model types, the full path(s) of the directories containing one or more RF model objects from one or more countries must be provided to the parameters of the `popRF()` function by properly defining the relevant fixed set parameters. It is important that the names of the ancillary datasets match those of the previously run RF model otherwise an error will occur.
+
+## User settings and parameters
+
+The `popRF()` function has five required parameters and 12 optional parameters related to the overall process (Table \@ref(tab:param-tbl)), as well as an additional five optional parameters that are passed to the internally called `randomForest()` function (Table \@ref(tab:rf-tbl)). The required parameters involve the paths to the input files containing: the areal, population count data (*pop*); the “mastergrid” raster containing the areas with unique IDs corresponding to the population data (*mastergrid*); the covariates for the RF (*cov*); the raster indicating water extents to be used as a mask (*watermask*); and the raster containing the area of each unprojected pixel (*px\_area*). All optional parameters involve: the location for writing outputs (*output\_dir*), options for parallel processing (cores* and *minblocks*), running a quantile RF regression options (*quant*), model type options (*fset*, *fset\_incl*, and *fset\_cutoff*), covariate alignment options (*fix\_cov*), output checking (*check*), and processing messaging options (*verbose* and *log*). We give a brief description of all parameters, but refer the reader to the **`popRF`** package documentation for additional detail not included here.
+
+```{r param-tbl, echo=FALSE}
+library(dplyr)
+library(readr)
+library(stringr)
+options(knitr.kable.NA = '')
+tbl <- "|Parameter Name|Type|Description| \\n
+|---|---|---| \\n
+|*pop*|Character|Contains the name of the file from which the unique area ID and corresponding population values are to be read from.| \\n
+|*cov*|List of named lists|The name of each named list corresponds to the 3-letter ISO code (ISO 3166-1 alpha-3) of a specified country. The elements within each named list define the specified input covariates to be used in the RF model, i.e. the name of the covariates and the corresponding, if applicable and local, path to them.| \\n
+|*mastergrid*|Named list|Each element of the list defines the path to the input mastergrid(s), i.e. the template gridded raster(s) that contains the unique area IDs as their value. The name(s) corresponds to the 3-letter ISO code(s) of a specified country(ies). Each corresponding element defines the path to the mastergrid(s).| \\n
+|*watermask*|Named list|Each element of the list defines the path to the input country-specific water mask. The name corresponds to the 3-letter ISO code of a specified country. Each corresponding element defines the path to the water mask, i.e. the binary raster that delineates the presence of water (1) and non-water (0), that is used to mask out areas from modelling.| \\n
+|*px\\_area*|Named list|Each element of the list defines the path to the input raster(s) containing the pixel area. The name corresponds to the 3-letter ISO code of a specified country. Each corresponding element defines the path to the raster whose values indicate the area of each unprojected (WGS84) pixel.| \\n
+|*output\\_dir*|Character|Optional. Contains the path to the directory for writing output files.|
+|*cores*|Integer|Optional. Indicates the number of cores to use in parallel when executing the function.| \\n
+|*quant*|Logical|Optional. Indicates whether to produce the quantile regression forests (TRUE) to generate prediction intervals.| \\n
+|*set\\_seed*|Integer|Optional. Value to be used to set the random seed. Value is 2010 by default.| \\n
+|*fset*|Named list|Optional. Each element of the list defines the path to the directory(ies) containing the RF model objects (.RData) with which we are using as a 'fixed set' in this modeling, i.e. are we parameterising, in part or in full, this RF model run upon another country's(ies') RF model object. The name of each element corresponds to the 3-letter ISO code of a specified country.| \\n
+|*fset\\_incl*|Logical|Optional. Indicates whether the RF model object will or will not be combined with another RF model run upon another country's(ies') RF model object, i.e. “Hybrid Parameterised”.| \\n
+|*fset\\_cutoff*|Integer|Optional. This parameter is only used if fset\\_incl is TRUE. If the country has less than fset\\_cutoff admin units, then RF popfit will not be combined with the RF model run upon another country's(ies') RF model object. This is to avoid trying to run a RF on countries with more covariates than admin units.| \\n
+|*fix\\_cov*|Logical| Optional. Indicates whether the raster extent of the covariates will be corrected if the extent does not match the mastergrid(s).| \\n
+|*check\\_results* |Logical|Optional. Indicates whether the results will be compared with input data, i.e. makes sure the sum of disaggregated pixel values equals the total of each source subnational unit the values were disaggregated from| \\n
+|*verbose*|Logical|Optional. Indicates whether to print intermediate output from the function to the console.| \\n
+|*log*|Logical|Optional. Indicates whether to print intermediate output from the function to the log.txt file.| \\n
+|*...*|*NA*|Optional. Additional parameters passed directly to the `randomForest()` function or influence the efficiency of parallel processing.| \\n"
+
+tbl_df <- data_frame <- read_delim(tbl, delim = '|') %>% select(`Parameter Name`, `Type`, `Description`)
+tbl_df <- tbl_df[c(2:nrow(tbl_df)),]
+knitr::kable(tbl_df, caption = "Parameters of the `popRF()` function with brief descriptions.")
+```
+
+There are some additional optional parameters that are passed directly to the `randomForest()` function that is called internally which we detail in Table \@ref(tab:rf-tbl). Further details on the parameters of the `randomForest()` function are given in [@Liaw2002].
+
+```{r rf-tbl, echo=FALSE}
+library(dplyr)
+library(readr)
+library(stringr)
+options(knitr.kable.NA = '')
+tbl <- "|Parameter Name|Type|Description| \\n 
+|---|---|---|
+|*binc*|Numeric|A constant value to increase the calculated number of blocks by. This can be used to set a larger 'safety' margin for the calculated allocation of computational resources.| \\n
+|*boptimise*|Logical|Indicates whether the calculation of blocksize should be 'optimised' to use 65 percent of available memory in the estimation.| \\n
+|*bsoft*|Logical|Indicates the 'softness' (or hardness) of the specification of cores to use in the modelling. If `TRUE` and the task can be processed in a number of blocks less than the specified value of `cores`, then the smaller number of blocks will be used.| \\n
+|*proximity*|Logical|Indicates whether proximity measures among the rows should be computed.|\\n
+|*nodesize*|Integer|Declares a fixed value for the number of observations to be in each terminal node of the RF. Is passed to the *nodesize* parameter of the `randomForest()` function. If `NULL`, defaults to 1/20th the number of observations.|\\n
+|*maxnodes* |Integer|Declares a fixed value for the maximum number of terminal nodes in a tree within the RF. Is passed to the *maxnodes* parameter of the `randomForest()` function. Default, of `NULL`, is no limit.|\\n
+|*ntree*|Integer|Declares a fixed value for the number of trees to grow within the RF. Is passed to the *ntree* parameter of the `randomForest()` function. Default, if `NULL`, is 500 trees.|\\n
+|*mtry*|Integer|Declares a fixed value for the number of covariates to try at each split within a tree. Is passed to the *mtry* parameter of the `randomForest()` function. If `NULL`, the value fit from the `tuneRF()` function is used instead.|\\n
+|*const*|Character|Contains the path to the binary raster file that will be used as a mask, where masked areas have value equal to zero. This mask is used to constrain the population modelling layers.|\\n"
+
+tbl_df <- data_frame <- read_delim(tbl, delim = '|') %>% select(`Parameter Name`, `Type`, `Description`)
+tbl_df <- tbl_df[c(2:nrow(tbl_df)),]
+knitr::kable(tbl_df, caption = "Table of additional, optional parameters within the `popfit()` function that are passed internally to the `randomForest()` function.")
+```
+
+### Typical covariates and their sources
+
+Covariates derived from remote sensing imagery, such as land cover, urban and settlement presence and density, nighttime lights, and vegetation, and other covariates derived from spatial environmental data, such as roads, health and education services, points of interest, water bodies, and protected land, are commonly used as “ancillary” data to produce the dasymetric weights used in disaggregating population [@Martin1991; @Balk2004; @Mennis2006; @Bhaduri2007; @Gaughan2014; @Sorichetta2015; @Stevens2015; @EuropeanCommission2015; @Friere2016; @Reed2018; @Palacios-Lopez2019; @Nieves2021]. Such covariate data can be locally developed, e.g. manual digitisation, or be derived from openly available sources as long as they are processed into raster format with a consistent resolution, are spatially aligned, and are unprojected in a common coordinate system (e.g. WGS84). The covariates can have any name, but will require consistency in the naming, between models, for model fitting and predictions to work when running wither a hybrid-parameterised or fully-parameterised model (Table \@ref(tab:model-tbl)).
+
+### Population and subnational boundary data
+The population data that is input to the `popRF()` function is tabular in nature and should be in a comma separated value (CSV) file format. The data should consist of two columns: the first column containing rows of unique Geographic ID (GID), which correspond to the subnational areas defined by the raster provided to the *mastergrid* parameter, and the second column containing rows of values of population counts for each subnational area. The CSV file should not contain a header with column names.
+
+## Internal optimisation
+One of the additional benefits of the `popRF()` function is that several portions of the process have been optimised for parallel processing, namely the RF predictions at the pixel/grid level and a zonal statistics function that calculates aggregate summaries of pixels within a given raster of zones. Both of these are carried out within internal functions that estimate the number of optimal number of blocks based upon the covariate and spatial contexts. These are written in `R` using the dependencies of the **`parallel`** [@R405] and **`doParallel`** [@RdoParallel] packages.
+
+### Random forest predictions
+The RF prediction of the pixel level weights, used in the dasymetric redistribution of the population counts (Figure \@ref(fig:dasy)), has been parallelised since @Stevens2015 and the corresponding code at [@Stevens2014]. This portion of the process divides the study area covered by the covariates into subareas, referred to as “blocks,” and then independently predicts for these areas using the same trained RF. The predicted values are then written out to a single raster, block by block. Much of the logic and code from @Stevens2015 and @Stevens2014 persists, however, we have provided an internal logic for determining the block size (see minblocks parameter) in relation to the overall study area size and the computational resources at hand. This is detailed in the internal `get_blocks_need()` function presented in [Appendix A](#Appendix-A). This removes the need for hardcoding of the block size or number of blocks and allows for more standardised and efficient means, as compared to the previous trial and error, of subdividing the modelling task into subtasks for parallel processing. 
+
+### Zonal statistics
+The basic `zonal()` function in the **`raster`** package has long been known to be less than efficient when given large rasters and or many zonal features [@Horning2013; @Stevens2014; @Marrotte2016; @Lovelace2021]. As a solution, we have created an internal function, `calculate_zs_parallel()`, that breaks the zonal statistic calculation task into many independent tasks that can be calculated in parallel. Again, using the concept of blocks, the function extracts the values from the value raster and the zonal raster into data.frames, carries out tabular summary calculations, and outputs the zonal statistics to a final `data.frame`. This all allows for more efficient calculation of zonal statistics. This function is called internally when summaries of the specified input covariates (see the *cov* parameter) do not already exist.
+
+# Exemplified test cases
+
+For the remainder of this paper, and to focus more on the `popRF()` function modelling rather than geoprocessing, we will be using the geospatial library of data [@Lloyd2019], created and hosted by the WorldPop research group ([ftp://ftp.worldpop.org/GIS/](ftp://ftp.worldpop.org/GIS/)). These data include spatially harmonised covariates pertaining to the environment as well as rasterised subnational areas that correspond to tabular, comma separated population data (.csv format). We give example `R` code in [Appendix B](#Appendix-B) on the programmatic downloading of these data, but they can be downloaded via a browser or FTP client. For the following examples we will use the countries of Guyana (ISO 3166-1 alpha-3: “GUY”), Suriname (ISO 3166-1 alpha-3: “SUR”), and French Guiana (ISO 3166-1 alpha-3: “GUF”). We download the data to the project root path of “`B:/Research/tmp\_popRF/`”, which we refer to simply as “`./`” hereafter for conciseness, but, of course, in replication the user may wish to change this directory location for their own file setup.
+
+## Single country, general run
+
+For our “single country, general” model run, we will use Guyana (GUY). We have already downloaded all the data using the code in [Appendix B](#Appendix-B) and the “GUY” ISO tag. GUY consists of a number of subnational units ($n = 117$) and will serve as a reference model when running the later hybrid- and fully-parameterised model runs. Note, that for all of these countries, the number of subnational units that "exist" may be higher in the official public releases or in non-public datasets, but here, and for all other examples, we are using the boundary matched population data from Lloyd et al. @Lloyd2019 based upon Doxsey-Whitfield et al.[@Doxsey-Whitfield2015].
+
+First, we need to make sure our folder structure is defined.
+
+```{r, guy_param_define_1, size = "scriptsize"}
+country <- "GUY"
+project_root_path <- "B:/Research/tmp_poprf/"
+input_dir <- paste0(project_root_path, country, "/covariates/")
+input_population <- paste0(input_dir,"guy_population.csv")
+output_directory <- paste0(project_root_path,country,"/output")
+if (!dir.exists(output_directory)) {
+   dir.create(output_directory)
+}
+```
+
+And we then define our input covariates in a nested list.
+
+```{r, guy_param_define_2, size = "scriptsize"}
+input_covariates <- list(
+      country = list(
+         "dst011_2015" = file.path(input_dir,"esaccilc_dst011_100m_2015.tif"),
+         "dst040_2015" = file.path(input_dir,"esaccilc_dst040_100m_2015.tif"),
+         "dst130_2015" = file.path(input_dir,"esaccilc_dst130_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst160_2015" = file.path(input_dir,"esaccilc_dst160_100m_2015.tif"),
+         "dst190_2015" = file.path(input_dir,"esaccilc_dst190_100m_2015.tif"),
+         "dst200_2015" = file.path(input_dir,"esaccilc_dst200_100m_2015.tif"),
+         "dst_water" = file.path(input_dir,"esaccilc_dst_water_100m_2000_2012.tif"),
+         "dst_bsgme_2020" = file.path(input_dir,"dst_bsgme_100m_2020.tif"),
+         "dst_ghsl_2000" = file.path(input_dir,"dst_ghslesaccilc_100m_2000.tif"),
+         "dst_intersec_2016" = file.path(input_dir,"osm_dst_roadintersec_100m_2016.tif"),
+         "dst_waterway_2016" = file.path(input_dir,"osm_dst_waterway_100m_2016.tif"),
+         "dst_road_2016" = file.path(input_dir,"osm_dst_road_100m_2016.tif"),
+         "slope" = file.path(input_dir,"srtm_slope_100m.tif"),
+         "topo" = file.path(input_dir,"srtm_topo_100m.tif"),
+         "dst_coast" = file.path(input_dir,"dst_coastline_100m_2000_2020.tif"),
+         "viirs_2016" = file.path(input_dir,"viirs_100m_2016.tif"),
+         "wdpa_dst_2017" = file.path(input_dir,"wdpa_dst_cat1_100m_2017.tif")
+      )  
+   )
+names(input_covariates) <- c(country)
+input_mastergrid <- list(
+   country = file.path(input_dir,"subnational_admin_2000_2020.tif")
+)
+names(input_mastergrid) <- c(country)
+input_watermask <- input_watermask <- list(
+   country = file.path(input_dir,"esaccilc_water_100m_2000_2012.tif")
+)
+names(input_watermask) <- c(country)
+input_px_area <- list(
+   country = file.path(input_dir,"px_area_100m.tif")
+)
+names(input_px_area) <- c(country)
+input_poptables <- list(
+   country = input_population
+)
+names(input_poptables) <- c(country)
+```
+
+We can then call the `popRF()` function using these inputs. We will use the default blocks parameter of `NULL` to allow it to automatically determine the number of blocks to divide the modelling into, but this can be alternately specified by the user. We also set the log parameter to TRUE to write the intermediate messages to a text file and disable the calculation of proximity measures in the RF; the proximity measures are not of interest to us currently and this increases the computational load (particularly for large numbers of subnational units or large geographic extent).
+
+```{r, single_run_general_guy, eval=FALSE, results="hide",size = "scriptsize"}
+require(popRF)
+guy <- popRF(pop = input_poptables,
+             cov = input_covariates,
+             mastergrid = input_mastergrid,
+             watermask = input_watermask,
+             px_area = input_px_area,
+             output_dir = output_directory,
+             cores = 8,
+             quant = TRUE,
+             proximity = FALSE,
+             set_seed = 1964L,
+             fix_cov = FALSE,
+             check_result = TRUE,
+             log = TRUE)
+```
+```{r, single_run_general_guy_hidden, include=FALSE, results="hide", size = "scriptsize"}
+require(popRF)
+require(raster)
+if (file.exists(paste0(output_directory,"/",country,"/","ppp_",country,".tif")) &
+    file.exists(paste0(output_directory,"/",country,"/","/tmp/",
+                     "popfit_final_",country,
+                     ".RData"))
+    ) {
+   guy <- list("pop" = raster(paste0(output_directory,"/",country,"/","ppp_",country,".tif")),
+               "popfit" = get(load(paste0(output_directory,"/",country,"/","/tmp/",
+                                      "popfit_final_",country,
+                                      ".RData")))
+               )
+}else{
+   guy <- popRF(pop = input_poptables,
+                cov = input_covariates,
+                mastergrid = input_mastergrid,
+                watermask = input_watermask,
+                px_area = input_px_area,
+                output_dir = output_directory,
+                cores = 8,
+                quant = TRUE,
+                proximity = FALSE,
+                set_seed = 1964L,
+                fix_cov = FALSE,
+                check_result = TRUE,
+                log = TRUE)
+}
+```
+
+The `popRF()` function returns a named, two-item list with the first item, `pop`, being the raster containing the disaggregated and gridded population counts and the second item, `popfit`, which is the final RF model object. If the option `check_results = TRUE`, then a three-item list is returned with the addition of an item `error` which provides the average absolute difference in the modeled population versus the input subnational population counts. These output data/objects, and more, are written to the “`./*<ISO_CODE>*/output/`” folder. Of specific interest for the hybrid- and fully-parameterised model runs is that the final RF model object (filename pattern of "`popfit_final_*<ISO_CODE>*.RData`") and the quantile regression RF model object (filename pattern of "`popfit_quant_*<ISO_CODE>*.RData`”) are written to the “`./*<ISO_CODE>*/output/tmp/`” folder. These model object files will need to be manually copied to the proper folders prior to any parameterised model run (Table \@ref(tab:model-tbl)).
+
+### Investigating the model and outputs
+
+We can examine some of the outputs from the model run now. First, we’ll look at the overall model fit of the RF.
+
+```{r, guy_rf_summary, eval = FALSE, size= "scriptsize"}
+require(randomForest)
+guy$popfit
+```
+```{r, guy_rf_summary_hidden, echo = FALSE, size="scriptsize"}
+cap <- capture.output(guy$popfit, file = NULL)[2:9]
+cap2 <- strsplit(cap[2],",")[[1]]
+cat(sprintf('%s\n',
+        c(cap[1])),
+    do.call(sprintf,
+            c(list('%s%s%s%s\n %s%s%s\n %s%s\n'),
+              cap2)),
+    do.call(sprintf,
+            c(list('%s\n%s\n%s\n%s\n%s\n%s'),
+                   cap[3:8]))
+    )
+```
+
+This gives us the standard summary output for RF model objects from the **`randomForest`** package [@Liaw2002]. We can see the original, internal `randomForest()` function call, that we grew 500 trees overall, and the auto-adjusted parameters that resulted in six variables tried at each split. Additionally, we can see that 85 percent of the data variance are explained in this model, as estimated from the out-of-bag sample validations. We can also look at the variable importances within the RF model. 
+
+
+```{r, guy_varimp_plot, size= "scriptsize"}
+require(randomForest)
+randomForest::varImpPlot(guy$popfit, 
+                         main = "GUY Variable Importances",
+                         cex = 0.8)
+```
+
+Further explorations of the RF model object are possible as with any standard RF model object from the **`randomForest`** package, such as partial dependency plots [@Liaw2002], Accumulated Local Effect plots [@Apley2016], and others.
+
+We can also plot the final population raster to get an idea of the overall output modelled population surface.
+
+
+```{r, guy_ppp_plot_code, eval=FALSE, size= "scriptsize"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+ggplot() +
+  layer_spatial(guy$pop) +
+  scale_fill_viridis(limits = c(0,5), na.value = NA) +
+  ggtitle("Guyana, Modelled Population, 2020") +
+  labs(fill = "Population\nPer Pixel") +
+  theme(panel.background = element_rect(fill = "gray20"),
+        panel.grid = element_line(color = "gray60"))
+```
+```{r, guy_ppp_plot_hidden, eval=FALSE, include=FALSE, results="hide"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+
+png(filename = paste0(project_root_path,"GUY_ppp_map.png"),
+    width=190, height=120, units="mm", res = 600)
+ggplot()+
+  layer_spatial(guy$pop)+
+  scale_fill_viridis(limits=c(0,5), na.value=NA)+
+  ggtitle("Guyana, Modelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill="gray20"),
+        panel.grid = element_line(color = "gray60"))+
+   annotation_north_arrow(location = "tl", 
+                          which_north = "true",
+                          height=unit(0.5, "cm"),
+                          width=unit(0.5, "cm"))+
+   annotation_scale(location = "br")
+dev.off()
+```
+
+```{r guy-single-general, echo=FALSE, fig.cap = "Population surface for Guyana using estimated 2020 population subnational counts and modelled using a RF-informed dasymetric disaggregation. Note, the population legend uses a maximum of 5 people per pixel for visualisation purposes; the people per pixel in the modelled data has a maximum of 91."}
+knitr::include_graphics(here::here("vignettes/figures","figure5.png"))
+```
+
+
+There are other output files, written to the “`./*<ISO\_CODE>*/output/`” folder, that may be of interest that are not returned by the `popRF()` function. The complete list of output files, their format, and their description are given in Table \@ref(tab:rf-tbl).
+
+```{r output-tbl, echo=FALSE}
+library(dplyr)
+library(readr)
+library(stringr)
+options(knitr.kable.NA = '')
+tbl <- "|File|Format|Folder|Description|\\n
+|---|---|---|---|
+|*\\<ISO\\>*_census_data|.CSV|`./<ISO>/output/zonal_stats/`|Subnational population count data with columns representing the zonal statistics summaries of all input covariates.|\\n
+|check_result_prj_*\\<ISO\\>*|.CSV|`./<ISO>/output/tmp/`|CSV file containing the difference between the input subnational population counts and the sum of the modelled population counts per pixel in each subnational unit.|\\n
+|init_popfit_*\\<ISO\\>*|.RData |`./<ISO>/output/tmp/`|Initial RF model that tunes in the parameters for number of covariates to use at each split.|\\n
+|pop_census_mask_*\\<ISO\\>|.TIF|`./<ISO>/output/tmp/`|Binary mask of where predictions should or should not be made based upon where the input mastergrid has coverage.|\\n
+|popfit_*\\<ISO\\>*|.RData|`./<ISO>/output/tmp/`|Random forest model that has the final set of covariates that resulted from the selection procedure.|\\n
+|popfit_final_*\\<ISO\\>*|.RData|`./<ISO>/output/tmp/`|Final RF model that is used to produce the dasymetric weights.|\\n
+|popfit_quant_*\\<ISO\\>*|.RData|`./<ISO>/output/tmp/`|Quantile regression forest model object.|\\n
+|ppp_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|Population Per Pixel (PPP) where pixel values are counts of people in the pixel.|\\n
+|predict_density_rf_pred_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|Values to be used as dasymetric weights where pixel value is predicted population from the popfit_final model.|\\n
+|predict_density_rf_pred_*\\<ISO\\>*_ZS_sum |.TIF|`./<ISO>/output/tmp/`|Sum of values from predict_density_rf_pred_\\<ISO\\> by subnational unit; used to produce the dasymetric weights.|\\n
+|predict_density_rf_pred_05_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|5th percentile of RF predictions.|\\n
+|predict_density_rf_pred_50_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|50th percentile of RF predictions.|\\n
+|predict_density_rf_pred_90_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|90th percentile of RF predictions.|\\n
+|predict_density_rf_sd_*\\<ISO\\>*|.TIF|`./<ISO>/output/tmp/`|Standard deviation of RF predictions.|\\n
+|ZONAL|.CSV|`./<ISO>/output/zonal_stats/`|Zonal statistic summaries by subnational unit.|\\n 
+"
+
+tbl_df <- data_frame <- read_delim(tbl, delim = '|') %>% select(`File`, `Format`, `Folder`, `Description`)
+tbl_df <- tbl_df[c(2:nrow(tbl_df)),]
+knitr::kable(tbl_df, 
+             caption = "Files written to the '`/output/`' folder by the `popRF()` function, their format, and a description of what they include. This includes all files produced when `popRF()` function defaults are used. The names associated with the 'ZONAL' files (last row) will vary based upon user input and naming conventions, but in general will follow the pattern of '`*<ISO>*_*<covariate_name>*_ZS_*<mean or sum>*.csv`'. Optional files, such as those produced when `log` is `TRUE`, are not included here.")
+```
+
+##  Single country, hybrid-parameterised model run
+Now we’ll look at the example of Suriname (SUR), which has a relatively small number of subnational units ($n = 80$). Let’s say we assume that while we can create a model using only SUR, that we believe it might be beneficial to include information from the GUY model we previously ran (see Section [Single Country](#Single-Country)). In this case, we want to combine the RF model object trained on the GUY data with the RF we train on only the SUR data. We refer to this as a “hybrid” parametrised model since we are combining two independent random forests from two different study areas, e.g. countries. This method builds from @Stevens2015 and was put forth in @Gaughan2014.
+
+To facilitate the hybrid model that will incorporate information from the GUY model in conjunction with the SUR trained model, we created a folder “`/final/`” and a folder “`/quant/`”} within country specific folder within the project root path, in this case “`B:/Research/tmp_poprf/SUR/`”}. From the “`./output/`” folder, where our GUY model and intermediaries were output, we have copied the “final” RF model for GUY into the “`/final/`”} folder as well as the quantile regression model object for GUY into the “`/quant/`”} folder. Both of these model objects are saved in `.RData` format. Note, if the quantile regression was not run for GUY and it is desired for SUR, then the GUY model would need to be rerun to include a quantile regression. Alternatively, if the quantile regression was run for GUY but was not desired for SUR, then there is no need to copy over the quantile regression model object (`.RData`) to the “`/quant/`” folder.
+
+After copying the necessary model objects to the correct folders, we first download the data for SUR using the code in [Appendix B](#Appendix-B) and then define our parameters that we will pass to the `popRF()` function.
+
+```{r, sur_guy_param_def_1, results= "hide", size = "scriptsize"}
+country <- "SUR"
+project_root_path <- "B:/Research/tmp_poprf/"
+input_dir <- paste0(project_root_path, country, "/covariates/")
+input_population <- paste0(input_dir, tolower(country), "_population.csv")
+
+output_directory <- paste0(project_root_path,country,"/output/")
+##  If the directory does not exist, create it:
+if (!dir.exists(output_directory)) {
+   dir.create(output_directory)
+}
+```
+
+Take note that since we are parameterising the model on a previously run RF, we will need to make sure we have the same covariates and covariates names, otherwise conflicts will occur when trying to provide the data to the RF.
+
+```{r, sur_guy_param_def_2, results = "hide", size = "scriptsize"}
+input_covariates <- list(
+      country = list(
+         "dst011_2015" = file.path(input_dir,"esaccilc_dst011_100m_2015.tif"),
+         "dst040_2015" = file.path(input_dir,"esaccilc_dst040_100m_2015.tif"),
+         "dst130_2015" = file.path(input_dir,"esaccilc_dst130_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst160_2015" = file.path(input_dir,"esaccilc_dst160_100m_2015.tif"),
+         "dst190_2015" = file.path(input_dir,"esaccilc_dst190_100m_2015.tif"),
+         "dst200_2015" = file.path(input_dir,"esaccilc_dst200_100m_2015.tif"),
+         "dst_water" = file.path(input_dir,"esaccilc_dst_water_100m_2000_2012.tif"),
+         "dst_bsgme_2020" = file.path(input_dir,"dst_bsgme_100m_2020.tif"),
+         "dst_ghsl_2000" = file.path(input_dir,"dst_ghslesaccilc_100m_2000.tif"),
+         "dst_intersec_2016" = file.path(input_dir,"osm_dst_roadintersec_100m_2016.tif"),
+         "dst_waterway_2016" = file.path(input_dir,"osm_dst_waterway_100m_2016.tif"),
+         "dst_road_2016" = file.path(input_dir,"osm_dst_road_100m_2016.tif"),
+         "slope" = file.path(input_dir,"srtm_slope_100m.tif"),
+         "topo" = file.path(input_dir,"srtm_topo_100m.tif"),
+         "dst_coast" = file.path(input_dir,"dst_coastline_100m_2000_2020.tif"),
+         "viirs_2016" = file.path(input_dir,"viirs_100m_2016.tif"),
+         "wdpa_dst_2017" = file.path(input_dir,"wdpa_dst_cat1_100m_2017.tif")
+      )  
+   )
+names(input_covariates) <- c(country)
+input_mastergrid <- list(
+   country = file.path(input_dir,"subnational_admin_2000_2020.tif")
+)
+names(input_mastergrid) <- c(country)
+input_watermask <- input_watermask <- list(
+   country = file.path(input_dir,"esaccilc_water_100m_2000_2012.tif")
+)
+names(input_watermask) <- c(country)
+input_px_area <- list(
+   country = file.path(input_dir,"px_area_100m.tif")
+)
+names(input_px_area) <- c(country)
+input_poptables <- list(
+   country = input_population
+)
+names(input_poptables) <- c(country)
+```
+
+We can now pass these arguments to the `popRF()` function, taking care to set our “fixed set” parameters (e.g. `fset`, `fset_incl`) for a hybrid model run such that a RF is created based solely on the SUR data and then merged with the GUY RF, i.e. `fset_incl = TRUE`.
+
+```{r, hybrid_run_SUR_with_GUY, eval=FALSE, size= "scriptsize"}
+require(popRF)
+sur <- popRF(pop = input_poptables,
+             cov = input_covariates,
+             mastergrid = input_mastergrid,
+             watermask = input_watermask,
+             px_area = input_px_area,
+             output_dir = output_directory,
+             cores = cores,
+             fset = list("final " = paste0(project_root_path, country,
+                                           "/final/"),
+                         "quant" = paste0(project_root_path, country,
+                                          "/quant/")),
+             fset_incl = TRUE,
+             quant = FALSE,
+             set_seed = 1964L,
+             proximity = FALSE,
+             fix_cov = FALSE,
+             check_result = TRUE,
+             log = TRUE)
+```
+
+```{r, hybrid_run_SUR_with_GUY_hidden, include=FALSE, result="hide"}
+require(popRF)
+require(raster)
+if (file.exists(paste0(output_directory,"/",country,"/",
+                       "ppp_",country,".tif")) &
+    file.exists(paste0(output_directory,"/",country,"/","/tmp/",
+                       "popfit_final_",country,
+                       ".RData"))) {
+   sur <- list("pop" = raster(paste0(output_directory,"/",
+                                     country,"/","ppp_",country,".tif")),
+               "popfit" = get(load(paste0(output_directory,
+                                          "/",country,"/","/tmp/",
+                                          "popfit_final_",country,
+                                              ".RData")))
+               )
+}else{
+   sur <- popRF(pop = input_poptables,
+             cov = input_covariates,
+             mastergrid = input_mastergrid,
+             watermask = input_watermask,
+             px_area = input_px_area,
+             output_dir = output_directory,
+             cores = 8,
+             fset = list("final " = paste0(project_root_path,
+                                           country, "/final/"),
+                         "quant" = paste0(project_root_path,
+                                          country, "/quant/")),
+             
+             fset_incl = TRUE,
+             
+             quant = FALSE,
+             set_seed = 1964L,
+             proximity = FALSE,
+             fix_cov = FALSE,
+             check_result = TRUE,
+             log = TRUE)
+   }
+```
+
+
+This gives us the following model summary and population map. Note that the summary does not have an estimate of the variance explained since we merged two independent models together.
+
+```{r, hybrid_run_SUR_with_GUY_summary, eval = FALSE, size = "scriptsize"}
+require(raster)
+require(randomForest)
+sur$popfit
+```
+
+```{r, sur_with_guy_hidden, echo = FALSE, size = "scriptsize"}
+cap <- capture.output(sur$popfit, file = NULL)[2:9]
+cap2 <- strsplit(cap[2],",")[[1]]
+cat(sprintf('%s\n',
+        c(cap[1])),
+    do.call(sprintf,
+            c(list('%s%s%s%s\n %s%s%s\n %s%s\n'),
+              cap2)),
+    do.call(sprintf,
+            c(list('%s\n%s\n  %s\n%s\n%s\n%s'),
+                   cap[3:8]))
+    )
+```
+
+```{r, sur_ppp_plot_code, eval = FALSE, size = "scriptsize"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+ggplot()+
+  layer_spatial(sur$pop)+
+  scale_fill_viridis(limits = c(0,5), na.value = NA)+
+  ggtitle("Suriname, Modelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill="gray20"),
+        panel.grid = element_line(color = "gray60"))
+```
+```{r, sur_ppp_plot_hidden, eval=FALSE, include=FALSE, results="hide"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+
+png(filename = paste0(project_root_path,"SUR_ppp_map.png"),
+    width = 190, height = 120, units = "mm", res = 600)
+ggplot()+
+  layer_spatial(sur$pop)+
+  scale_fill_viridis(limits = c(0,5), na.value = NA)+
+  ggtitle("Suriname, Modelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill = "gray20"),
+        panel.grid = element_line(color = "gray60"))+
+   annotation_north_arrow(location = "tl", 
+                          which_north = "true",
+                          height=unit(0.5, "cm"),
+                          width=unit(0.5, "cm"))+
+   annotation_scale(location = "br")
+dev.off()
+```
+
+```{r sur-hybrid, echo=FALSE, fig.cap = "Population surface for Suriname using estimated 2020 population subnational counts and modelled using a RF-informed dasymetric disaggregation that combined the Suriname RF with the previously run Guyana RF. Note, the population legend uses a maximum of 5 people per pixel for visualisation purposes; the people per pixel in the modelled data has a maximum of 78."}
+knitr::include_graphics(here::here("vignettes/figures","figure6.png"))
+```
+
+The outputs can be viewed as described. However, because the RF model for SUR was merged with GUY, and the covariate importance values being calculated from the respective out-of-bag samples, the `varImpPlot()` function will not produce meaningful results. This example can be extended to situations where you may want to parametrise a country on multiple other countries by simply placing as many countries model objects as desired within the “`/final/`” and “`/quant/`” folders.
+
+## Single country, fully-parameterised run
+
+Lastly, we’ll look at the example of French Guiana (GUF), which has very few subnational units ($n = 29$). While you could still run a RF with this few subnational units, only if the number of covariates were less than n, we’ll simply predict for GUF using the GUY RF model relationships. That is, we are inputting the gridded covariates for GUF and predicting for GUF, but it is based upon the relationships stored in the RF model object trained on GUY with no model training input from GUF, which you would have in a hybrid parameterised run (i.e. `fset = TRUE`).
+
+```{r, guf_guy_param_def_1, size="scriptsize", eval=TRUE}
+country <- "GUF"
+project_root_path <- "B:/Research/tmp_poprf/"
+input_dir <- paste0(project_root_path, country, "/covariates/")
+input_population <- paste0(input_dir, tolower(country), "_population.csv")
+
+output_directory <- paste0(project_root_path,country,"/output/")
+if (!dir.exists(output_directory)) {
+   dir.create(output_directory)
+}
+```
+
+We now declare the covariates being used. Note that the names of these must agree with the covariate names within the GUY RF or an error will occur.
+
+```{r, guf_guy_param_def_2, size="scriptsize", eval=TRUE}
+input_covariates <- list(
+      country = list(
+         "dst011_2015" = file.path(input_dir,"esaccilc_dst011_100m_2015.tif"),
+         "dst040_2015" = file.path(input_dir,"esaccilc_dst040_100m_2015.tif"),
+         "dst130_2015" = file.path(input_dir,"esaccilc_dst130_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst160_2015" = file.path(input_dir,"esaccilc_dst160_100m_2015.tif"),
+         "dst190_2015" = file.path(input_dir,"esaccilc_dst190_100m_2015.tif"),
+         "dst200_2015" = file.path(input_dir,"esaccilc_dst200_100m_2015.tif"),
+         "dst_water" = file.path(input_dir,
+                                 "esaccilc_dst_water_100m_2000_2012.tif"),
+         "dst_bsgme_2020" = file.path(input_dir,"dst_bsgme_100m_2020.tif"),
+         "dst_ghsl_2000" = file.path(input_dir,
+                                     "dst_ghslesaccilc_100m_2000.tif"),
+         "dst_intersec_2016" = file.path(input_dir,
+                                         "osm_dst_roadintersec_100m_2016.tif"),
+         "dst_waterway_2016" = file.path(input_dir,
+                                         "osm_dst_waterway_100m_2016.tif"),
+         "dst_road_2016" = file.path(input_dir,"osm_dst_road_100m_2016.tif"),
+         "slope" = file.path(input_dir,"srtm_slope_100m.tif"),
+         "topo" = file.path(input_dir,"srtm_topo_100m.tif"),
+         "dst_coast" = file.path(input_dir,"dst_coastline_100m_2000_2020.tif"),
+         "viirs_2016" = file.path(input_dir,"viirs_100m_2016.tif"),
+         "wdpa_dst_2017" = file.path(input_dir,"wdpa_dst_cat1_100m_2017.tif")
+      )  
+   )
+names(input_covariates) <- c(country)
+input_mastergrid <- list(
+   country = file.path(input_dir,"subnational_admin_2000_2020.tif")
+)
+names(input_mastergrid) <- c(country)
+input_watermask <- input_watermask <- list(
+   country = file.path(input_dir,"esaccilc_water_100m_2000_2012.tif")
+)
+names(input_watermask) <- c(country)
+input_px_area <- list(
+   country = file.path(input_dir,"px_area_100m.tif")
+)
+names(input_px_area) <- c(country)
+input_poptables <- list(
+   country = input_population
+)
+names(input_poptables) <- c(country)
+```
+
+To run the fully-parameterised we created a folder “`/final/`” and a folder “`/quant/`” within the country specific folder within the country's project path, “`B:/Research/tmp_poprf/GUF/`”.  From the “`/output/`”} folder, where our GUY model and intermediaries were output, we have copied the “final” RF model for GUY into the “`/final/`” folder as well as the quantile regression model object for GUY into the “`/quant/`” folder. Both of these model objects are saved in `.RData` format. 
+
+We can then run the model, making sure to set `fset_incl = FALSE` to indicate that we do not want to train a RF on our input country of GUF and only create predictions using the existing RF model trained on GUY data.
+
+```{r, full_param_run_GUF_with_GUY, eval=FALSE, size = "scriptsize"}
+require(popRF)
+guf <- popRF(pop = input_poptables,
+             cov = input_covariates,
+             mastergrid = input_mastergrid,
+             watermask = input_watermask,
+             px_area = input_px_area,
+             output_dir = output_directory,
+             cores = 8,
+             fset = list("final " = paste0(project_root_path, country, "/final/"),
+                         "quant" = paste0(project_root_path, country, "/quant/")),
+             fset_incl = TRUE,
+             quant = FALSE,
+             set_seed = 1964L,
+             proximity = FALSE,
+             fix_cov = FALSE,
+             check_result = TRUE,
+             log = TRUE)
+```
+
+```{r, full_param_run_GUF_with_GUY_hidden, include=FALSE, result="hide"}
+require(popRF)
+require(raster)
+if (file.exists(paste0(output_directory,"/",country,"/","ppp_",country,".tif")) &
+   file.exists(paste0(output_directory,"/",country,"/","/tmp/",
+                                      "popfit_",country,
+                                              ".RData"))) {
+   guf <- list("pop" = raster(paste0(output_directory,
+                                     "/",country,"/","ppp_",country,".tif")),
+               "popfit" = get(load(paste0(output_directory,
+                                          "/",country,"/","/tmp/",
+                                      "popfit_",country,
+                                              ".RData")))
+               )
+}else{
+   guf <- popRF(pop = input_poptables,
+                cov = input_covariates,
+                mastergrid = input_mastergrid,
+                watermask = input_watermask,
+                px_area = input_px_area,
+                output_dir = output_directory,
+                cores = 8,
+                fset = list("final " = paste0(project_root_path,
+                                              country, "/final/"),
+                            "quant" = paste0(project_root_path,
+                                             country, "/quant/")),
+                fset_incl = FALSE,
+                quant = FALSE,
+                set_seed = 1964L,
+                proximity = FALSE,
+                fix_cov = FALSE,
+                check_result = TRUE,
+                log = TRUE)}
+```
+
+This gives us the following output RF model, which is really the GUY model, and population surface. Note that when calling the RF model object that a variance and pseudo r squared will be given, but this is for the model that was parameterised on (GUY in this case) and not the country being predicted for (GUF in this case).
+
+```{r, full_param_run_GUF_with_GUY_summary,eval=FALSE, size = "scriptsize"}
+require(raster)
+require(randomForest)
+guf$popfit
+```
+
+```{r, guf_with_guy_hidden, echo = FALSE, size = "scriptsize"}
+cap <- capture.output(guf$popfit, file = NULL)[2:9]
+cap2 <- strsplit(cap[2],",")[[1]]
+cat(sprintf('%s\n',
+        c(cap[1])),
+    do.call(sprintf,
+            c(list('%s%s%s\n %s%s\n %s%s\n'),
+              cap2)),
+    do.call(sprintf,
+            c(list('%s\n%s\n  %s\n%s\n%s\n%s'),
+                   cap[3:8]))
+    )
+```
+
+We can plot the modelled results.
+
+```{r, guf_ppp_plot_code,eval=FALSE, eval=FALSE, size = "scriptsize"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+ggplot()+
+  layer_spatial(guf$pop)+
+  scale_fill_viridis(limits = c(0,5), na.value = NA)+
+  ggtitle("French Guiana, Modelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill="gray20"),
+        panel.grid = element_line(color = "gray60"))
+```
+```{r, guf_ppp_plot_hidden, eval=FALSE, include=FALSE, results="hide"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+
+png(filename = paste0(project_root_path,"GUF_ppp_map.png"),
+    width = 190, height = 120, units = "mm", res = 600)
+ggplot()+
+  layer_spatial(guf$pop)+
+  scale_fill_viridis(limits=c(0,5), na.value=NA)+
+  ggtitle("French Guiana, Modelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill="gray20"),
+        panel.grid = element_line(color = "gray60"))+
+   annotation_north_arrow(location = "tl", 
+                          which_north = "true",
+                          height=unit(0.5, "cm"),
+                          width=unit(0.5, "cm"))+
+   annotation_scale(location = "br")
+dev.off()
+```
+
+```{r guf-fully-param, echo=FALSE, fig.cap = "Population surface for French Guiana using estimated 2020 population subnational counts and modelled using a RF-informed dasymetric disaggregation that utilised the relationships from  the previously run Guyana RF. Note, the population legend uses a maximum of 5 people per pixel for visualisation purposes; the people per pixel in the modelled data has a maximum of 78."}
+knitr::include_graphics(here::here("vignettes/figures","figure7.png"))
+```
+
+As alluded to above, because we are making the predictions completely from the GUY model, `varImpPlot()` could be called on the “output” model object, but it would only show the variable importances for the GUY model we are parameterising on. This example can be also extended to situations where you may want to parametrise a country on multiple other countries by simply placing as many countries model objects as desired within the “`/final/`” and “`/quant/`” folders. In this case, any summaries and variable importance measures and functions would be meaningless due to the merging of multiple independent RF models.
+
+##  Multi-country model scenario
+
+There can arise scenarios where it may be desirable to run multiple countries at once as a single model. There is the more philosophically cogent situation when it is believed that multiple countries have the same underlying population processes at work. Alternatively, there could be the more practically necessary situation where several adjacent (or proximate in the case of islands) countries lack sufficient numbers of subnational units themselves to create independent RF models. Regardless, the `popRF()` function allows for the specification of multiple countries of input at once. We’ll now walk through a case where we input GUY, SUR, and GUF and run a single RF model trained on all three countries.
+
+Again, all data was downloaded in advance by using the code in [Appendix B](#Appendix-B). We then carefully define our inputs, expanding upon the example in [Section "Single Country"](#Single-Country) and referring to the parameters in Table \@ref(tab:param-tbl).
+
+```{r, guy_sur_guf_param_def_1, size="scriptsize", eval=TRUE}
+project_root_path <- "B:/Research/tmp_poprf/"
+countries <- c("GUY","SUR","GUF")
+country_tag <- paste0(countries, collapse = "_")
+
+output_directory <- paste0(project_root_path, country_tag,"/output/")
+if (!dir.exists(output_directory)) {
+   dir.create(output_directory, recursive = TRUE)
+   }
+```
+
+We now define the parameters, covariates and their corresponding data in a programmatic way that allows for accessing data in different locations for our single run.
+
+```{r, guy_sur_guf_param_def_2, size="scriptsize", eval=TRUE}
+input_poptables <- vector(mode = "list", length = length(countries))
+names(input_poptables) <- countries
+
+input_mastergrid <- vector(mode = "list", length = length(countries))
+names(input_mastergrid) <- countries
+
+input_watermask <- vector(mode = "list", length = length(countries))
+names(input_watermask) <- countries
+
+input_px_area <- vector(mode = "list", length = length(countries))
+names(input_px_area) <- countries
+
+input_covariates <- vector(mode = "list", length = length(countries))
+names(input_covariates) <- countries
+input_covariates <- list()
+for (country in countries) {
+   input_dir <- paste0(project_root_path, country, "/covariates/")
+   input_population <- paste0(input_dir, tolower(country), "_population.csv")
+   input_poptables[[eval(country)]] <- input_population
+   input_covariates[[eval(country)]] <- list(
+      "dst011_2015" = file.path(input_dir,"esaccilc_dst011_100m_2015.tif"),
+      "dst040_2015" = file.path(input_dir,"esaccilc_dst040_100m_2015.tif"),
+      "dst130_2015" = file.path(input_dir,"esaccilc_dst130_100m_2015.tif"),
+      "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+      "dst140_2015" = file.path(input_dir,"esaccilc_dst140_100m_2015.tif"),
+      "dst160_2015" = file.path(input_dir,"esaccilc_dst160_100m_2015.tif"),
+      "dst190_2015" = file.path(input_dir,"esaccilc_dst190_100m_2015.tif"),
+      "dst200_2015" = file.path(input_dir,"esaccilc_dst200_100m_2015.tif"),
+      "dst_water" = file.path(input_dir,"esaccilc_dst_water_100m_2000_2012.tif"),
+      "dst_bsgme_2020" = file.path(input_dir,"dst_bsgme_100m_2020.tif"),
+      "dst_ghsl_2000" = file.path(input_dir,"dst_ghslesaccilc_100m_2000.tif"),
+      "dst_intersec_2016" = file.path(input_dir,
+                                      "osm_dst_roadintersec_100m_2016.tif"),
+      "dst_waterway_2016" = file.path(input_dir,
+                                      "osm_dst_waterway_100m_2016.tif"),
+      "dst_road_2016" = file.path(input_dir,"osm_dst_road_100m_2016.tif"),
+      "slope" = file.path(input_dir,"srtm_slope_100m.tif"),
+      "topo" = file.path(input_dir,"srtm_topo_100m.tif"),
+      "dst_coast" = file.path(input_dir,"dst_coastline_100m_2000_2020.tif"),
+      "viirs_2016" = file.path(input_dir,"viirs_100m_2016.tif"),
+      "wdpa_dst_2017" = file.path(input_dir,"wdpa_dst_cat1_100m_2017.tif"))
+
+input_mastergrid[[country]] <- file.path(input_dir,
+                                         "subnational_admin_2000_2020.tif")
+input_watermask[[country]] <- file.path(input_dir,
+                                        "esaccilc_water_100m_2000_2012.tif")
+   input_px_area[[country]] <- file.path(input_dir,"px_area_100m.tif")
+}
+```
+
+We can then make the function call that creates the multi-country model.
+
+```{r, multi_run_GUY_SUR_GUF, eval=FALSE, cache = TRUE, results="hide", size = "scriptsize"}
+require(popRF)
+guy_sur_guf <- popRF(pop = input_poptables,
+                     cov = input_covariates,
+                     mastergrid = input_mastergrid,
+                     watermask = input_watermask,
+                     px_area = input_px_area,
+                     output_dir = output_directory,
+                     cores = 8,
+                     fset = NULL,
+                     quant = FALSE,
+                     set_seed = 1964L,
+                     proximity = FALSE,
+                     fix_cov = TRUE,
+                     check_result = TRUE,
+                     log = TRUE)
+```
+
+```{r, multi_run_GUY_SUR_GUF_hidden, include=FALSE, result="hide", cache = TRUE}
+require(popRF)
+require(raster)
+if (file.exists(paste0(output_directory,
+                      "GUY_GUF_SUR","/","ppp_","GUY_GUF_SUR",".tif")) &
+   file.exists(paste0(output_directory,"GUY_GUF_SUR","/tmp/",
+                     "popfit_final_","GUY_GUF_SUR",
+                     ".RData"))) {
+   guy_sur_guf <- list("pop" = raster(paste0(output_directory,"GUY_GUF_SUR","/",
+                                             "ppp_","GUY_GUF_SUR",".tif")),
+                       "popfit" = get(load(paste0(output_directory,"GUY_GUF_SUR","/",
+                                              "/tmp/",
+                                              "popfit_final_","GUY_GUF_SUR",
+                                              ".RData"))))
+}else{
+   guy_sur_guf <- popRF(pop = input_poptables,
+                        cov = input_covariates,
+                        mastergrid = input_mastergrid,
+                        watermask = input_watermask,
+                        px_area = input_px_area,
+                        output_dir = output_directory,
+                        cores = 8,
+                        fset = NULL,
+                        quant = FALSE,
+                        set_seed = 1964L,
+                        proximity = FALSE,
+                        fix_cov = TRUE,
+                        check_result = TRUE,
+                        log = TRUE)}
+```
+
+Unlike the parameterised models, we can call the full model summary and look at the variable importance plots as it was run as a single model and thus has a single, common out-of-bag sample.
+
+
+```{r, guy_sur_guf_varimp_plot,eval=FALSE, size = "scriptsize"}
+require(randomForest)
+guy_sur_guf$popfit
+
+```
+```{r, guy_sur_guf_hidden, echo = FALSE, size = "scriptsize"}
+cap <- capture.output(guy_sur_guf$popfit, file = NULL)[2:9]
+cap2 <- strsplit(cap[2],",")[[1]]
+cat(sprintf('%s\n',
+        c(cap[1])),
+    do.call(sprintf,
+            c(list('%s%s%s%s\n %s%s%s\n %s%s\n'),
+              cap2)),
+    do.call(sprintf,
+            c(list('%s\n%s\n%s\n%s\n%s\n%s'),
+                   cap[3:8]))
+    )
+```
+
+We can examine the variable importance plot as well.
+
+```{r, guy_sur_guf_varimp}
+varImpPlot(guy_sur_guf$popfit,
+           main = "GUY-SUR-GUF Variable Importances",
+           cex = 0.8)
+```
+
+And, lastly, we can plot the entire modelled population surface of all three countries.
+
+```{r, guy_sur_guf_ppp_plot_code, eval=FALSE, size = "scriptsize"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+ggplot() +
+  layer_spatial(guy_sur_guf$pop) +
+  scale_fill_viridis(limits = c(0,5), na.value = NA) +
+  ggtitle("Guyana, Suriname, and French Guiana\nModelled Population, 2020") +
+  labs(fill = "Population\nPer Pixel") +
+  theme(panel.background = element_rect(fill = "gray20"),
+        panel.grid = element_line(color = "gray60"))
+```
+```{r, guy_sur_guf_ppp_plot_hidden, eval=FALSE, include=FALSE, results="hide"}
+require(raster)
+require(ggplot2)
+require(ggspatial)
+require(viridis)
+
+png(filename = paste0(project_root_path,"GUY_SUR_GUF_ppp_map.png"),
+    width = 190, height = 120, units = "mm", res = 600)
+ggplot()+
+  layer_spatial(guy_sur_guf$pop)+
+  scale_fill_viridis(limits = c(0,5), na.value=NA)+
+  ggtitle("Guyana, Suriname, and French Guiana\nModelled Population, 2020")+
+  labs(fill = "Population\nPer Pixel")+
+  theme(panel.background=element_rect(fill = "gray20"),
+        panel.grid = element_line(color = "gray60"))+
+   annotation_north_arrow(location = "tl", 
+                          which_north = "true",
+                          height = unit(0.5, "cm"),
+                          width = unit(0.5, "cm"))+
+   annotation_scale(location = "br")
+dev.off()
+```
+
+```{r guy-sur-guf-ppp, echo=FALSE, fig.cap = "Population surface for Guyana (GUY), Suriname (SUR), and French Guiana (GUF) using estimated 2020 population subnational counts. This was modelled using a RF-informed dasymetric disaggregation that was trained on the pooled data of all three countries. Note, the population legend uses a maximum of 5 people per pixel for visualisation purposes; the people per pixel in the modelled data has a maximum of 88."}
+knitr::include_graphics(here::here("vignettes/figures","figure8.png"))
+```
+
+# Conclusions
+
+Here, we have developed and demonstrated a new package in the `R` statistical programming language for creating RF-informed dasymetrically modelled gridded populations. This single language package and function makes a transparent, peer-reviewed method [@Gaughan2014; @Sorichetta2015; @Stevens2015; @Leyk2019] more accessible in a replicable coding framework. However, the user still needs to have some skill in data management and geoprocessing to to preprocess the the covariates. Further, optimised functions with a parallel coding approach allow for a more efficient modelling process. Additionally, while country-level or multiple country-level model runs were demonstrated here, in practice subnational models can also be generated due to the flexibility of `popRF()`. For instance, if a user had data for a city composed of sub-city units and wanted to run the model only for the city the `popRF()` function could run this scenario as long as a “dummy” 3 letter ISO code was defined if the parameters, e.g. if modelling the city of Georgetown as opposed to all of Guyana, a dummy ISO code could be “GEO”. The user would then simply supply input data for the desired study area, in this example Georgetown.
+
+It is important to note how these gridded data are best used. It is not recommended to use any one pixel level predicted value, rather, the values are provided at a sufficiently fine resolution (typically ~100m in practice, but this depends on the input data) to allow for aggregation to coarser areas that are fit for the purpose of application [@Leyk2019]. Because of the proportional redistribution using unit-relative weights [@Mennis2003; @Mennis2009], the uncertainty estimates that may be generated by the random forest are not propagated to the final pixel level estimates [@Stevens2015; @Nagle2014]. In general, the greater the difference in spatial scale between the source area and target area resolutions, the greater the spatial and modelling uncertainty that is introduced into the predicted estimates. Future work may attempt to address this by means of another modelling method or through extensive simulation.
+
+Future developments of this package could target and are targeting a number of areas. First, other methods for generating dasymetric weights, such as other implementations of random forests [@Strobl2007; @Strobl2008; @Sinha2019] or other statistical/machine learning methods [@Nelder1972; @Hastie1987; @Hopfield1988; @Boser1992], could be incorporated. Second, alternative disaggregations involving pre-modelling spatial constraints on the disaggregations, via masking, and or post-modelling spatial constraints is possible and worth exploring. Such code for developing disaggregative "constrained" models is already in development within **`popRF`**. There is also the potential to introduce alternative covariate selection procedures other than the conservative procedure outlined in @Stevens2015 and implemented within this code. Further developments will include additional functions to auto-generate common diagnostic and summary plots of the models as well as provide functions to aid in the validation of model results against independent, input validation data. Lastly, other utilities such as plotting functions for the outputs and generation of metadata reports, summarising the model and its inputs, would likely be of use for end-users.
+
+---
+
+## Acknowledgements {.appendix}
+Listed in order of contribution.
+
+Conceptualisation: MB, JJN, FRS. Data Curation: JJN, MB, FRS, AEG, DK, AS. Formal Analysis: JJN, MB. Funding Acquisition: AS, AJT. Investigation: JJN, MB. Methodology: MB, JJN, FRS, AEG. Project Administration: AS, AJT. Resources: MB, AS, AJT. Software: MB, JJN, FRS, CJ, DK. Supervision: MB, JJN, AS, AJT. Validation: JJN, MB. Visualisation: JJN. Writing - Original Draft Preparation: JJN. Writing - Review/Editing: JJN, MB, FRS, AEG, DK, CJ, AS, AJT
+
+---
+
+## Appendix A {.appendix}
+```{r, appendix_a, eval=FALSE, size = "scriptsize"}
+#' Function will return a number of blocks
+#' sugesting for processing raster file. It will take into consideration
+#' number of layers, cells, cores and avalible memory on computer
+#' (not maximum memory but avalible)
+#' @param x raster
+#' @param cores number of cores
+#' @param n parameter to increase requrement of the raster
+#' @param number_type Will be used to estimate requred memory
+#' @importFrom raster nlayers ncell
+#' @rdname get_blocks_need
+#' @return integer
+#' @examples
+#' \dontrun{
+#' get_blocks_need(x, cores=2, n=1)
+#' }
+#' @noRd
+get_blocks_need <- function( x, cores, n=1, number_type = "numeric"){
+  
+  #stopifnot(hasValues(x))
+  
+  n <- n + nlayers(x) - 1
+  cells <- round( 1.1 * ncell(x) ) * n
+  #memneed <- cells * 8 * n / (1024 * 1024)
+  
+  if(number_type == "integer") {
+    
+    byte_per_number = 4
+    
+  } else if(number_type == "numeric") {
+    
+    byte_per_number = 8
+    
+  } else {
+    
+    #byte_per_number = .Machine$sizeof.pointer
+    stop(sprintf("Unknown number_type: %s", number_type))
+  }
+  
+  blocks <- 1
+  
+  memneed <- (cells * byte_per_number * n / (1024 * 1024 * 1024))/blocks
+  
+  memavail <- get_aval_memory()/cores
+  
+  while ((memneed > memavail)) {
+    
+    memneed <- (cells * byte_per_number * n / (1024 * 1024 * 1024))/blocks
+    blocks <- blocks + 1
+  }
+  
+  if ( blocks < cores) blocks <- cores
+  
+  return(blocks)
+  
+}
+```
+
+
+## Appendix B {.appendix}
+```{r, appendix_b, eval=FALSE, size = "scriptsize"}
+wpdata_download <- function(project_dir, 
+                            country="GUY",#”SUR”     “GUF” 
+                            ftp=TRUE, 
+                            verbose=TRUE, 
+                            log=TRUE){
+   
+   
+   iso.list <- c('ABW','AFG','AGO','AIA','ALA','ALB','AND','ARE','ARG','ARM',
+                 'ASM','ATG','AUS','AUT','AZE','BDI','BEL','BEN','BES','BFA',
+                 'BGD','BGR','BHR','BHS','BIH','BLM','BLR','BLZ','BMU','BOL',
+                 'BRA','BRB','BRN','BTN','GUF','CAF','CAN','CHE','CHL','CIV',
+                 'CMR','COD','COG','COK','COL','COM','CPV','CRI','CUB','CUW',
+                 'CYM','CZE','DEU','DJI','DMA','DNK','DOM','DZA','ECU','EGY',
+                 'ERI','ESH','ESP','EST','ETH','FIN','FJI','FLK','FRA','FRO',
+                 'FSM','GAB','GBR','GEO','GGY','GHA','GIB','GIN','GLP','GMB',
+                 'GNB','GNQ','GRC','GRD','GRL','GTM','GUF','GUM','GUY','HKG',
+                 'HND','HRV','HTI','IDN','IMN','IRL','IRN','IRQ','ISL','ITA',
+                 'JAM','JOR','JPN','KAZ','KGZ','KHM','KIR','KNA','KOR','KOS',
+                 'KWT','LAO','LBN','LBR','LBY','LCA','LIE','LKA','SUR','LTU',
+                 'LUX','LVA','MAC','MAF','MAR','MCO','MDA','MDG','MDV','MHL',
+                 'MKD','MLI','MLT','MMR','MNE','MNG','MNP','MOZ','MRT','MSR',
+                 'MUS','MYS','MYT','NAM','NCL','NER','NFK','NGA','NIC','NIU',
+                 'NLD','NOR','NPL','NRU','NZL','OMN','PAK','PAN','PCN','PER',
+                 'PHL','PLW','PNG','PRI','PRK','PRT','PRY','PSE','PYF','QAT',
+                 'REU','ROU','RWA','SAU','SDN','SEN','SGP','SHN','SJM','SLB',
+                 'SLE','SLV','SMR','SOM','SPM','SPR','SSD','STP','SUR','SVN',
+                 'SWE','SWZ','SXM','SYC','SYR','TCA','TCD','TGO','THA','TJK',
+                 'TKL','TKM','TLS','TON','TTO','TUN','TUR','TUV','TWN','TZA',
+                 'UGA','UKR','URY','UZB','VAT','VCT','VEN','VGB','VIR','VNM',
+                 'VUT','WLF','WSM','YEM','GUY','ZMB','ZWE')
+   
+   is.populated <- function(x, xlist) x %in% xlist
+   
+   iso.s <- tolower(country)
+   country <- toupper(country)
+   
+   if (!is.populated(country, iso.list)) {
+      cat(paste0("***********************************************\n"))
+      cat(paste0("Error: ",country," does not exist in this demo.\n"))
+      cat(paste0("***********************************************\n"))
+      cat(paste0("Please use the follwoing ISO \n"))
+      cat(paste0("------------------------------------------------\n"))
+      cat(iso.list)
+      cat(paste0("\n------------------------------------------------\n"))
+      stop() 
+   }
+   
+   quiet <- ifelse(verbose, FALSE, TRUE)
+   
+   output_dir <- file.path(project_dir, country, "covariates")
+   
+   if (!file.exists(output_dir)) { 
+      message("Info :: Creating dir ", output_dir)
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE) 
+   }
+   
+   
+   url_prefix <- "https://data.worldpop.org"
+   if (ftp) {
+      url_prefix <- "ftp://ftp.worldpop.org"
+   }
+   ptcov <- paste0(url_prefix,
+                   "/GIS/Covariates/Global_2000_2020/",
+                   toupper(country))
+   
+   input_covariates <- list(
+      country = list(
+         "dst011_2015" = file.path(output_dir,"esaccilc_dst011_100m_2015.tif"),
+         "dst040_2015" = file.path(output_dir,"esaccilc_dst040_100m_2015.tif"),
+         "dst130_2015" = file.path(output_dir,"esaccilc_dst130_100m_2015.tif"),
+         "dst140_2015" = file.path(output_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst140_2015" = file.path(output_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst160_2015" = file.path(output_dir,"esaccilc_dst160_100m_2015.tif"),
+         "dst190_2015" = file.path(output_dir,"esaccilc_dst190_100m_2015.tif"),
+         "dst200_2015" = file.path(output_dir,"esaccilc_dst200_100m_2015.tif"),
+         "dst_water" = file.path(output_dir,"esaccilc_dst_water_100m_2000_2012.tif"),
+         "dst_bsgme_2020" = file.path(output_dir,"dst_bsgme_100m_2020.tif"),
+         "dst_ghsl_2000" = file.path(output_dir,"dst_ghslesaccilc_100m_2000.tif"),
+         "dst_intersec_2016" = file.path(output_dir,"osm_dst_roadintersec_100m_2016.tif"),
+         "dst_waterway_2016" = file.path(output_dir,"osm_dst_waterway_100m_2016.tif"),
+         "dst_road_2016" = file.path(output_dir,"osm_dst_road_100m_2016.tif"),
+         "slope" = file.path(output_dir,"srtm_slope_100m.tif"),
+         "topo" = file.path(output_dir,"srtm_topo_100m.tif"),
+         "dst_coast" = file.path(output_dir,"dst_coastline_100m_2000_2020.tif"),
+         "viirs_2016" = file.path(output_dir,"viirs_100m_2016.tif"),
+         "wdpa_dst_2017" = file.path(output_dir,"wdpa_dst_cat1_100m_2017.tif")
+      )  
+   )
+   names(input_covariates) <- c(country)
+   
+   ptcov <- paste0(url_prefix,
+                   "/GIS/Mastergrid/Global_2000_2020/",
+                   toupper(country))
+   
+   input_mastergrid <- list(
+      country = paste0(ptcov,"/Subnational/",iso.s,
+                       "_subnational_admin_2000_2020.tif")
+   )
+   names(input_mastergrid) <- c(country)
+   
+   ptcov <- paste0(url_prefix,"/GIS/Covariates/Global_2000_2020/",
+                   toupper(country))
+   input_watermask <- list(
+      country = paste0(ptcov,"/ESA_CCI_Water/Binary/",iso.s,
+                       "_esaccilc_water_100m_2000_2012.tif")
+   )
+   names(input_watermask) <- c(country)
+   
+   ptcov <- paste0(url_prefix,"/GIS/Pixel_area/Global_2000_2020/",
+                   toupper(country))
+   input_px_area <- list(
+      country = paste0(ptcov,"/",iso.s,"_px_area_100m.tif")
+   )
+   names(input_px_area) <- c(country)
+   
+   
+   countries <- c()
+   
+   for (i in names(input_covariates)) {
+      countries <- append(countries, i, 1)
+   } 
+   
+   for (i in countries) {
+      
+      covariates <- sub("(.*)[.]tif",
+                        "\\1",
+                        basename(unlist(input_covariates[[i]],
+                                        use.names = FALSE)),
+                        perl = TRUE)
+      
+      cat("\n------------------------------------------------\n")
+      cat("------------------------------------------------\n")
+      cat(paste0("Following covariates will be downloaded to \n",
+                 output_dir,"\n"))
+      cat("------------------------------------------------\n")
+      cat(paste0("",covariates,"\n"))
+      cat("------------------------------------------------\n")
+      
+      for (c in covariates) {
+         file_remote <- input_covariates[[i]][[c]]
+         
+         output_file <- file.path(output_dir, paste0(c,".tif"))
+         if (!file.exists(output_file)) {
+            cat(paste0("Downloading... ", c ,"\n"))
+            download.file(file_remote, output_file,
+                          mode = "wb", quiet,
+                          method = "auto")
+         }
+      }
+   }
+   
+   cat(paste0("\n"))
+   output_px_area <- file.path(output_dir, paste0("px_area_100m.tif"))
+   file_remote_px_area <- input_px_area[[country]]
+   if (!file.exists(output_px_area)) {
+      cat(paste0("Downloading... px_area px_area_100m\n"))
+      download.file(file_remote_px_area, output_px_area, mode = "wb", quiet,
+                    method = "auto")  
+   }  
+   
+   
+   output_watermask <- file.path(output_dir,
+                                 paste0("esaccilc_water_100m_2000_2012.tif"))
+   file_remote_watermask <- input_watermask[[country]]
+   if (!file.exists(output_watermask)) {
+      cat(paste0("Downloading... watermask esaccilc_water_100m_2000_2012\n"))
+      download.file(file_remote_watermask, output_watermask, mode = "wb", quiet,
+                    method = "auto") 
+   }   
+   
+   
+   output_mastergrid <- file.path(output_dir,
+                                  paste0("subnational_admin_2000_2020.tif"))
+   file_remote_mastergrid <- input_mastergrid[[country]]
+   if (!file.exists(output_mastergrid)) {
+      cat(paste0("Downloading... mastergrid subnational_admin_2000_2020\n"))
+      download.file(file_remote_mastergrid, output_mastergrid, mode = "wb",
+                    quiet, method = "auto")
+   }   
+   
+   input_covariates <- list(
+      country = list(
+         "dst011_2015" = file.path(output_dir,"esaccilc_dst011_100m_2015.tif"),
+         "dst040_2015" = file.path(output_dir,"esaccilc_dst040_100m_2015.tif"),
+         "dst130_2015" = file.path(output_dir,"esaccilc_dst130_100m_2015.tif"),
+         "dst140_2015" = file.path(output_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst140_2015" = file.path(output_dir,"esaccilc_dst140_100m_2015.tif"),
+         "dst160_2015" = file.path(output_dir,"esaccilc_dst160_100m_2015.tif"),
+         "dst190_2015" = file.path(output_dir,"esaccilc_dst190_100m_2015.tif"),
+         "dst200_2015" = file.path(output_dir,"esaccilc_dst200_100m_2015.tif"),
+         "dst_water" = file.path(output_dir,"esaccilc_dst_water_100m_2000_2012.tif"),
+         "dst_bsgme_2020" = file.path(output_dir,"dst_bsgme_100m_2020.tif"),
+         "dst_ghsl_2000" = file.path(output_dir,"dst_ghslesaccilc_100m_2000.tif"),
+         "dst_intersec_2016" = file.path(output_dir,"osm_dst_roadintersec_100m_2016.tif"),
+         "dst_waterway_2016" = file.path(output_dir,"osm_dst_waterway_100m_2016.tif"),
+         "dst_road_2016" = file.path(output_dir,"osm_dst_road_100m_2016.tif"),
+         "slope" = file.path(output_dir,"srtm_slope_100m.tif"),
+         "topo" = file.path(output_dir,"srtm_topo_100m.tif"),
+         "dst_coast" = file.path(output_dir,"dst_coastline_100m_2000_2020.tif"),
+         "viirs_2015" = file.path(output_dir,"viirs_100m_2016.tif"),
+         "wdpa_dst_2017" = file.path(output_dir,"wdpa_dst_cat1_100m_2017.tif")
+      )  
+   )
+   names(input_covariates) <- c(country)
+   
+   
+   input_mastergrid <- list(
+      country = file.path(output_dir,"subnational_admin_2000_2020.tif")
+   )
+   names(input_mastergrid) <- c(country)
+   
+   input_watermask <- list(
+      country = file.path(output_dir,"esaccilc_water_100m_2000_2012.tif")
+   )
+   names(input_watermask) <- c(country)
+   
+   
+   input_px_area <- list(
+      country = file.path(output_dir,"px_area_100m.tif")
+   )
+   names(input_px_area) <- c(country)  
+   
+   dpop_file <- file.path(output_dir, paste0(iso.s, "_population.csv"))
+   
+   if (!file.exists(dpop_file)) {
+      cat( paste0("\nDownloading and saving population table for ",country) )
+      cat( paste0(" in ", paste0(iso.s, "_population.csv"), "\n",
+                  dpop_file,"\n") )
+      
+      dpop <- read.csv(file.path(url_prefix,
+                                 "GIS/Population/Global_2000_2020/CensusTables",
+                                 paste0(iso.s,"_population_2000_2020.csv")
+      )
+      )
+      
+      dpop <- dpop[,c("GID","P_2020")]
+      
+      write.table(dpop, dpop_file, sep = ",",  col.names = FALSE, row.names = FALSE)
+      
+   }
+}
+
+
+
+options(timeout = max(530, getOption("timeout")))
+project_directory <- "B:/Research/tmp_popRF"
+wpdata_download(project_dir = project_directory,
+                country = "GUY",
+                ftp = TRUE, 
+                verbose = TRUE, 
+                log = TRUE)
+wpdata_download(project_dir = project_directory,
+                country = "GUF",
+                ftp = TRUE, 
+                verbose = TRUE, 
+                log = TRUE)
+wpdata_download(project_dir = project_directory,
+                country = "SUR",
+                ftp = TRUE, 
+                verbose = TRUE, 
+                log = TRUE)
+
+```
