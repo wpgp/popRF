@@ -147,7 +147,7 @@ All input data should be of a raster format and is assumed to be unprojected but
 
 Data requirements for carrying out the `popRF()` function workflow will vary based upon the specific type of model being run, e.g. “single country general” versus “single country hybrid” (Table \@ref(tab:model-tbl)). Though, at a minimum, zonal data representing subnational areas, corresponding tabular population count data for those areas, a binary water mask indicating pixels of water (*1*) and no water (*0*), a raster containing the area of each pixel as its pixel values, and at least one ancillary covariate dataset must be provided. The areal zonal data must have a unique ID for each zone and these IDs must correspond to the tabular population count data. Common ways the `popRF()` function can be run and their data requirements are given below in Table \ref(tab:model-tbl).
 
-```{r model-tbl, echo = FALSE}
+```{r model-tbl, echo = FALSE, message = FALSE}
 library(dplyr)
 library(readr)
 library(stringr)
@@ -182,7 +182,7 @@ In the case of the hybrid- and fully-parameterised model types, the full path(s)
 
 The `popRF()` function has five required parameters and 12 optional parameters related to the overall process (Table \@ref(tab:param-tbl)), as well as an additional five optional parameters that are passed to the internally called `randomForest()` function (Table \@ref(tab:rf-tbl)). The required parameters involve the paths to the input files containing: the areal, population count data (*pop*); the “mastergrid” raster containing the areas with unique IDs corresponding to the population data (*mastergrid*); the covariates for the RF (*cov*); the raster indicating water extents to be used as a mask (*watermask*); and the raster containing the area of each unprojected pixel (*px\_area*). All optional parameters involve: the location for writing outputs (*output\_dir*), options for parallel processing (cores* and *minblocks*), running a quantile RF regression options (*quant*), model type options (*fset*, *fset\_incl*, and *fset\_cutoff*), covariate alignment options (*fix\_cov*), output checking (*check*), and processing messaging options (*verbose* and *log*). We give a brief description of all parameters, but refer the reader to the **`popRF`** package documentation for additional detail not included here.
 
-```{r param-tbl, echo=FALSE}
+```{r param-tbl, echo=FALSE, message = FALSE}
 library(dplyr)
 library(readr)
 library(stringr)
@@ -214,7 +214,7 @@ knitr::kable(tbl_df, caption = "Parameters of the `popRF()` function with brief 
 
 There are some additional optional parameters that are passed directly to the `randomForest()` function that is called internally which we detail in Table \@ref(tab:rf-tbl). Further details on the parameters of the `randomForest()` function are given in [@Liaw2002].
 
-```{r rf-tbl, echo=FALSE}
+```{r rf-tbl, echo=FALSE, message = FALSE}
 library(dplyr)
 library(readr)
 library(stringr)
@@ -448,7 +448,7 @@ knitr::include_graphics(here::here("vignettes/figures","figure5.png"))
 
 There are other output files, written to the “`./*<ISO\_CODE>*/output/`” folder, that may be of interest that are not returned by the `popRF()` function. The complete list of output files, their format, and their description are given in Table \@ref(tab:rf-tbl).
 
-```{r output-tbl, echo=FALSE}
+```{r output-tbl, echo=FALSE, message = FALSE}
 library(dplyr)
 library(readr)
 library(stringr)
