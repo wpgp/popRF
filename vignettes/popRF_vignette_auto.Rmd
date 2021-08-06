@@ -11,7 +11,7 @@ author:
   - name: Maksym Bondarenko
     affiliation: WorldPop, University of Southampton
     affiliation_url: https://www.worldpop.org
-    url: https://www.southampton.ac.uk/engineering/about/staff/mb4.page
+    url: https://sdi.worldpop.org/about 
     orcid_id: 0000-0003-4958-6551
   - name: Forrest R. Stevens
     affiliation: University of Louisville
