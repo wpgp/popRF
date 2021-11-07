@@ -171,10 +171,17 @@
 #'        \code{proximity}: Logical vector indicating whether proximity measures among 
 #'        the rows should be computed. Default is \code{proximity} = TRUE. 
 #'        See \code{\link[randomForest]{randomForest}} for more details.\cr
-#'        \code{const}: Character vector containing the name of the file from which the 
-#'        mask will be used to constraine population layer. The mask file should
-#'         have value \code{0} as a mask. If it does not contain an absolute path, 
-#'        the file name is relative to the current working directory.
+#'        \code{const}: A named list where each element of the list defines the path 
+#'        to the input country-specific raster mask to constrain population layer. 
+#'        The mask file should have value \code{0} as a mask. If it does not contain 
+#'        an absolute path, the file name is relative to the current working directory.\cr
+#'        \code{preprocessed_const}: Logical vector indicating whether the constraining 
+#'        done before a prediction layer is calculated. 
+#'        Default is \code{preprocessed_const} = TRUE\cr
+#'        \code{pop_int}: Logical vector indicating whether additional population 
+#'        layer "integer" type should be created. Default is \code{pop_int} = FALSE
+#'        \code{pop_const_int}: Logical vector indicating whether additional constrained population 
+#'        layer "integer" type should be created. Default is \code{pop_const_int} = FALSE
 #' @references      
 #' \itemize{
 #' \item Stevens, F. R., Gaughan, A. E., Linard, C. & A. J. Tatem. 2015. 
@@ -248,14 +255,79 @@ popRF <- function(pop,
                   log = FALSE, ...){
   
   timeStart <- Sys.time()
+  
+  ### checking  arguments for RF
+  ###
+  args <- list(...);
+  
+  if ("nodesize" %in% names(args)){
+    nodesize <- args[["nodesize"]]
+  }else{
+    nodesize <- NULL
+  }
+  
+  if ("maxnodes" %in% names(args)){
+    maxnodes <- args[["maxnodes"]]
+  }else{
+    maxnodes <- NULL
+  }
+  
+  if ("ntree" %in% names(args)){
+    ntree <- args[["ntree"]]
+  }else{
+    ntree <- NULL
+  }  
+  
+  if ("mtry" %in% names(args)){
+    mtry <- args[["mtry"]]
+  }else{
+    mtry <- NULL
+  }    
+  
+  if ("proximity" %in% names(args)){
+    proximity <- args[["proximity"]]
+  }else{
+    proximity <- TRUE
+  }  
+
+  
+  if ("preprocessed_const" %in% names(args)){
+    preprocessed_const <- args[["preprocessed_const"]]
+  }else{
+    preprocessed_const <- TRUE
+  }   
+  
+  if ("pop_int" %in% names(args)){
+    pop_int <- args[["pop_int"]]
+  }else{
+    pop_int <- FALSE
+  }  
+  
+  if ("pop_const_int" %in% names(args)){
+    pop_const_int <- args[["pop_const_int"]]
+  }else{
+    pop_const_int <- FALSE
+  }   
+  
+  if ("const" %in% names(args)){
+    const <- args[["const"]]
+  }else{
+    const <- NULL
+    if (pop_const_int){
+      message("param 'pop_const_int' can be used only if 'const' is used.")
+      stop_quietly()
+    }
+  } 
 
   rfg.initial.checks <- initial_check(cov,
                                       mastergrid,
                                       watermask,
                                       px_area,
                                       pop,
-                                      output_dir, cores)
-  
+                                      output_dir,
+                                      const,
+                                      cores)
+
   
   options("pj.output.dir"=output_dir)
   
@@ -338,6 +410,24 @@ popRF <- function(pop,
   
   
 
+  
+  ## Check if population layer is producing using constrained layer
+  
+  if (!is.null(const) & preprocessed_const == TRUE) {
+    
+    log_info("MSG", paste0("Constraining pixel_area covariate..."), verbose=verbose, log=log)  
+    
+    px_area <- apply_constrained_pixel(px_area=px_area, 
+                                       const=const,
+                                       output_dir=output_dir,
+                                       cores, 
+                                       blocks=NULL, 
+                                       verbose=verbose, 
+                                       log=log)
+    
+  }
+  
+  
   
   ##  Pre allocate a list to hold all possible covariate names we will be dealing 
   ##  with:
@@ -452,44 +542,7 @@ popRF <- function(pop,
   ##	Transform (i.e. log) y_data as defined in the transY() function:
   y_data <- transY(y_data)
   
-  
-  
-  ### checking  arguments for RF
-  ###
-  args <- list(...);
-  
-  if ("nodesize" %in% names(args)){
-    nodesize <- args[["nodesize"]]
-  }else{
-    nodesize <- NULL
-  }
-  
-  if ("maxnodes" %in% names(args)){
-    maxnodes <- args[["maxnodes"]]
-  }else{
-    maxnodes <- NULL
-  }
-  
-  if ("ntree" %in% names(args)){
-    ntree <- args[["ntree"]]
-  }else{
-    ntree <- NULL
-  }  
-  
-  if ("mtry" %in% names(args)){
-    mtry <- args[["mtry"]]
-  }else{
-    mtry <- NULL
-  }    
-  
-  if ("proximity" %in% names(args)){
-    proximity <- args[["proximity"]]
-  }else{
-    proximity <- TRUE
-  }    
 
-  
-    
   
   #####
   ##  BEGIN:  FITTING RANDOM FOREST
@@ -962,42 +1015,13 @@ popRF <- function(pop,
                                 verbose=verbose, 
                                 log=log)
   
+  return_results <- list(pop=p_raster)
   
-  
-  if ("const" %in% names(args)){
-    const <- args[["const"]]
-  }else{
-    const <- NULL
-  }    
-  
-  if (!is.null(const)) {
-    
-    p_raster_const <- apply_constrained(pop, 
-                                        mastergrid_filename=censusmaskPathFileName,
-                                        const=const,
-                                        output_dir=rfg.output.path.countries, 
-                                        cores=npoc_blocks, 
-                                        rfg.countries.tag=rfg.countries.tag, 
-                                        quant = quant, 
-                                        blocks=blocks, 
-                                        verbose=verbose, 
-                                        log=log)
-    
-    c_result_const <- check_result_constrained(pop, 
-                                               censusmaskPathFileName, 
-                                               rfg.output.path.countries, 
-                                               npoc_blocks, 
-                                               rfg.countries.tag,  
-                                               blocks=blocks, 
-                                               verbose=verbose, 
-                                               log=log)
-    
-  }  
   
   
   if (check_result){
     
-    log_info("MSG", paste0("Checking results."), verbose=verbose, log=log)
+    log_info("MSG", paste0("Checking results population."), verbose=verbose, log=log)
     
     c_result <- check_result(pop, 
                              censusmaskPathFileName, 
@@ -1008,38 +1032,117 @@ popRF <- function(pop,
                              verbose=verbose, 
                              log=log)
     
-    if (!is.null(const)) {
-      
-      return_results <- list(pop=p_raster, 
-                             pop_const=p_raster_const, 
-                             popfit=popfit_final, 
-                             error= c_result,
-                             error_const= c_result_const)  
-    }else{
-      
-      return_results <- list(pop=p_raster, 
-                             popfit=popfit_final, 
-                             error= c_result)  
-    }  
+    return_results[["error"]] <- c_result
+  }
+
+  
+  if (pop_int==TRUE){
     
-  }else{
+    log_info("MSG", paste0("Producing integer version of population"), verbose=verbose, log=log)
     
-    if (!is.null(const)) {
+    apply_integer_type(x=raster(censusmaskPathFileName), 
+                       y=p_raster, 
+                       df_pop=census_data, 
+                       fn=file.path(rfg.output.path.countries, 
+                                    paste0("ppp_",rfg.countries.tag, "_int.tif")), 
+                       cores=cores, 
+                       verbose=verbose, 
+                       log=log)
+    
+
+    
+    if (check_result){
+      log_info("MSG", paste0("Checking results of integer version of population"), verbose=verbose, log=log)
+      c_result_int <- check_result_int(pop, 
+                                       censusmaskPathFileName, 
+                                       rfg.output.path.countries, 
+                                       npoc_blocks, 
+                                       rfg.countries.tag, 
+                                       blocks=blocks, 
+                                       verbose=verbose, 
+                                       log=log)
       
-      return_results <- list(pop=p_raster,
-                             pop_const=p_raster_const,
-                             popfit=popfit_final)  
+      return_results[["error_int"]] <- c_result_int
       
-    }else{
+    }
+
+  }
+  
+
+  # Start creating constrained pop
+  if (!is.null(const)) {
+    log_info("MSG", paste0("Producing constrained version"), verbose=verbose, log=log)
+    const_file <- merg_constrained(const,
+                                   rfg.countries.tag,
+                                   rfg.countries.merged,
+                                   verbose=verbose,
+                                   log=log)
+    
+    p_raster_const <- apply_constrained(pop, 
+                                        mastergrid_filename=censusmaskPathFileName,
+                                        const=const_file,
+                                        output_dir=rfg.output.path.countries, 
+                                        cores=npoc_blocks, 
+                                        rfg.countries.tag=rfg.countries.tag, 
+                                        quant = quant, 
+                                        blocks=blocks, 
+                                        verbose=verbose, 
+                                        log=log)
+    
+    return_results[["pop_const"]] <- p_raster_const
+
+    if (check_result){
+      log_info("MSG", paste0("Checking results of constrained version"), verbose=verbose, log=log)
+      c_result_const <- check_result_constrained(pop, 
+                                                 censusmaskPathFileName, 
+                                                 rfg.output.path.countries, 
+                                                 npoc_blocks, 
+                                                 rfg.countries.tag,  
+                                                 blocks=blocks, 
+                                                 verbose=verbose, 
+                                                 log=log)
       
-      return_results <- list(pop=p_raster, 
-                             popfit=popfit_final)  
+      return_results[["error_const"]] <- c_result_const
       
-    }  
+    }
+    
+  }  
+
+  
+  
+  if (!is.null(const) & pop_const_int==TRUE){
+    
+    log_info("MSG", paste0("Producing constrained integer version"), verbose=verbose, log=log)
+    
+    apply_integer_type(raster(censusmaskPathFileName), 
+                       p_raster_const,
+                       df_pop=census_data,
+                       fn=file.path(rfg.output.path.countries, 
+                                    paste0("ppp_",rfg.countries.tag, "_const_int.tif")),
+                       cores=cores,
+                       verbose=verbose,
+                       log=log)
+    
+    
+    if (check_result){
+      log_info("MSG", paste0("Checking results of constrained integer version"), verbose=verbose, log=log)
+      c_result_const_int <- check_result_constrained_int(pop, 
+                                                         censusmaskPathFileName, 
+                                                         rfg.output.path.countries, 
+                                                         npoc_blocks, 
+                                                         rfg.countries.tag, 
+                                                         blocks=blocks, 
+                                                         verbose=verbose, 
+                                                         log=log)
+      
+      return_results[["error_const_int"]] <- c_result_const_int
+    }
+
     
   }
   
-  
+  return_results[["popfit"]] <- popfit_final
+
   
   timeEnd <-  Sys.time()
   
