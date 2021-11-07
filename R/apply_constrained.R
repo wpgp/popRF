@@ -121,7 +121,7 @@ apply_constrained <- function(pop,
                                    fun = fun_const,
                                    filename = mastergrid.const,
                                    NAflag=-99999,
-                                   datatype="FLT4S",
+                                   datatype="INT4S",
                                    overwrite = TRUE,
                                    cores = npoc_blocks,
                                    blocks = blocks,
@@ -153,7 +153,7 @@ apply_constrained <- function(pop,
                 format="GTiff", 
                 overwrite=TRUE, 
                 NAflag=-99999, 
-                datatype='FLT4S', 
+                datatype='INT4S', 
                 options=c("COMPRESS=LZW")
     )
     
