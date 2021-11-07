@@ -21,6 +21,8 @@
 #'        without columns names. If it does not contain an absolute path, the 
 #'        file name is relative to the current working directory.
 #' @param output_dir Path to the folder to save the outputs. 
+#' @param const  A named list where each element of the list defines the path 
+#'        to the input country-specific raster mask to constrain population layer. 
 #' @param cores is a integer. Number of cores to use when executing the function.
 #' @param minblocks Integer. if \code{minblocks} is NULL then \code{minblocks} 
 #'        for cluster prediction parallesation will be calculated based on 
@@ -32,7 +34,8 @@ initial_check <- function(cov,
                           watermask,
                           px_area,
                           pop,
-                          output_dir, 
+                          output_dir,
+                          const,
                           cores, 
                           minblocks){
   
@@ -171,6 +174,17 @@ initial_check <- function(cov,
     
   }  
   
+  
+  if (!is.null(const)) {
+    
+    if(!is.list( const )) {
+      
+      msg <- paste0("Error :: Input parameter 'const' should be a list.")
+      return(msg)
+      
+    }
+    
+  }
 
   
   return(TRUE)
