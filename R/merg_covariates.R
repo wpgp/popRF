@@ -11,8 +11,7 @@
 #' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
 #'        output from the function on the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @importFrom gdalUtils gdalwarp
-#' @importFrom raster crs
+#' @importFrom terra
 #' @noRd 
 #' @rdname merg_covariates
 #' @return A data.frame merged covariates
@@ -58,14 +57,28 @@ merge_covariates <- function(input.countries,
     if (!file.exists(dstfile)){
       
       
-      gdalwarp(srcfile=list_of_tiffs,
-               of = "GTiff",
-               dstfile=dstfile,
-               co=c("COMPRESS=LZW", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "TILED=YES", "BIGTIFF=YES"),
-               s_srs=crs(raster(rst)),
-               output_Raster=TRUE,
-               overwrite=TRUE,
-               verbose=FALSE) 
+      # gdalwarp(srcfile=list_of_tiffs,
+      #          of = "GTiff",
+      #          dstfile=dstfile,
+      #          co=c("COMPRESS=LZW", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "TILED=YES", "BIGTIFF=YES"),
+      #          s_srs=crs(raster(rst)),
+      #          output_Raster=TRUE,
+      #          overwrite=TRUE,
+      #          verbose=FALSE) 
+      
+      terra::merge(x = terra::sprc(list_of_tiffs),
+                   first = TRUE,
+                   na.rm = TRUE,
+                   filename = dstfile,
+                   overwrite = TRUE,
+                   wopt = list(filetype = "GTiff", 
+                               gdal = c("COMPRESS=LZW",
+                                        "BLOCKXSIZE=512",
+                                        "BLOCKYSIZE=512",
+                                        "TILED=YES",
+                                        "BIGTIFF=YES")))
+      
+      
       
     }
     
