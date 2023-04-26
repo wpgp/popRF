@@ -1,4 +1,4 @@
-#' Mergin covariates.
+#' Merging covariates.
 #'
 #' @param input.countries list countries 
 #' @param covariates.var.names list of covariates names 
@@ -18,18 +18,18 @@
 #' @return A data.frame merged covariates
 #' @examples
 #' \dontrun{
-#' merg_covariates( covariates.var.names, 
+#' merge_covariates( covariates.var.names, 
 #'                  covariates, 
 #'                  rfg.countries.tag, 
 #'                  rfg.countries.merged)
 #' }
-merg_covariates <- function(input.countries,
-                            covariates.var.names, 
-                            covariates, 
-                            rfg.countries.tag, 
-                            rfg.countries.merged, 
-                            verbose=FALSE,
-                            log=FALSE){
+merge_covariates <- function(input.countries,
+                             covariates.var.names, 
+                             covariates, 
+                             rfg.countries.tag, 
+                             rfg.countries.merged, 
+                             verbose=FALSE,
+                             log=FALSE){
   
   
   rfg.input.countries <- input.countries
