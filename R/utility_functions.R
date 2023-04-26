@@ -38,7 +38,8 @@ transY <- function(x, inverse=FALSE) {
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output to file
 #' @rdname log_info
 #' @noRd 
 log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
@@ -212,7 +213,7 @@ change_raster_extend <- function(srcfile,
   
   
   r1 <- raster::raster(srcfile)
-  ##  Changing extent of two rasters using gdal_warp.
+  ##  Changing extent of two rasters using terra::merge.
   xmin <- raster::bbox(r1)[1,1]
   xmax <- raster::bbox(r1)[1,2]
   ymin <- raster::bbox(r1)[2,1]
@@ -224,14 +225,25 @@ change_raster_extend <- function(srcfile,
   te <- paste0(' ',xmin,' ',ymin,' ',xmax,' ',ymax)
   
   rToPath <- file.path(rPath, paste0("tmp_",rFileName))
-  gdalwarp(dstfile,
-           te=te,
-           co=c("COMPRESS=LZW","BLOCKXSIZE=512","BLOCKYSIZE=512", "TILED=YES", "BIGTIFF=YES"),
-           s_srs=crs(r1),
-           rToPath,
-           output_Raster=TRUE,
-           overwrite=TRUE,
-           verbose=verbose)
+  # gdalwarp(dstfile,
+  #          te=te,
+  #          co=c("COMPRESS=LZW","BLOCKXSIZE=512","BLOCKYSIZE=512", "TILED=YES", "BIGTIFF=YES"),
+  #          s_srs=crs(r1),
+  #          rToPath,
+  #          output_Raster=TRUE,
+  #          overwrite=TRUE,
+  #          verbose=verbose)
+  terra::merge(x = rast(dstfile),
+               first = TRUE,
+               na.rm = TRUE,
+               filename = rToPath,
+               overwrite = TRUE,
+               wopt = list(filetype = "GTiff", 
+                           gdal = c("COMPRESS=LZW",
+                                    "BLOCKXSIZE=512",
+                                    "BLOCKYSIZE=512",
+                                    "TILED=YES",
+                                    "BIGTIFF=YES")))
   
   
   if(file.exists(dstfile)){ unlink(dstfile , recursive = TRUE, force = FALSE)}
