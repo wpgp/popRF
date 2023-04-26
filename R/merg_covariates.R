@@ -11,11 +11,11 @@
 #' @param log is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @importFrom terra rspc
+#' @importFrom terra sprc
 #' @importFrom terra rast
 #' @importFrom terra merge
 #' @noRd 
-#' @rdname merg_covariates
+#' @rdname merge_covariates
 #' @return A data.frame merged covariates
 #' @examples
 #' \dontrun{
@@ -29,8 +29,8 @@ merge_covariates <- function(input.countries,
                              covariates, 
                              rfg.countries.tag, 
                              rfg.countries.merged, 
-                             verbose=FALSE,
-                             log=FALSE){
+                             verbose = FALSE,
+                             log = FALSE){
   
   
   rfg.input.countries <- input.countries
