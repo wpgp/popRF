@@ -11,7 +11,9 @@
 #' @param log is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the log.txt file. 
 #'        Default is \code{log} = FALSE.
-#' @importFrom terra
+#' @importFrom terra rspc
+#' @importFrom terra rast
+#' @importFrom terra merge
 #' @noRd 
 #' @rdname merg_covariates
 #' @return A data.frame merged covariates

@@ -216,7 +216,9 @@ check_raster_extent <- function(x,
 #' @rdname check_raster_extent
 #' @return logical
 #' @noRd 
-#' @importFrom terra
+#' @importFrom terra rspc
+#' @importFrom terra rast
+#' @importFrom terra merge
 change_raster_extent <- function(srcfile, 
                                  dstfile, 
                                  verbose = FALSE, 
