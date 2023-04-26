@@ -21,7 +21,8 @@ stop_quietly <- function() {
 #' @rdname transY
 #' @return A data.frame merged covariates
 #' @noRd 
-transY <- function(x, inverse=FALSE) {
+transY <- function(x, 
+                   inverse=FALSE) {
   if (!inverse) {
     return( log(x) )
   } else {
@@ -42,7 +43,10 @@ transY <- function(x, inverse=FALSE) {
 #'        intermediate output to file
 #' @rdname log_info
 #' @noRd 
-log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
+log_info <- function(prank, 
+                     stext, 
+                     verbose=FALSE, 
+                     log=FALSE){
   
   if (verbose){
     cat(stext)
@@ -51,7 +55,9 @@ log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
 
   if (log){
     if (file.exists(getOption("pj.output.dir"))){
-      log_con <- file(file.path(getOption("pj.output.dir"), "logs.txt"), open="a")
+      log_con <- file(file.path(getOption("pj.output.dir"),
+                                "logs.txt"),
+                      open="a")
       cat(paste0( format(Sys.time(), "%d %X"), 
                   " :: ", 
                   paste0(prank, " :: ", stext)), 
@@ -71,13 +77,14 @@ log_info <- function(prank, stext, verbose=FALSE, log=FALSE){
 #'        helpful for model debugging. Default is \code{verbose} = TRUE. 
 #' @rdname create_dir
 #' @noRd 
-create_dir <- function(x, verbose){
+create_dir <- function(x, 
+                       verbose){
   
-  x.covariates <- file.path(x,"covariates")
+  x.covariates <- file.path(x, "covariates")
   
   if(!file.exists( x.covariates )) {
     
-    msg <- paste0("Log :: Creating directory ",x.covariates,".")
+    msg <- paste0("Log :: Creating directory ", x.covariates,".")
     
     dir.create(x.covariates, 
                recursive = TRUE,
@@ -98,14 +105,16 @@ create_dir <- function(x, verbose){
 #' @rdname tmDiff
 #' @return Returned is the formatted time.
 #' @noRd 
-tmDiff <- function(start, end, frm="hms") {
+tmDiff <- function(start, 
+                   end,
+                   frm = "hms") {
 
   dsec <- as.numeric(difftime(end, start, units = c("secs")))
   hours <- floor(dsec / 3600)
   
   if (frm == "hms" ){
     minutes <- floor((dsec - 3600 * hours) / 60)
-    seconds <- dsec - 3600*hours - 60*minutes
+    seconds <- dsec - 3600 * hours - 60 * minutes
     
     out=paste0(
       sapply(c(hours, minutes, seconds), function(x) {
@@ -120,7 +129,7 @@ tmDiff <- function(start, end, frm="hms") {
 
 
 
-#' creat_raster_stack Create a raster stack from all covariates from 
+#' create_raster_stack Create a raster stack from all covariates from 
 #' popfit and census_mask and water_raster.
 #' @param covariates covariates list
 #' @param popfit_final list of names used in the RF
@@ -131,10 +140,10 @@ tmDiff <- function(start, end, frm="hms") {
 #' @rdname creat_raster_stack
 #' @return raster stack
 #' @noRd 
-creat_raster_stack <- function(covariates, 
-                               popfit_final, 
-                               census_mask, 
-                               water_raster) {
+create_raster_stack <- function(covariates, 
+                                popfit_final, 
+                                census_mask, 
+                                water_raster) {
   ##  Create an empty list to hold the rasters:
   list_ras <- list()
   
@@ -148,9 +157,9 @@ creat_raster_stack <- function(covariates,
   }  
   ##  Append the census mask and the water mask to that list:
   names(census_mask) <- "census_mask"
-  list_ras[[length(list_ras)+1]] <- census_mask
+  list_ras[[length(list_ras) + 1]] <- census_mask
   names(water_raster) <- "water_raster"
-  list_ras[[length(list_ras)+1]] <- water_raster
+  list_ras[[length(list_ras) + 1]] <- water_raster
   
   ##  Stack all the rasters we just retrieved:
   ras_stack <- stack(list_ras)
@@ -172,10 +181,11 @@ specify_decimal <- function(x, k) format(round(x, k), nsmall=k)
 #' Checking extent of two rasters
 #' @param x the name of the raster file.  
 #' @param y the name of the raster file. 
-#' @rdname check_raster_extend
+#' @rdname check_raster_extent
 #' @return logical
 #' @noRd 
-check_raster_extend <- function( x, y ){
+check_raster_extent <- function(x,
+                                y){
   
   r1 <- raster::raster(x)
   r2 <- raster::raster(y)
@@ -203,13 +213,13 @@ check_raster_extend <- function( x, y ){
 #' @param dstfile the name of the raster file. 
 #' @param verbose logical. Should report extra information on progress? 
 #' @param overwrite logical to overwrite or not the output file.  
-#' @rdname check_raster_extend
+#' @rdname check_raster_extent
 #' @return logical
 #' @noRd 
-change_raster_extend <- function(srcfile, 
+change_raster_extent <- function(srcfile, 
                                  dstfile, 
-                                 verbose=FALSE, 
-                                 overwrite=FALSE){
+                                 verbose = FALSE, 
+                                 overwrite = FALSE){
   
   
   r1 <- raster::raster(srcfile)
@@ -246,7 +256,9 @@ change_raster_extend <- function(srcfile,
                                     "BIGTIFF=YES")))
   
   
-  if(file.exists(dstfile)){ unlink(dstfile , recursive = TRUE, force = FALSE)}
+  if(file.exists(dstfile)){ unlink(dstfile,
+                                   recursive = TRUE,
+                                   force = FALSE)}
   
   file.rename(from=rToPath, to=dstfile)
 }
@@ -259,38 +271,54 @@ change_raster_extend <- function(srcfile,
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate  
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate   file
 #' @rdname create_dirs_for_prj
 #' @return list of project directories
 #' @noRd 
 create_dirs_for_prj <- function(input.countries, 
                                 output_dir, 
-                                verbose=FALSE, 
-                                log=FALSE){
+                                verbose = FALSE, 
+                                log = FALSE){
   
   
-  countries_tag_output <- paste(input.countries, collapse="_")
+  countries_tag_output <- paste(input.countries, collapse = "_")
   
   subDir.country <- file.path(output_dir, countries_tag_output, "tmp")
   
   if(!file.exists(subDir.country)){ 
-    log_info("Info", paste0("Creating dir ", subDir.country), verbose=verbose, log=log)
+    log_info("Info", paste0("Creating dir ", subDir.country),
+             verbose = verbose,
+             log = log)
     dir.create(subDir.country, recursive = TRUE, showWarnings = FALSE) 
   }
   
-  subDir.country.output.zst <- file.path(output_dir, countries_tag_output, "zonal_stats")
+  subDir.country.output.zst <- file.path(output_dir, 
+                                         countries_tag_output,
+                                         "zonal_stats")
   
   if(!file.exists(subDir.country.output.zst)){ 
-    log_info("Info", paste0("Creating dir ", subDir.country.output.zst), verbose=verbose, log=log)    
-    dir.create(subDir.country.output.zst, recursive = TRUE, showWarnings = FALSE) 
+    log_info("Info", 
+             paste0("Creating dir ",
+                    subDir.country.output.zst),
+             verbose = verbose,
+             log = log)    
+    dir.create(subDir.country.output.zst, 
+               recursive = TRUE,
+               showWarnings = FALSE) 
   }
   
-  subDir.countrys.merged <- file.path(output_dir, countries_tag_output, "merged")
+  subDir.countrys.merged <- file.path(output_dir,
+                                      countries_tag_output,
+                                      "merged")
   
   if (length(input.countries) > 1){
     
     if(!file.exists(subDir.countrys.merged)){ 
-      log_info("Info", paste0("Creating dir ", subDir.countrys.merged), verbose=verbose, log=log)    
+      log_info("Info", paste0("Creating dir ",
+                              subDir.countrys.merged),
+               verbose = verbose, 
+               log = log)    
       dir.create(subDir.countrys.merged, recursive = TRUE, showWarnings = FALSE) 
     }  
   }
@@ -307,7 +335,7 @@ create_dirs_for_prj <- function(input.countries,
   
 }
 
-#' Checking if covariates extend matches mastergrid.
+#' Checking if covariates extent matches mastergrid.
 #' @param covariates list of covariates 
 #' @param fix_cov logical
 #' @param verbose logical. Should report extra information on progress?
@@ -317,8 +345,8 @@ create_dirs_for_prj <- function(input.countries,
 #' @noRd 
 check_cov <- function(covariates, 
                       fix_cov,
-                      verbose=FALSE, 
-                      log=FALSE){
+                      verbose = FALSE, 
+                      log = FALSE){
 
     for ( i in names(covariates) ) {
       
@@ -336,16 +364,23 @@ check_cov <- function(covariates,
         fpath <- file.path(fdir,ffile)
         
         
-        if (!check_raster_extend(mpath, fpath)){
+        if (!check_raster_extent(mpath, fpath)){
           
           if (fix_cov){
-            log_info("Warning", paste0("Will try to fix ", ffile ," extend to match mastergrid extend."), verbose=verbose, log=log)
-            change_raster_extend(mpath,fpath)
+            log_info("Warning", 
+                     paste0("Will try to fix ", 
+                            ffile ," extent to match mastergrid extent."),
+                     verbose = verbose, log = log)
+            change_raster_extent(mpath,fpath)
             return(FALSE)
           }else{
             
-            #log_info("Error", paste0("Covariate ", ffile ," extend is not match mastergrid extend."), verbose=verbose, log=log)
-            stop(paste0("Covariate ", ffile ," extend is not match mastergrid extend.")) 
+            #log_info("Error", paste0("Covariate ", ffile ,
+            #         "extent is not match mastergrid extent."),
+            #          verbose = verbose, 
+            #          log = log)
+            stop(paste0("Covariate ", ffile ,
+                        " extent does not match mastergrid extent.")) 
             
             return(TRUE)
           } 
