@@ -15,7 +15,8 @@ download_file <- function(file_remote, dest_file, quiet, method="auto") {
   
   checkStatus <- tryCatch(
     {
-      utils::download.file(file_remote, destfile=dest_file,mode="wb",quiet=quiet, method=method)
+      utils::download.file(file_remote, destfile=dest_file,mode="wb",
+                           quiet=quiet, method=method)
     },
     error=function(cond){
       message(paste("URL does not seem to exist:", file_remote))
