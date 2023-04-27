@@ -4,7 +4,8 @@
 #' 
 #' @rdname get_popfit_final
 #' @param x_data matrix or data frame of predictor variables
-#' @param y_data response vector (factor for classification, numeric for regression)
+#' @param y_data response vector (factor for classification, numeric for 
+#'        regression)
 #' @param nodesize Minimum size of terminal nodes. Setting this number larger 
 #'        causes smaller trees to be grown (and thus take less time). See 
 #'        \code{\link[randomForest]{randomForest}} for more details. Default 
@@ -34,8 +35,8 @@
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
-#'        output from the function on the log.txt file. 
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the log.txt file. 
 #'        Default is \code{log} = FALSE
 #' @importFrom randomForest randomForest
 #' @return constructed n object of class randomForest, 
@@ -56,7 +57,8 @@ get_popfit_final <- function(x_data,
   
   if (file.exists(popfit_fln)) {
     
-    log_info("MSG", paste0("Loading popfit object from ",popfit_fln), verbose=verbose, log=log) 
+    log_info("MSG", paste0("Loading popfit object from ",popfit_fln),
+             verbose=verbose, log=log) 
     load(file=popfit_fln)
     
   }else{
@@ -93,7 +95,8 @@ get_popfit_final <- function(x_data,
                                  proximity=proximity,
                                  do.trace=F)    
     
-    log_info("MSG", paste0("Saving popfit_final object ",popfit_fln), verbose=verbose, log=log) 
+    log_info("MSG", paste0("Saving popfit_final object ",popfit_fln),
+             verbose=verbose, log=log) 
     save(popfit_final, file=popfit_fln)
     
   } 
@@ -132,16 +135,21 @@ get_popfit_final_old <- function(fset,
   
   
 
-  log_info("MSG", paste("Loading old popfit final from: ", fset$final), verbose=verbose, log=log)   
+  log_info("MSG", 
+           paste("Loading old popfit final from: ", fset$final),
+           verbose=verbose, log=log)   
 
   if ( length(list.of.old.popfits.final) == 0 ){
-    err_mess <- paste0('There is no old popfit Please check the folder : ', fset$final)
+    err_mess <- paste0('There is no old popfit Please check the folder : ',
+                       fset$final)
     stop(err_mess)
   }
   
   ##  Load it:
 
-  log_info("MSG", paste("Loading", basename(list.of.old.popfits.final[[1]]) ), verbose=verbose, log=log)   
+  log_info("MSG", 
+           paste("Loading", basename(list.of.old.popfits.final[[1]]) ),
+           verbose=verbose, log=log)   
  
   local_env.Popfit_final = local({load(file=list.of.old.popfits.final[[1]]);environment()})
   
@@ -165,7 +173,9 @@ get_popfit_final_old <- function(fset,
     local_env.Popfit_final$popfit_final$predicted <- 0
     
     ##  Combine it with the other popfit finals:
-    log_info("MSG", paste("'Combine popfit ", basename(list.of.old.popfits.final[[i]]) ), verbose=verbose, log=log) 
+    log_info("MSG", paste("'Combine popfit ",
+                          basename(list.of.old.popfits.final[[i]]) ),
+             verbose=verbose, log=log) 
     
     popfit.final.old <- combine( popfit.final.old, local_env.Popfit_final$popfit_final )    
   } 
