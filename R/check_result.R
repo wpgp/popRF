@@ -30,7 +30,9 @@ check_result <- function(input_poptables,
   
   ##  Load final results
   rfg.predict.density.rf.pred.final <- file.path(rfg.output.path.countries, 
-                                                 paste0("ppp_",rfg.countries.tag, ".tif"))
+                                                 paste0("ppp_",
+                                                        rfg.countries.tag,
+                                                        ".tif"))
   
   dataset_raster <- raster(rfg.predict.density.rf.pred.final)
   
@@ -131,7 +133,9 @@ check_result_constrained <- function(input_poptables,
   
   ##  Load final results
   rfg.predict.density.rf.pred.final <- file.path(rfg.output.path.countries, 
-                                                 paste0("ppp_",rfg.countries.tag, "_const.tif"))
+                                                 paste0("ppp_",
+                                                        rfg.countries.tag, 
+                                                        "_const.tif"))
   
   dataset_raster <- raster(rfg.predict.density.rf.pred.final)
   
@@ -182,7 +186,8 @@ check_result_constrained <- function(input_poptables,
   
   
   file.path.csv <- file.path(rfg.output.path.countries, 
-                             paste0("check_result_prj_",rfg.countries.tag,"_const.csv"))
+                             paste0("check_result_prj_",
+                                    rfg.countries.tag,"_const.csv"))
   
   write.csv( as.data.frame(df), file = file.path.csv, row.names=FALSE )
   
