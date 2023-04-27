@@ -26,19 +26,21 @@ input covariates to be used in the random forest model, i.e. the name
 of the covariates and the corresponding, if applicable and local, path
 to them. If the path is not a full path, it is assumed to be relative
 to the current working directory.
-Example for Nepal (NPL):\if{html}{\out{<div class="r">}}\preformatted{list(
+Example for Nepal (NPL):
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{list(
     "NPL"=list(
                "covariate1" = "covariate1.tif",
                "covariate2" = "covariate2.tif"
               )  
    )
-}\if{html}{\out{</div>}}\preformatted{## $NPL
-## $NPL$covariate1
-## [1] "covariate1.tif"
-## 
-## $NPL$covariate2
-## [1] "covariate2.tif"
-}}
+#> $NPL
+#> $NPL$covariate1
+#> [1] "covariate1.tif"
+#> 
+#> $NPL$covariate2
+#> [1] "covariate2.tif"
+}\if{html}{\out{</div>}}}
 
 \item{mastergrid}{A named list where each element of the list defines the
 path to the input mastergrid(s), i.e. the template gridded raster(s)
@@ -47,10 +49,12 @@ corresponds to the 3-letter ISO code(s) of a specified country(ies).
 Each corresponding element defines the path to the mastergrid(s). If
 the path is local and not a full path, it is assumed to be relative to
 the current working directory.
-Example:\preformatted{list(
+Example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list(
     "NPL" = "npl_mastergrid.tif"
    )
-}}
+}\if{html}{\out{</div>}}}
 
 \item{watermask}{A named list where each element of the list defines the path
 to the input country-specific watermask. The name corresponds to the
@@ -59,10 +63,12 @@ defines the path to the watermask, i.e. the binary raster that
 delineates the presence of water (1) and non-water (0), that is used
 to mask out areas from modelling. If the path is local and not a full
 path, it is assumed to be relative to the current working directory.
-Example:\preformatted{list(
+Example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list(
     "NPL" = "npl_watermask.tif"
    )
-}}
+}\if{html}{\out{</div>}}}
 
 \item{px_area}{A named list where each element of the list defines the path
 to the input raster(s) containing the pixel area. The name corresponds
@@ -70,12 +76,14 @@ to the 3-letter ISO code of a specified country. Each corresponding
 element defines the path to the raster whose values indicate the area
 of each unprojected (WGS84) pixel. If the path is local and not a full
 path, it is assumed to be relative to the current working directory.
-Example:\if{html}{\out{<div class="r">}}\preformatted{list(
+Example:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{list(
     "NPL" = "npl_px_area.tif"
    )
-}\if{html}{\out{</div>}}\preformatted{## $NPL
-## [1] "npl_px_area.tif"
-}}
+#> $NPL
+#> [1] "npl_px_area.tif"
+}\if{html}{\out{</div>}}}
 
 \item{output_dir}{Character vector containing the path to the directory for
 writing output files. Default is the temp directory.}
@@ -180,7 +188,7 @@ The unit-average log-transformed population density and covariate
 summary values for each census unit are then used to train a
 Random Forest model (\doi{10.1023/A:1010933404324})
 to predict log population density. Random Forest models are an
-ensemble, nonparametric modeling approach that grows a "forest" of
+ensemble, nonparametric modelling approach that grows a "forest" of
 individual classification or regression trees and improves upon
 bagging by using the best f a random selection of predictors at
 each node in each tree. The Random Forest is used to produced grid,

@@ -1,4 +1,4 @@
-#' Function will return progress ploting a progress bar
+#' Function will return progress plotting a progress bar
 #'
 #' @param x integer, current level
 #' @param max maximum for progress bar

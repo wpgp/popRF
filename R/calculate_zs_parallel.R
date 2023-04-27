@@ -8,7 +8,8 @@
 #'        Chris Jochem <W.C.Jochem@soton.ac.uk>
 #' @param x Raster* object
 #' @param y RasterLayer object with codes representing zones
-#' @param fun The function to be applied. Either as character: 'mean', 'min', 'max' and 'sum'
+#' @param fun The function to be applied. Either as character: 'mean', 
+#'        'min', 'max' and 'sum'
 #' @param cores Integer. Number of cores for parallel calculation
 #' @param blocks number of blocks sugesting for processing raster file.
 #' @param na.rm using na.rm = TRUE for missing data
@@ -89,8 +90,10 @@ calculate_zs_parallel <- function(x,
       
       if ( fun == 'mean' | fun == 'sd' ) {
         
-        df.fun <- aggregate(x = (df.x), by = list(df.y[,1]), FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
-        df.length <- aggregate(x = (df.x), by = list(df.y[,1]), FUN = function(x, na.rm=na.rm) length(stats::na.omit(x)), na.rm=na.rm)
+        df.fun <- aggregate(x = (df.x), by = list(df.y[,1]), 
+                            FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
+        df.length <- aggregate(x = (df.x), by = list(df.y[,1]),
+                               FUN = function(x, na.rm=na.rm) length(stats::na.omit(x)), na.rm=na.rm)
         
         colnames(df.length) <- c(layernames,'length')
         colnames(df.fun) <- c(layernames,'sum')
@@ -99,7 +102,8 @@ calculate_zs_parallel <- function(x,
         
         if (fun == 'sd'){
           
-          df.sq <- aggregate(x = (df.x^2), by = list(df.y[,1]), FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
+          df.sq <- aggregate(x = (df.x^2), by = list(df.y[,1]),
+                             FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
           colnames(df.sq) <- c(layernames,'sq')
           df <- merge(df, df.sq, all=TRUE, by=layernames)
           
@@ -107,13 +111,15 @@ calculate_zs_parallel <- function(x,
         
       } else if ( fun == 'count') {
         
-        df <- aggregate(x = (df.x), by = list(df.y[,1]), FUN = function(x, na.rm=na.rm) length(stats::na.omit(x)), na.rm=na.rm)
+        df <- aggregate(x = (df.x), by = list(df.y[,1]),
+                        FUN = function(x, na.rm=na.rm) length(stats::na.omit(x)), na.rm=na.rm)
         
         colnames(df) <- c(layernames,'count')
         
       } else if ( fun == 'sum') {
         
-        df <- aggregate(x = (df.x), by = list(df.y[,1]), FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
+        df <- aggregate(x = (df.x), by = list(df.y[,1]),
+                        FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
         
         colnames(df) <- c(layernames,'sum')	
         
@@ -132,13 +138,16 @@ calculate_zs_parallel <- function(x,
   
   if ( fun == 'mean' | fun == 'sd') {
     
-    df1 <- aggregate(x = result$sum, by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
-    df2 <- aggregate(x = result$length, by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
+    df1 <- aggregate(x = result$sum,
+                     by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
+    df2 <- aggregate(x = result$length,
+                     by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
     df1$x <- df1$x / df2$x
     
     if (fun == 'sd'){
       
-      df3 <- aggregate(x = result$sq, by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
+      df3 <- aggregate(x = result$sq,
+                       by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
       df1$x <- sqrt(( (df3$x / df2$x) - (df1$x)^2 ) * (df2$x / (df2$x - 1)))
       colnames(df1) <- c(layernames, 'sd')
       
@@ -150,19 +159,24 @@ calculate_zs_parallel <- function(x,
     
   } else if ( fun == 'count') {
     
-    df1 <- aggregate(x = result[[2]], by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
+    df1 <- aggregate(x = result[[2]],
+                     by = list(result[[1]]), FUN = 'sum', na.rm=na.rm)
     
     colnames(df1) <- c(layernames,'count')
     
   } else if ( fun == 'sum') {
     
-    df1 <- aggregate(x = result[[2]], by = list(result[[1]]), FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
+    df1 <- aggregate(x = result[[2]], 
+                     by = list(result[[1]]),
+                     FUN = function(x, na.rm = TRUE) sum(as.numeric(x), na.rm = na.rm), na.rm=na.rm)
     
     colnames(df1) <- c(layernames,'sum')	
     
   } else{
     
-    df1 <- aggregate(x = result[[2]], by = list(result[[1]]), FUN = fun, na.rm=na.rm)
+    df1 <- aggregate(x = result[[2]],
+                     by = list(result[[1]]),
+                     FUN = fun, na.rm=na.rm)
     
     colnames(df1) <- c(layernames,fun)
     

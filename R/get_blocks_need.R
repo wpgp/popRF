@@ -106,25 +106,27 @@ log_mem_info <- function(memavail, maxmem.mg, totalmem_need, blks, verbose){
   
 
   
-  log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
-  log_info("MSG", paste0("Total number of blocks: ", blks), verbose=verbose, log=log)
-  log_info("MSG", paste(replicate(48, "-"), collapse = ""), verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "-"), collapse = ""),
+           verbose=verbose, log=log)
+  log_info("MSG", paste0("Total number of blocks: ", blks),
+           verbose=verbose, log=log)
+  log_info("MSG", paste(replicate(48, "-"), collapse = ""),
+           verbose=verbose, log=log)
   
 }
 
 
 
 
-#' Function will return a number of blocks
-#' sugesting for processing raster file. Indicates the minimum number of blocks 
-#' to break the processing extent into for parallel processing. 
-#' It will take into consideration number of layers, cells, cores and avalible 
-#' memory on computer
+#' Function will return a number of blocks suggested for processing raster file.
+#' Indicates the minimum number of blocks to break the processing extent into 
+#' for parallel processing. It will take into consideration number of layers, 
+#' cells, cores and avalible memory on computer
 #' binc number parameter to increase requrement of the raster
 #' @param x raster
 #' @param cores number of cores
 #' @param nt number of trees used in RF training
-#' @param n number of  laeyrs
+#' @param n number of  layers
 #' @param verbose Logical vector indicating whether to print 
 #'        intermediate output from the function to the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -141,7 +143,8 @@ get_blocks_size <- function(x,
                             cores,
                             nt=1,
                             n=1,
-                            verbose=T, ...){
+                            verbose=T,
+                            ...){
   
   args <- list(...);
   

@@ -18,9 +18,12 @@ get_aval_memory <- function(){
     memavail = memavail[grep('FreePhysicalMemory', memavail)]
     memavail = as.numeric(gsub('FreePhysicalMemory=','',memavail))
   }else if (OS == 'osx'){
-    memavail = as.numeric(unlist(strsplit(system("sysctl hw.memsize", intern = T), split = ' '))[2])/1e3
+    memavail = as.numeric(unlist(strsplit(system("sysctl hw.memsize",
+                                                 intern = T),
+                                          split = ' '))[2])/1e3
   }else{
-    memavail = as.numeric(system(" awk '/MemTotal/ {print $2}' /proc/meminfo", intern=T))
+    memavail = as.numeric(system(" awk '/MemTotal/ {print $2}' /proc/meminfo",
+                                 intern=T))
   }
   
   return(memavail/ (1024 * 1024))

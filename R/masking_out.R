@@ -161,7 +161,8 @@ masking_out <- function(x,
   
   
   if (!file.exists(dirname(filename))){
-    stop(paste0("Directory  ",dirname(filename)," for file ", basename(filename) ," does not exist"))
+    stop(paste0("Directory  ",dirname(filename)," for file ", 
+                basename(filename) ," does not exist"))
   }
   
   if (is.null(NAflag)) NAflag=-99999
@@ -174,7 +175,8 @@ masking_out <- function(x,
   
   datatype <- toupper(datatype)
   
-  if (!(datatype %in% c('INT1S', 'INT2S', 'INT4S', 'FLT4S', 'LOG1S', 'INT1U', 'INT2U', 'INT4U', 'FLT8S'))) {
+  if (!(datatype %in% c('INT1S', 'INT2S', 'INT4S', 'FLT4S', 'LOG1S', 'INT1U',
+                        'INT2U', 'INT4U', 'FLT8S'))) {
     stop('not a valid data type. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S')
   }
   
@@ -228,7 +230,7 @@ masking_out <- function(x,
         test <- try(fun(testMatrix, na.rm=na.rm), silent=TRUE)
         
         if (class(test) == 'try-error') {
-          stop("cannot use this function. Perhaps add '...' or 'na.rm' to the function arguments?") 
+          stop("Cannot use this function. Perhaps add '...' or 'na.rm' to the function arguments?") 
         }
       } 
     } else {
@@ -253,7 +255,8 @@ masking_out <- function(x,
   }
   
   if (cores > max.cores) {
-    stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
+    stop(paste0("Number of cores ",cores,
+                " more then real physical cores in PC ",max.cores ))
   }
   
   

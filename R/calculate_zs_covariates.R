@@ -11,7 +11,7 @@
 #'        zonal statistics will be sved into the file. 
 #'        Default is \code{save_zst} = TRUE.
 #' @param cores is a integer. Number of cores to use when executing the function.
-#' @param blocks number of blocks sugesting for processing raster file.
+#' @param blocks number of blocks suggesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
@@ -37,7 +37,9 @@ calculate_zonal_stats_covariates <- function(x,
                                              log=FALSE, ...){
 
   
-  log_info("MSG", paste0("Start calculating zonal-statistics for all covariates"), verbose=verbose, log=log)  
+  log_info("MSG", 
+           paste0("Start calculating zonal-statistics for all covariates"),
+           verbose=verbose, log=log)  
   
   tag <- paste(names(x), collapse="_")
   
@@ -92,7 +94,8 @@ calculate_zonal_stats_covariates <- function(x,
       ##  Explicitly retrieve what the covariate is meant to represent:
       covariates.var.names <- covariate$dataset_class
       
-      fname <- paste0(tolower(icountry),"_",var_name_class,"_ZS_",dataset_summary,".csv")
+      fname <- paste0(tolower(icountry),"_",
+                      var_name_class,"_ZS_",dataset_summary,".csv")
       file.path.csv <- file.path(y, fname)
       
 
@@ -118,7 +121,8 @@ calculate_zonal_stats_covariates <- function(x,
                                                 blocks=blocks)  
         }else{
           
-          output_stats <- zonal(dataset_raster, zonal_raster, fun=dataset_summary)
+          output_stats <- zonal(dataset_raster, 
+                                zonal_raster, fun=dataset_summary)
           
         }
         
@@ -131,7 +135,8 @@ calculate_zonal_stats_covariates <- function(x,
         output_stats.sorted <-  output_stats.sorted[output_stats.sorted[,1] != 0, ]        
         ## Saving zonal statiscs per country for each covariate:
         if (save_zst){
-          write.csv( as.data.frame(output_stats.sorted), file = file.path.csv, row.names=FALSE )
+          write.csv( as.data.frame(output_stats.sorted),
+                     file = file.path.csv, row.names=FALSE )
         }        
         
       }else{
@@ -161,10 +166,10 @@ calculate_zonal_stats_covariates <- function(x,
         census_data.country <- output_stats.sorted
       } else {
         ##  Merge with the previous iterations:
-        census_data.country <- merge( as.data.frame(census_data.country), 
-                                      as.data.frame(output_stats.sorted), 
-                                      by="ADMINID", 
-                                      sort=FALSE)
+        census_data.country <- merge(as.data.frame(census_data.country), 
+                                     as.data.frame(output_stats.sorted), 
+                                     by="ADMINID", 
+                                     sort=FALSE)
       }
       
       if (verbose){
@@ -226,7 +231,8 @@ calculate_zonal_stats_covariates <- function(x,
   ##  Convert that data to a dataframe for continuted use:
   census_data <- as.data.frame(census_data)
   
-  log_info("MSG", paste0("Complited calculation zonal-statistics for all covariates"), 
+  log_info("MSG",
+           paste0("Complited calculation zonal-statistics for all covariates"), 
            verbose=verbose, log=log) 
   
   return(census_data)

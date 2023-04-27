@@ -30,7 +30,8 @@ rasterize_parallel_start <- function(x,
   
   verbose <- if (silent) FALSE else TRUE
   
-  log_info("MSG", paste0("Rasterizing using total blocks ",blocks$n ), verbose=verbose, log=FALSE)
+  log_info("MSG", paste0("Rasterizing using total blocks ",blocks$n ),
+           verbose=verbose, log=FALSE)
 
   
   recvOneData <- getFromNamespace("recvOneData", "parallel")
@@ -47,7 +48,9 @@ rasterize_parallel_start <- function(x,
   
   clRasteriseFun <- function(i) {
     # tryCatch({
-    v <- data.frame( raster::getValues(x, row=blocks$row[i], nrows=blocks$nrows[i]) )
+    v <- data.frame( raster::getValues(x, 
+                                       row=blocks$row[i],
+                                       nrows=blocks$nrows[i]) )
     colnames(v) <- c("v1")
     colnames(df) <- c("v1","v2")
     v <- plyr::join(v,df,type="left",by = "v1")[-1]
@@ -177,7 +180,8 @@ rasterize_parallel <- function(x,
   
 
   if (cores > max.cores) {
-    stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
+    stop(paste0("Number of cores ",cores,
+                " more then real physical cores in PC ",max.cores ))
   }
   
   if (!is.data.frame(df)) stop(paste0("df should be a data.frame"))
@@ -188,8 +192,9 @@ rasterize_parallel <- function(x,
   
   datatype <- toupper(datatype)
   
-  if (!(datatype %in% c('INT1S', 'INT2S', 'INT4S', 'FLT4S', 'LOG1S', 'INT1U', 'INT2U', 'INT4U', 'FLT8S'))) {
-    stop('not a valid data type. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S')
+  if (!(datatype %in% c('INT1S', 'INT2S', 'INT4S', 'FLT4S',
+                        'LOG1S', 'INT1U', 'INT2U', 'INT4U', 'FLT8S'))) {
+    stop('Not a valid data type. Avalible are INT1S/INT2S/INT4S/FLT4S/LOG1S/INT1U/INT2U/INT4U/FLT8S')
   }
   
   if (!file.exists(dirname(filename))){
@@ -197,13 +202,14 @@ rasterize_parallel <- function(x,
   }
   
   if ( file.exists(filename) & overwrite==FALSE) {
-    stop(paste0("File ",filename," exist. Use option overwrite=TRUE"))
+    stop(paste0("File ",filename," exists. Use option overwrite=TRUE"))
   } else{
     if ( file.exists(filename) ) file.remove(filename)
   }
   
   if (cores > max.cores) {
-    stop(paste0("Number of cores ",cores," more then real physical cores in PC ",max.cores ))
+    stop(paste0("Number of cores ",cores,
+                " more then real physical cores in PC ",max.cores ))
   }
   
   # if user did not tell how many blocks to use then blocks will
@@ -220,7 +226,8 @@ rasterize_parallel <- function(x,
   
   beginCluster(n=npoc_blocks)
   
-  out <- rasterize_parallel_start(x, df, blocks, NAflag, datatype, filename, overwrite, silent)
+  out <- rasterize_parallel_start(x, df, blocks, NAflag, datatype, filename,
+                                  overwrite, silent)
   
   endCluster()
   

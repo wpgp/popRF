@@ -38,20 +38,26 @@ rf_prediction_parallel <- function(covariates,
 
   prediction_raster <- census_mask
     
-  log_info("MSG", paste0("Start predict for gridded covariates"), verbose=verbose, log=log) 
+  log_info("MSG", paste0("Start predict for gridded covariates"),
+           verbose=verbose, log=log) 
   
   rfg.predict.density.rf.pred <- file.path(outdir, 
-                                           paste0("predict_density_rf_pred_", tag, ".tif")) 
+                                           paste0("predict_density_rf_pred_", 
+                                                  tag, ".tif")) 
   rfg.predict.density.rf.sd <- file.path(outdir, 
-                                         paste0("predict_density_rf_sd_", tag, ".tif")) 
+                                         paste0("predict_density_rf_sd_",
+                                                tag, ".tif")) 
   
   
   rfg.predict.density.rf.pred_05 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_05_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_05_",
+                                                     tag , ".tif")) 
   rfg.predict.density.rf.pred_50 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_50_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_50_", 
+                                                     tag , ".tif")) 
   rfg.predict.density.rf.pred_95 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_90_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_90_",
+                                                     tag , ".tif")) 
   
   
   
@@ -186,9 +192,14 @@ rf_prediction_parallel <- function(covariates,
                                 newdata=row_data[roi_subset,1:(length(row_data)-2)], 
                                 predict.all=TRUE)
       
-      predictions$rf_pred[roi_subset] <- transY(apply(prediction_set$individual, MARGIN=1, mean), inverse=TRUE)
+      predictions$rf_pred[roi_subset] <- transY(apply(prediction_set$individual,
+                                                      MARGIN=1,
+                                                      mean),
+                                                inverse=TRUE)
       
-      predictions$rf_sd[roi_subset] <- apply(prediction_set$individual, MARGIN=1, sd)
+      predictions$rf_sd[roi_subset] <- apply(prediction_set$individual,
+                                             MARGIN=1,
+                                             sd)
       
       if (quant) {
         
@@ -319,7 +330,10 @@ rf_prediction_parallel <- function(covariates,
     if (verbose){
       progress_message(x=i, 
                        max=blocks$n, 
-                       label=paste0("received block ",ni, " Processing Time: ", tmDiff(tStart,tEnd))
+                       label=paste0("received block ",
+                                    ni,
+                                    " Processing Time: ",
+                                    tmDiff(tStart,tEnd))
       ) 
     }
   }

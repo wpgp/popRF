@@ -29,20 +29,27 @@ rf_prediction <- function(covariates,
 
   
   tStart <- Sys.time()
-  log_info("MSG", paste0("Start predict for gridded covariates"), verbose=verbose, log=log) 
+  log_info("MSG", paste0("Start prediction for gridded covariates"),
+           verbose=verbose,
+           log=log) 
   
   rfg.predict.density.rf.pred <- file.path(outdir, 
-                                           paste0("predict_density_rf_pred_", tag, ".tif")) 
+                                           paste0("predict_density_rf_pred_",
+                                                  tag, ".tif")) 
   rfg.predict.density.rf.sd <- file.path(outdir, 
-                                         paste0("predict_density_rf_sd_", tag, ".tif")) 
+                                         paste0("predict_density_rf_sd_",
+                                                tag, ".tif")) 
   
   
   rfg.predict.density.rf.pred_05 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_05_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_05_",
+                                                     tag , ".tif")) 
   rfg.predict.density.rf.pred_50 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_50_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_50_",
+                                                     tag , ".tif")) 
   rfg.predict.density.rf.pred_95 <- file.path(outdir, 
-                                              paste0("predict_density_rf_pred_90_", tag , ".tif")) 
+                                              paste0("predict_density_rf_pred_90_",
+                                                     tag , ".tif")) 
   
   
   # Stack all of our covariates and masks together:
@@ -79,7 +86,9 @@ rf_prediction <- function(covariates,
   ## that matches our popfit variable list:
   ## Full covariate stack:
   #
-  names(row_data) <- c(names(popfit_final$forest$xlevels), "census_mask", "water_raster")
+  names(row_data) <- c(names(popfit_final$forest$xlevels),
+                       "census_mask",
+                       "water_raster")
   
   ##	Detect if we have any NA or Inf values, and that the values are
   ##		covered by our census administrative units:
@@ -222,7 +231,10 @@ rf_prediction <- function(covariates,
   
   
   tEnd <-  Sys.time()
-  log_info("MSG", paste0("Processing Time:  ",tmDiff(tStart,tEnd)), verbose=verbose, log=log) 
+  log_info("MSG", 
+           paste0("Processing Time:  ",
+                  tmDiff(tStart,tEnd)),
+           verbose=verbose, log=log) 
   
   return(prediction_raster)
 }

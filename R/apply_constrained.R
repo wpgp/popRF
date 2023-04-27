@@ -3,26 +3,27 @@
 #' @details masking out the prediction layer and L1 using mask.
 #' 
 #' @rdname apply_constrained
-#' @param pop the name of the file which the administrative ID and the population 
-#'        values are to be read from. The file should contain two columns 
-#'        comma-separated with the value of administrative ID and population 
-#'        without columns names. If it does not contain an absolute path, the 
-#'        file name is relative to the current working directory.
+#' @param pop the name of the file which the administrative ID and the 
+#'        population values are to be read from. The file should contain two 
+#'        columns comma-separated with the value of administrative ID and 
+#'        population without columns names. If it does not contain an absolute 
+#'        path, the file name is relative to the current working directory.
 #' @param mastergrid_filename census mask Path FileName
 #' @param const Path to the mask to constrained population layer. 
 #'        Mask file should be a raster file with 0 and Nodata values.
 #' @param output_dir Path to the folder to save the outputs. 
-#' @param cores is a integer. Number of cores to use when executing the function, 
-#'        which defaults to 4. If set to 0 or NULL max number of cores will be 
-#'        used based on as many processors as the hardware and RAM allow. 
+#' @param cores is a integer. Number of cores to use when executing the 
+#'        function, which defaults to 4. If set to 0 or NULL max number of cores
+#'        will be used based on as many processors as the hardware and RAM 
+#'        allow. 
 #' @param rfg.countries.tag character of tag
 #' @param quant logical. If FALSE then quant will not be calculated
 #' @param blocks number of blocks sugesting for processing raster file.
 #' @param verbose is logical. TRUE or FALSE: flag indicating whether to print 
 #'        intermediate output from the function on the console, which might be 
 #'        helpful for model debugging. Default is \code{verbose} = TRUE.
-#' @param log is logical. TRUE or FALSE: flag indicating whether to print intermediate 
-#'        output from the function on the log.txt file. 
+#' @param log is logical. TRUE or FALSE: flag indicating whether to print 
+#'        intermediate output from the function on the log.txt file. 
 #'        Default is \code{log} = FALSE.
 #' @importFrom raster getValues writeRaster values calc
 #' @importFrom plyr join
@@ -33,12 +34,12 @@ apply_constrained <- function(pop,
                               mastergrid_filename,
                               const,
                               output_dir,
-                              cores=NULL,
+                              cores = NULL,
                               rfg.countries.tag, 
                               quant = TRUE, 
-                              blocks=NULL,
-                              verbose=TRUE, 
-                              log=FALSE) {
+                              blocks = NULL,
+                              verbose = TRUE, 
+                              log = FALSE) {
   
   log_info("MSG", paste0("Start creating a constrained population layer"), 
            verbose=verbose, 
@@ -51,7 +52,8 @@ apply_constrained <- function(pop,
   
   rfg.predict.density.rf.pred.const <- file.path(output_dir, 
                                                  paste0("predict_density_rf_pred_", 
-                                                        rfg.countries.tag, "_const.tif"))
+                                                        rfg.countries.tag, 
+                                                        "_const.tif"))
   
   mastergrid.basename = basename(mastergrid_filename)
   
@@ -77,7 +79,7 @@ apply_constrained <- function(pop,
     }
   } 
   
-  log_info("MSG", paste0("Start prepering a data to constraine"), 
+  log_info("MSG", paste0("Start preparing data to constrain"), 
            verbose=verbose, 
            log=log)
   
@@ -97,7 +99,9 @@ apply_constrained <- function(pop,
 
     npoc_blocks <- ifelse(blocks$n < cores, blocks$n, cores)
 
-    log_info("MSG", paste0("Constraining prediction layer"), verbose=verbose, log=log)
+    log_info("MSG", paste0("Constraining prediction layer"),
+             verbose=verbose, 
+             log=log)
     
     density_mask <- masking_out(mask_ppd_stack,
                                 fun = fun_const,
@@ -115,7 +119,7 @@ apply_constrained <- function(pop,
                                       raster(mastergrid_filename))
     
 
-    log_info("MSG", paste0("constraining mastegrid"), verbose=verbose, log=log)
+    log_info("MSG", paste0("Constraining mastergrid"), verbose=verbose, log=log)
     
     mastergrid_mask <- masking_out(mastergrid_stack,
                                    fun = fun_const,

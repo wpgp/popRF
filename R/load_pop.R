@@ -17,7 +17,7 @@ load_pop <- function(icountry,input_poptables){
 }
 
 #
-#' get_pop_census_all load population data from input
+#' get_pop_census_all Load population data from input
 #'
 #' @param x input poptables
 #' @rdname get_pop_census_all

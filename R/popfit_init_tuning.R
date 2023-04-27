@@ -7,8 +7,8 @@
 #' @param log logical. Should report on progress be saved in log file?
 #' @importFrom randomForest tuneRF
 #' @importFrom stats na.omit
-#' @return it returns a matrix whose first column contains the mtry values searched, 
-#' and the second column the corresponding OOB error
+#' @return it returns a matrix whose first column contains the mtry values 
+#' searched, and the second column the corresponding OOB error
 #' @noRd 
 popfit_init_tuning <- function(x, 
                                y, 
@@ -19,7 +19,9 @@ popfit_init_tuning <- function(x,
   #  x_data = x
   #  y_data = y  
   
-  log_info("MSG", paste0("Start tuning of our randomForest population density regression."), verbose=verbose, log=log)  
+  log_info("MSG",
+           paste0("Start tuning of our randomForest population density regression."),
+           verbose=verbose, log=log)  
   
   start_time <- Sys.time()
   
@@ -41,7 +43,9 @@ popfit_init_tuning <- function(x,
   
   
   end_time <- Sys.time()
-  log_info("MSG", paste("End tuning RF. Elapsed Fitting Time:", tmDiff(start_time,end_time)), verbose=verbose, log=log)  
+  log_info("MSG", paste("End tuning RF. Elapsed Fitting Time:",
+                        tmDiff(start_time,end_time)),
+           verbose=verbose, log=log)  
   
   return(init_popfit)
 }
