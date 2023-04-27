@@ -1,8 +1,8 @@
 ######################################################################################
 #
 #
-#' get_popfit_quant Another alternative is to use Quantile Regression Forests to generate
-#' prediction intervals.  We'll fit a quantile regression using
+#' get_popfit_quant Another alternative is to use Quantile Regression Forests to
+#' generate prediction intervals.  We'll fit a quantile regression using
 #' the tuning parameters pulled from the popfit object above:
 #' 
 #' @rdname get_popfit_quant
@@ -51,7 +51,9 @@ get_popfit_quant <- function(x_data,
   
   if (file.exists(rfg.popfit.quant.RData)) {
     
-    log_info("MSG", paste0("Loading popfit object from ",rfg.popfit.quant.RData), verbose=verbose, log=log) 
+    log_info("MSG", paste0("Loading popfit object from ",
+                           rfg.popfit.quant.RData),
+             verbose=verbose, log=log) 
     load(file=rfg.popfit.quant.RData)
     
   }else{  
@@ -82,7 +84,10 @@ get_popfit_quant <- function(x_data,
                                    nodesize=rf_nodesize,
                                    maxnodes=rf_maxnodes)    
     
-    log_info("MSG", paste0("Saving popfit_quant object ",rfg.popfit.quant.RData), verbose=verbose, log=log) 
+    log_info("MSG", 
+             paste0("Saving popfit_quant object ",
+                    rfg.popfit.quant.RData),
+             verbose=verbose, log=log) 
     save(popfit_quant, file=rfg.popfit.quant.RData)
     
   } 
@@ -120,16 +125,20 @@ get_popfit_quant_old <- function(fset,
                                           full.names=TRUE) 
   
   
-  log_info("MSG", paste("Loading old popfit quant from: ", fset$quant), verbose=verbose, log=log) 
+  log_info("MSG", paste("Loading old popfit quant from: ", fset$quant),
+           verbose=verbose, log=log) 
   
   
   if ( length(list.of.old.popfits.quant) == 0 ){
-    err_mess <- paste0('There is no old popfit Please check the folder : ', fset$quant)
+    err_mess <- paste0('There is no old popfit Please check the folder : ', 
+                       fset$quant)
     stop(err_mess)
   }
   
   ##  Load it:
-  log_info("MSG", paste("Loading ", basename(list.of.old.popfits.quant[[1]]) ), verbose=verbose, log=log) 
+  log_info("MSG", 
+           paste("Loading ", basename(list.of.old.popfits.quant[[1]])),
+           verbose=verbose, log=log) 
   local_env.Popfit_quant = local({load(file=list.of.old.popfits.quant[[1]]);environment()})
   
   popfit.quant.old <- local_env.Popfit_quant$popfit_quant
@@ -153,7 +162,9 @@ get_popfit_quant_old <- function(fset,
     local_env.Popfit_quant$popfit_quant$predicted <- 0
     
     ##  Combine it with the other popfit quant:
-    log_info("MSG", paste("Combine popfit ", basename(list.of.old.popfits.quant[[i]]) ), verbose=verbose, log=log) 
+    log_info("MSG",
+             paste("Combine popfit ", basename(list.of.old.popfits.quant[[i]])),
+             verbose=verbose, log=log) 
     popfit.quant.old <- combine( popfit.quant.old, local_env.Popfit_quant$popfit_quant )    
   } 
   
