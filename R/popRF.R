@@ -391,7 +391,7 @@ popRF <- function(pop,
   
   if (length(rfg.input.countries) > 1){
     
-    merged_covariates <- merg_covariates(rfg.input.countries,
+    merged_covariates <- merge_covariates(rfg.input.countries,
                                          covariates.var.names, 
                                          covariates, 
                                          rfg.countries.tag, 
