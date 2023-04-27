@@ -1,6 +1,6 @@
-# Authors: Maksym Bondarenko mb4@soton.ac.uk
-# Date :  June 2021
-# Version 0.1
+# Authors: Maksym Bondarenko mb4@soton.ac.uk Jeremiah J. Nieves
+# Date :  April 2023
+# Version 0.2
 #
 #' Exit program quietly without error
 #' @noRd 
