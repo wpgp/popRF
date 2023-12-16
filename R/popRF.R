@@ -283,7 +283,7 @@ popRF <- function(pop,
              verbose = verbose,
              log = log)  
     log_info("MSG", 
-             paste0("popRF will use maximum avalible cores on the PC which is ", 
+             paste0("popRF will use maximum available cores on the PC which is ", 
                     cores), 
              verbose = verbose, 
              log = log)
@@ -362,7 +362,7 @@ popRF <- function(pop,
   
   
   
-  #get blokcs for parallel calculation of zonal stats
+  #get blocks for parallel calculation of zonal stats
   
   # blocks_zs <- get_blocks_size(raster(covariates[[1]]$mastergrid$dataset_path), 
   #                              cores,
