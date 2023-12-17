@@ -994,7 +994,7 @@ popRF <- function(pop,
   #                           nt=1,
   #                           verbose = verbose, ...)   
   
-  #get blokcs for parallel calculation of zonal stats
+  # get blocks for parallel calculation of zonal stats
   
   blocks <- get_blocks_size(census_mask,
                             cores, 
