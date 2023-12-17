@@ -80,13 +80,11 @@ log_info <- function(prank,
 create_dir <- function(x, 
                        verbose){
   
-  x.covariates <- file.path(x, "covariates")
-  
   if(!file.exists( x.covariates )) {
     
-    msg <- paste0("Log :: Creating directory ", x.covariates,".")
+    msg <- paste0("Log :: Creating directory ", x, ".")
     
-    dir.create(x.covariates, 
+    dir.create(x, 
                recursive = TRUE,
                showWarnings = FALSE)
     
